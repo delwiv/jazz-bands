@@ -1,0 +1,64 @@
+networks:
+  api-network:
+    driver: bridge
+
+services:
+  canto:
+    env_file: .env.docker
+    restart: always
+    build: ./apps/canto
+    ports:
+      - "3017:3017"
+    networks:
+      - api-network
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: 'bitnami/mongodb:latest'
+    env_file: .env.docker
+    ports:
+      - 27029:27017
+    volumes:
+      - ./data/mongo:/bitnami/mongodb
+    networks:
+      - api-network
+
+  redis:
+    image: 'bitnami/redis:latest'
+    env_file: .env.docker
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
+    networks:
+      - api-network
+    volumes:
+      - ./data/redis:/bitnami/redis
+
+  webserver:
+    depends_on:
+      - canto
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./data/nginx:/etc/nginx/conf.d:ro
+      - ./data/letsencrypt:/etc/letsencrypt
+      - ./data/certbot:/var/www/certbot
+    networks:
+      - api-network
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/letsencrypt:/etc/letsencrypt
+      - ./data/certbot:/var/www/certbot
+
+volumes:
+  certbot_etc:
+  redis_data:
+  certbot_certs:

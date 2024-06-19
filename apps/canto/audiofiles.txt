@@ -1,0 +1,5 @@
+./server/storage/audiofiles/01 - Makin' whoopee(Gus Khan - Walter Donaldson;Whoopee !.mp3
+./server/storage/audiofiles/03 - I'm through with love(Fud Livington - Matt Malneck - Gus Khan;Some Like It Hot.mp3
+./server/storage/audiofiles/02 - Je ne pourrai jamais vivre sans toi(Michel Legrand;Les parapluies de Cherbourg.mp3
+./server/storage/audiofiles/04 - My favorite things(Richard Rogers;The sound of music.mp3
+./server/storage/audiofiles/05 - Love for sale(Cole Porter;The New Yorkers.mp3

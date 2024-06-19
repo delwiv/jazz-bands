@@ -1,0 +1,7 @@
+audit.json
+node_modules
+.env*
+dump
+managr*
+data/mongo/data/db
+data/redis/data/*

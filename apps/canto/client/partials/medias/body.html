@@ -1,0 +1,51 @@
+<div class="myBody col-md-12">
+    <div class="well row" ng-show="logged">
+        <span class="anchor" id="newPicture"></span>
+        <h4> Ajouter une photo</h4>
+        <input type="file" nv-file-select uploader="uploader" multiple/>
+        <ul>
+            <li ng-repeat="item in uploader.queue">
+                <div ng-thumb="{ file: item._file, height: 100 }"></div>
+                Nom du fichier n° {{$index}}: <strong><span ng-bind="item.file.name"></span></strong>
+                <button type="button" class="btn btn-danger" ng-click="uploader.removeFromQueue(item)">Supprimer</button>
+            </li>
+        </ul>
+        <button type="button" class="btn btn-success" ng-disabled="uploader.queue.length == 0" ng-click="uploader.uploadAll()">Sauver</button>
+    </div>
+    <div class="media well">
+        <h1>Medias</h1>
+        <h2>Photos</h2>
+        <div class="row center">
+            <div class="col-md-3" ng-repeat="picture in pictures">
+                <a class="row center" href="{{picture.path}}" data-lightbox="'picture'" data-title="{{picture.name}}"> <img class="picture" ng-src="{{picture.path}}" title="{{'photo' + $index}}" />
+                </a>
+                <button ng-show="logged" type="button" class="btn btn-danger row center" ng-click="deletePicture(picture)">Supprimer</button>
+            </div>
+
+        </div>
+        <h2>Vidéos</h2>
+        <!-- <div class="row center">
+            <div class="col-md-6" ng-repeat="video in videos">
+                <a href="{{video.path}}" data-lightbox="'video'" data-title="{{picture.name}}"> <img class="picture" ng-src="{{picture.path}}" title="{{'photo' + $index}}" />
+                </a>
+                <button ng-show="logged" type="button" class="center-block btn btn-danger" ng-click="deletePicture(picture)">Supprimer</button>
+            </div>
+        </div> -->
+        <!-- <h1>Audio</h1>
+        <div ng-show="media.type === 'audio'">
+        </div> -->
+    </div>
+    <div class="media well" ng-show="logged">
+        <h1>Audio</h1>
+        <input type="file" nv-file-select uploader="audioUploader" multiple/>
+        <ul>
+            <li ng-repeat="item in audioUploader.queue">
+                <div ng-thumb="{ file: item._file, height: 100 }"></div>
+                Nom du fichier n° {{$index}}: <strong><span ng-bind="item.file.name"></span></strong>
+                <button type="button" class="btn btn-danger" ng-click="audioUploader.removeFromQueue(item)">Supprimer</button>
+            </li>
+        </ul>
+        <button type="button" class="btn btn-success" ng-disabled="audioUploader.queue.length == 0" ng-click="audioUploader.uploadAll()">Sauver</button>
+    </div>
+
+</div>

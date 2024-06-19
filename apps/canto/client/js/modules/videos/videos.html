@@ -1,0 +1,21 @@
+<div class="videos">
+    <div class="myBody col-md-12">
+        <div class="well row" ng-show="logged">
+            <h1>Editer la page<span class="pull-right">
+                <button class="btn btn-primary" ng-click="collapseEdit = !collapseEdit"><i class="fa" ng-class="collapseEdit ? 'fa-minus' : 'fa-plus'"></i></button>
+            </span></h1>
+            <div collapse="!collapseEdit">
+                <form class="form" role="form">
+                    <div class="form-group taDiv" ng-model="vm.video.content" text-angular></div>
+                    <button type="button" class="btn btn-success" ng-click="updateVideo()">Sauver</button>
+                </form>
+            </div>
+        </div>
+        <div class="well row">
+            <div id="videoContainer">
+                <div ta-bind ng-model="vm.video.content"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
