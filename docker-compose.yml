@@ -31,7 +31,7 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
-      - 6379:6379
+      - 6369:6379
     networks:
       - api-network
     volumes:
