@@ -18,18 +18,5 @@ COPY gulpfile.js makeConfig.js .
 
 RUN pnpm build
 
-# FROM builder AS tester
-# COPY tests ./tests
-# RUN npm install
-# COPY .env.test .env.test
-# ENV TBD_ENV test
-# CMD ["npm", "test"]
-
-# FROM $BASE AS runner
-# ARG TBD_ENV
-# ENV TBD_ENV=$TBD_ENV
-# WORKDIR /app
-# COPY --from=builder /app ./
-# COPY .env.docker ./.env
 EXPOSE $PORT
 CMD ["pnpm", "start"]
