@@ -1,0 +1,140 @@
+<div class="myBody col-md-12">
+    <div class="well row">
+        <h1 class="">Tour</h1>
+        <hr/>
+        <div id="new-date" ng-if="logged">
+            <span class="anchor" id="newShow"></span>
+            <h2>Ajouter une date</h2>
+            <form class="date-form">
+                <div class="row first">
+
+                    <div class="col-md-6 datetime-picker">
+                        <!-- <div class="form-group">
+                <label for="datetime-picker">Date</label> -->
+                        <!-- <div id="datetime-picker" class="input-group date datetimepicker" data-date-format="dd MM yyyy - HH:ii p">
+                                <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+                                <input id="input-datetime" class="form-control" type="text" placeholder="Cliquer pour choisir une date" ng-model="newDate.datetime" readonly hidden="hidden" />
+                            </div> -->
+                        <div class="col-md-7">
+                            <div class="input-group datepicker">
+                                <label>Date & heure</label>
+                                <input type="text" class="form-control" uib-datepicker-popup="dd/MM/yyyy" ng-model="newDate.datetime" ng-click="date.opened = true" is-open="date.opened" datepicker-options="dateOptions" ng-required="true" close-text="Fermer"/>
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default btn-date" ng-click="date.opened = !date.opened">
+                                        <i class="glyphicon glyphicon-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <uib-timepicker class="timepicker" ng-model="newDate.datetime" hour-step="hstep" show-meridian="false" minute-step="mstep"></uib-timepicker>
+
+                        </div>
+                        <!-- <uib-datepicker-popup ng-model="date"></uib-datepicker>
+                <uib-timepicker-popup ng-model="time"></uib-timepicker> -->
+                    </div>
+
+                    <!-- </div> -->
+                    <div class="col-md-6">
+                        <div class="form-group ">
+                            <label for="department">Département</label>
+                            <select class="form-control" name="department" id="department" ng-model="newDate.department" ng-options="dep as dep for dep in departments">
+                                <option value=''>Choisir un département</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="city">Ville</label>
+                        <input class="form-control" ng-model="newDate.city" type="text" id="city" placeholder="Ville">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="place">Lieu</label>
+                        <input ng-model="newDate.place" class="form-control" type="text" id="place" placeholder="Lieu">
+                    </div>
+                </div>
+                <!-- <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="informations">Informations supplémentaires</label>
+                        <textarea placeholder="Informations supplémentaires affichées au survol d'un concert dans la liste." name="informations" id="informations" ng-model="newDate.observations" class="col-md-12"></textarea>
+                    </div>
+                </div> -->
+                <div class="col-md-12">
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-success" ng-click="addNewDate(newDate)">Sauver</button>
+                        <button type="button" class="btn btn-warning" ng-click="newDate = {}">Reset</button>
+                    </div>
+                </div>
+            </form>
+            <!-- <div class="preview-date" ng-show="newDate.datetime">
+                <h3>Aperçu</h3>
+                <table class="table table-hover table-agenda">
+                    <thead>
+                        <th>Date et heure</th>
+                        <th>Département</th>
+                        <th>Ville</th>
+                        <th>Lieu</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{newDate.datetime}}</td>
+                            <td>{{newDate.department}}</td>
+                            <td>{{newDate.city}}</td>
+                            <td>{{newDate.place}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> -->
+        </div>
+        <div class="agenda">
+            <span class="anchor" id="nextShows"></span>
+            <h2>Concerts à venir ({{nextShows.length}})</h2>
+            <table class="table table-striped table-agenda">
+                <thead>
+                    <th>Date et heure</th>
+                    <th>Département</th>
+                    <th>Ville</th>
+                    <th>Lieu</th>
+                    <th ng-if="logged"></th>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="date in nextShows track by $index">
+                        <td>{{getDate(date.datetime)}}</td>
+                        <td>{{date.department}}</td>
+                        <td>{{date.city}}</td>
+                        <td>{{date.place}}</td>
+                        <td ng-if="logged">
+                            <button class="btn btn-danger" ng-click="delete(date.id)">X</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr/>
+            <span class="anchor" id="previousShows"></span>
+            <h2>Concerts passés ({{previousShows.length}})</h2>
+            <table class="table table-striped table-agenda">
+                <thead>
+                    <th>Date et heure</th>
+                    <th>Département</th>
+                    <th>Ville</th>
+                    <th>Lieu</th>
+                    <th ng-if="logged"></th>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="date in previousShows track by $index">
+                        <td>{{getDate(date.datetime)}}</td>
+                        <td>{{date.department}}</td>
+                        <td>{{date.city}}</td>
+                        <td>{{date.place}}</td>
+                        <td ng-if="logged">
+                            <button class="btn btn-danger" ng-click="delete(date.id)">X</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

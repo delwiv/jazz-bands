@@ -1,0 +1,41 @@
+// .home-body {
+img {
+    max-width: 100%;
+}
+.message {
+    p {
+        margin-right: -30px !important;
+    }
+}
+.date-form {
+    .first.row {
+        margin-top: 15px !important;
+        .datetime-picker {
+            margin-top: -10px;
+            .uib-time > input {
+                padding: 0;
+            }
+        }
+    }
+    .datepicker {
+        margin-top: 14px;
+        .btn-date {
+            margin-top: 25px !important;
+        }
+    }
+    .btn {
+        margin: 0;
+        .timepicker {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        &a {
+            padding: 0;
+            margin: 0;
+        }
+    }
+}
+// .first.row {
+//     height: 80px;
+// }
+// }

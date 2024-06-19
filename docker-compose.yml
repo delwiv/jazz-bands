@@ -3,12 +3,24 @@ networks:
     driver: bridge
 
 services:
+  boheme:
+    env_file: .env.docker
+    restart: always
+    build: ./apps/boheme
+    ports:
+      - "3017:8080"
+    networks:
+      - api-network
+    depends_on:
+      - mongo
+      - redis
+
   canto:
     env_file: .env.docker
     restart: always
     build: ./apps/canto
     ports:
-      - "3017:3017"
+      - "3045:8080"
     networks:
       - api-network
     depends_on:

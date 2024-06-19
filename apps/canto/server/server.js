@@ -22,7 +22,7 @@ boot(app, __dirname);
 
 app.start = function() {
   // start the web server
-  return app.listen(3017, function() {
+  return app.listen(function() {
     app.emit('started');
     console.log('Web server listening at: %s', app.get('url'));
   });

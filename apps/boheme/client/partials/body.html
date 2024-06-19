@@ -1,0 +1,19 @@
+<div class="myBody col-md-12">
+    <div class="well" ng-show="logged">
+        <h1>Modifier le message d'accueil</h1>
+        <form class="form" role="form">
+            <div class="form-group" ng-model="home.homeMessage" text-angular text-angular-name="Message d'accueil"></div>
+            <button type="button" class="btn btn-success" ng-click="updateHome()">Sauver</button>
+        </form>
+    </div>
+    <div class="well">
+        <div class="col-md-12" class="home-body">
+            <span class="anchor" id="home"></span>
+            <img class="col-md-6" id="homePicture" src="/assets/remy.png" />
+            <div class="col-md-6 message">
+                <div ng-bind-html="home.homeMessage"></div>
+            </div>
+        </div>
+        <div style="clear:both;"></div>
+    </div>
+</div>
