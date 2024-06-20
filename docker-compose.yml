@@ -7,6 +7,8 @@ services:
     env_file: .env.docker
     restart: always
     build: ./apps/boheme
+    environment:
+      PORT: 3017
     ports:
       - "3017:3017"
     networks:
@@ -18,6 +20,8 @@ services:
     env_file: .env.docker
     restart: always
     build: ./apps/canto
+    environment:
+      PORT: 3045
     ports:
       - "3045:3045"
     networks:
