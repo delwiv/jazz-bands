@@ -5,18 +5,18 @@ FROM $BASE AS builder
 
 WORKDIR /app
 
-RUN corepack enable pnpm
+RUN corepack enable yarn
 
-COPY package.json pnpm-lock.yaml bower.json .bowerrc ./
+COPY package.json yarn.lock bower.json .bowerrc ./
 
-RUN pnpm install
+RUN yarn
 
 COPY client/ ./client/
 COPY common/ ./common/
 COPY server/ ./server/
 COPY gulpfile.js makeConfig.js .
 
-RUN pnpm build
+RUN yarn build
 
 EXPOSE $PORT
-CMD ["pnpm", "start"]
+CMD ["yarn", "start"]
