@@ -1,4 +1,5 @@
 ARG BASE=node:20
+ARG PORT=3017
 
 FROM $BASE AS builder
 
@@ -17,5 +18,5 @@ COPY gulpfile.js makeConfig.js .
 
 RUN pnpm build
 
-EXPOSE 8080
+EXPOSE $PORT
 CMD ["pnpm", "start"]
