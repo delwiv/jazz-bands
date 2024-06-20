@@ -6,7 +6,6 @@ const env = process.env
 const {
   MONGODB_USERNAME,
   MONGODB_PASSWORD,
-  MONGODB_DATABASE,
   MONGODB_HOST,
 } = env
 
@@ -21,7 +20,7 @@ const mkConfig = async () => {
       },
       mongoDB: {
         host: host || 'localhost',
-        database: MONGODB_DATABASE || 'canto',
+        database: 'mpquartet',
         username: MONGODB_USERNAME,
         password: MONGODB_PASSWORD,
         name: "mongoDB",
