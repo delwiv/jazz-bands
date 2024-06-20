@@ -21,7 +21,7 @@ boot(app, __dirname);
 
 app.start = function() {
   // start the web server
-  return app.listen(function() {
+  return app.listen(process.env.PORT, function() {
     app.emit('started');
     console.log('Web server listening at: %s', app.get('url'));
   });
