@@ -39,21 +39,10 @@ services:
     networks:
       - api-network
 
-  # redis:
-  #   image: 'bitnami/redis:latest'
-  #   env_file: .env.docker
-  #   environment:
-  #     - ALLOW_EMPTY_PASSWORD=yes
-  #   ports:
-  #     - 6369:6379
-  #   networks:
-  #     - api-network
-  #   volumes:
-  #     - ./data/redis:/bitnami/redis
-
   webserver:
     depends_on:
       - canto
+      - boheme
     image: nginx:alpine
     restart: unless-stopped
     ports:
@@ -71,6 +60,19 @@ services:
     volumes:
       - ./data/letsencrypt:/etc/letsencrypt
       - ./data/certbot:/var/www/certbot
+
+  # redis:
+  #   image: 'bitnami/redis:latest'
+  #   env_file: .env.docker
+  #   environment:
+  #     - ALLOW_EMPTY_PASSWORD=yes
+  #   ports:
+  #     - 6369:6379
+  #   networks:
+  #     - api-network
+  #   volumes:
+  #     - ./data/redis:/bitnami/redis
+
 
 volumes:
   certbot_etc:
