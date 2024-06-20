@@ -7,7 +7,7 @@ WORKDIR /app
 
 RUN corepack enable pnpm
 
-COPY ./package.json ./pnpm-lock.yaml ./bower.json ./
+COPY package.json pnpm-lock.yaml bower.json .bowerrc ./
 
 RUN pnpm install
 
