@@ -33,9 +33,9 @@ services:
     image: 'bitnami/mongodb:latest'
     environment:
       - MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
-      - MONGODB_EXTRA_USERNAMES=boheme;mpquartet
-      - MONGODB_EXTRA_PASSWORDS=${MONGODB_BOHEME_PASSWORD};${MONGODB_MPQUARTET_PASSWORD}
-      - MONGODB_EXTRA_DATABASES=boheme;mpquartet
+      - MONGODB_EXTRA_USERNAMES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio
+      - MONGODB_EXTRA_PASSWORDS=${MONGODB_BOHEME_PASSWORD};${MONGODB_MPQUARTET_PASSWORD};${MONGODB_JAZZOLA_PASSWORD};${MONGODB_SWINGFAMILY_PASSWORD};${MONGODB_TRIORSH_PASSWORD};${MONGODB_WESTSIDETRIO_PASSWORD}
+      - MONGODB_EXTRA_DATABASES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio
     ports:
       - 27029:27017
     # volumes:

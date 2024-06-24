@@ -5,3 +5,4 @@ dump
 managr*
 data/mongo/data/db
 data/redis/data/*
+data/letsencrypt/{renewal,live,archive,accounts}
