@@ -16,19 +16,6 @@ services:
     depends_on:
       - mongo
 
-  jazzola:
-    env_file: .env
-    restart: always
-    build: ./apps/jazzola
-    environment:
-      PORT: 3342
-    ports:
-      - "3342:3342"
-    networks:
-      - api-network
-    depends_on:
-      - mongo
-
   canto:
     env_file: .env
     restart: always
@@ -37,6 +24,19 @@ services:
       PORT: 3045
     ports:
       - "3045:3045"
+    networks:
+      - api-network
+    depends_on:
+      - mongo
+
+  jazzola:
+    env_file: .env
+    restart: always
+    build: ./apps/jazzola
+    environment:
+      PORT: 3342
+    ports:
+      - "3342:3342"
     networks:
       - api-network
     depends_on:
