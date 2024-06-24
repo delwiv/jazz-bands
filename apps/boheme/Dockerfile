@@ -15,9 +15,11 @@ COPY client/ ./client/
 COPY common/ ./common/
 COPY server/ ./server/
 
+COPY gulpfile.js .
+
 RUN yarn build
 
-COPY gulpfile.js makeConfig.js .
+COPY makeConfig.js .
 
 EXPOSE $PORT
 CMD ["yarn", "start"]
