@@ -14,9 +14,10 @@ RUN pnpm install
 COPY client/ ./client/
 COPY common/ ./common/
 COPY server/ ./server/
-COPY gulpfile.js makeConfig.js .
 
 RUN pnpm build
+
+COPY gulpfile.js makeConfig.js .
 
 EXPOSE $PORT
 CMD ["pnpm", "start"]
