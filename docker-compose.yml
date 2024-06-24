@@ -4,7 +4,7 @@ networks:
 
 services:
   boheme:
-    env_file: .env.docker
+    env_file: .env
     restart: always
     build: ./apps/boheme
     environment:
@@ -17,7 +17,7 @@ services:
       - mongo
 
   canto:
-    env_file: .env.docker
+    env_file: .env
     restart: always
     build: ./apps/canto
     environment:
@@ -31,11 +31,15 @@ services:
 
   mongo:
     image: 'bitnami/mongodb:latest'
-    env_file: .env.docker
+    environment:
+      - MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
+      - MONGODB_EXTRA_USERNAMES=boheme;mpquartet
+      - MONGODB_EXTRA_PASSWORDS=${MONGODB_BOHEME_PASSWORD};${MONGODB_MPQUARTET_PASSWORD}
+      - MONGODB_EXTRA_DATABASES=boheme;mpquartet
     ports:
       - 27029:27017
-    volumes:
-      - ./data/mongo:/bitnami/mongodb
+    # volumes:
+    #   - ./data/mongo:/bitnami/mongodb
     networks:
       - api-network
 

@@ -4,7 +4,7 @@ const { resolve } = require('node:path')
 const env = process.env
 
 const {
-  MONGODB_ROOT_PASSWORD,
+  MONGODB_MPQUARTET_PASSWORD,
   MONGODB_HOST,
 } = env
 
@@ -20,8 +20,8 @@ const mkConfig = async () => {
       mongoDB: {
         host: host || 'localhost',
         database: 'mpquartet',
-        username: 'root',
-        password: MONGODB_ROOT_PASSWORD,
+        username: 'mpquartet',
+        password: MONGODB_MPQUARTET_PASSWORD,
         name: "mongoDB",
         connector: "mongodb"
       },
@@ -34,7 +34,5 @@ const mkConfig = async () => {
     }
     , null, 2))
 }
-
-console.log({MONGODB_ROOT_PASSWORD, MONGODB_HOST})
 
 mkConfig()

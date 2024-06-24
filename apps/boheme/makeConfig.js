@@ -4,11 +4,22 @@ const { resolve } = require('node:path')
 const env = process.env
 
 const {
-  MONGODB_ROOT_PASSWORD,
+  MONGODB_BOHEME_PASSWORD,
   MONGODB_HOST,
 } = env
 
 const [host, port] = (MONGODB_HOST || '').split(':')
+
+const mongoDB = {
+  host: host || 'localhost',
+  database: 'boheme',
+  username: 'boheme',
+  password: MONGODB_BOHEME_PASSWORD,
+  name: "mongoDB",
+  connector: "mongodb"
+}
+
+console.log({ mongoDB })
 
 const mkConfig = async () => {
   await writeFile(resolve('./server', 'datasources.json'), JSON.stringify(
@@ -17,14 +28,7 @@ const mkConfig = async () => {
         name: "db",
         connector: "memory"
       },
-      mongoDB: {
-        host: host || 'localhost',
-        database: 'boheme',
-        username: 'root',
-        password: MONGODB_ROOT_PASSWORD,
-        name: "mongoDB",
-        connector: "mongodb"
-      },
+      mongoDB,
       storage: {
         name: "storage",
         connector: "loopback-component-storage",
@@ -34,7 +38,5 @@ const mkConfig = async () => {
     }
     , null, 2))
 }
-
-console.log({MONGODB_ROOT_PASSWORD, MONGODB_HOST})
 
 mkConfig()
