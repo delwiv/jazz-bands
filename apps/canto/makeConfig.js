@@ -35,4 +35,6 @@ const mkConfig = async () => {
     , null, 2))
 }
 
+console.log({MONGODB_ROOT_PASSWORD, MONGODB_HOST})
+
 mkConfig()
