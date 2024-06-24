@@ -1,4 +1,4 @@
-ARG BASE=node:18
+ARG BASE=node:20
 ARG PORT=3017
 
 FROM $BASE AS builder
