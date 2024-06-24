@@ -4,8 +4,7 @@ const { resolve } = require('node:path')
 const env = process.env
 
 const {
-  MONGODB_USERNAME,
-  MONGODB_PASSWORD,
+  MONGODB_ROOT_PASSWORD,
   MONGODB_HOST,
 } = env
 
@@ -21,8 +20,8 @@ const mkConfig = async () => {
       mongoDB: {
         host: host || 'localhost',
         database: 'boheme',
-        username: MONGODB_USERNAME,
-        password: MONGODB_PASSWORD,
+        username: 'root',
+        password: MONGODB_ROOT_PASSWORD,
         name: "mongoDB",
         connector: "mongodb"
       },
