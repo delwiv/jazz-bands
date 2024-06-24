@@ -1,0 +1,23 @@
+{
+  "name": "Agenda",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "properties": {
+    "dates": {
+      "type": [
+        "DateJazz"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "$unauthenticated",
+      "permission": "DENY"
+    }
+  ],
+  "methods": {}
+}

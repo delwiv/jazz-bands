@@ -19,8 +19,6 @@ const mongoDB = {
   connector: "mongodb"
 }
 
-console.log({ mongoDB })
-
 const mkConfig = async () => {
   await writeFile(resolve('./server', 'datasources.json'), JSON.stringify(
     {
