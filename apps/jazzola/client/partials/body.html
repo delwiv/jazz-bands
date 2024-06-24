@@ -1,0 +1,47 @@
+<div class="myBody row">
+  <div class="well col-md-12" ng-show="logged">
+    <h1>Modifier le message d'accueil</h1>
+    <form class="form" role="form">
+      <div class="form-group" ng-model="home.homeMessage" text-angular text-angular-name="Message d'accueil"></div>
+      <button type="button" class="btn btn-success" ng-click="updateHome()">
+        Sauver
+      </button>
+    </form>
+  </div>
+  <div class="well col-md-12 ">
+    <div class="home-body" class="">
+      <span class="anchor" id="home"></span>
+      <img class="col-xs-4 main-pic" src="/assets/Mot de Lina.png" />
+      <div class="col-xs-8">
+        <div style="height: 100%; display: flex; justify-content: center; flex-direction: column; align-self: stretch;">
+          <div class="col-md-12" ng-bind-html="home.homeMessage" id="home-message"></div>
+          <p style="text-align: center;">
+            <b>
+              <span>Jacques Julienne</span>
+            </b>
+            : accordéon
+          </p>
+          <p style="text-align: center;">
+            <b>
+              <span>Antoine Hervier</span>
+            </b>
+            : piano
+          </p>
+          <p style="text-align: center;">
+            <b>
+              <span>Guillaume Souriau</span>
+            </b>
+            : contrebasse
+          </p>
+          <p style="text-align: center;">
+            <b>
+              <span>Frédéric Robert</span>
+            </b>
+            : batterie
+          </p>
+        </div>
+      </div>
+    </div>
+    <div style="clear:both;"></div>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+#slideshow {
+  .carousel-indicators,
+  .carousel-control {
+    * {
+      display: none;
+    }
+  }
+  margin-bottom: 25px;
+  margin-top: 5px;
+}

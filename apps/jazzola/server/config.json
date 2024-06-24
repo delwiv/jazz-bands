@@ -1,0 +1,22 @@
+{
+  "restApiRoot": "/api",
+  "host": "0.0.0.0",
+  "port": 3342,
+  "legacyExplorer": false,
+  "logoutSessionsOnSensitiveChanges": true,
+  "remoting": {
+    "rest": {
+      "normalizeHttpPath": false,
+      "xml": false,
+      "handleErrors": false
+    },
+    "json": {
+      "strict": false,
+      "limit": "100kb"
+    },
+    "urlencoded": {
+      "extended": true,
+      "limit": "10000kb"
+    }
+  }
+}

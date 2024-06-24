@@ -1,0 +1,34 @@
+{
+  "initial:before": {
+    "loopback#favicon": {}
+  },
+  "initial": {
+    "compression": {},
+    "cors": {
+      "params": {
+        "origin": true,
+        "credentials": true
+      }
+    }
+  },
+  "session": {},
+  "auth": {},
+  "parse": {},
+  "routes": {
+    "loopback#status": {
+      "paths": "/"
+    }
+  },
+  "files": {},
+  "final": {
+    "loopback#urlNotFound": {}
+  },
+  "final:after": {
+    "strong-error-handler": {
+      "params": {
+        "debug": false,
+        "log": true
+      }
+    }
+  }
+}
