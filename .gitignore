@@ -6,3 +6,4 @@ data/mongo/data/db
 data/redis/data/*
 data/letsencrypt/renewal
 server/datasources.json
+data/nginx/.htpasswd
