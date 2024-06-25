@@ -5,8 +5,6 @@ import config from '../src/config'
 
 const API_URL = config.API_URL
 
-console.log({API_URL}, {env: process.env.API_URL}, {public: process.env.NEXT_PUBLIC_API_URL});
-
 export const sendMails = async params => {
   console.log({ params })
   const data = await fetch(`${API_URL}/emails`, {

@@ -1,8 +1,6 @@
 ARG BASE=node:16
 ARG PORT=3091
 
-ARG API_URL
-
 FROM $BASE AS builder
 
 WORKDIR /app

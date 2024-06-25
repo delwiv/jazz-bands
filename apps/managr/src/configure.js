@@ -4,7 +4,6 @@ import { join } from 'path'
 import { promises } from 'fs'
 
 const { writeFile } = promises
-console.log('configure', {env: process.env.API_URL}, {public: process.env.NEXT_PUBLIC_API_URL});
 
 const config = {
   API_URL: process.env.API_URL,
