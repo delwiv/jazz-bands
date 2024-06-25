@@ -132,9 +132,6 @@ services:
       - ./data/redis:/bitnami/redis
 
   webserver:
-    depends_on:
-      - canto
-      - boheme
     image: nginx:alpine
     restart: unless-stopped
     ports:
