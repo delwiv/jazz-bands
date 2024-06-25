@@ -4,7 +4,7 @@ import config from '../src/config'
 
 console.log({config});
 
-const {API_URL} = config
+const API_URL = process.env.NEXT_PUBLIC_MANAGR_API_URL
 
 export const sendMails = async params => {
   console.log({ params })

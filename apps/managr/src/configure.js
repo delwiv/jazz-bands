@@ -6,7 +6,7 @@ import { promises } from 'fs'
 const { writeFile } = promises
 
 const config = {
-  API_URL: process.env.MANAGR_API_URL,
+  API_URL: process.env.NEXT_PUBLIC_MANAGR_API_URL,
   PAGINATION: process.env.MANAGR_PAGINATION,
   months: [
     'Ignorer',
@@ -128,7 +128,6 @@ const config = {
   ],
 }
 
-console.log({config}, process.env);
 
 const configure = async () => {
   await writeFile(join(__dirname, 'config.json'), JSON.stringify(config, null, 2))
