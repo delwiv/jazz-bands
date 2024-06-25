@@ -20,8 +20,6 @@ COPY static/ ./static
 
 COPY next.config.js ./
 
-RUN API_URL=$API_URL NEXT_PUBLIC_API_URL=$API_URL pnpm build
-
 EXPOSE $PORT
 
 CMD ["pnpm", "start"]
