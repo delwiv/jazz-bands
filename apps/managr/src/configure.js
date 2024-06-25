@@ -4,8 +4,7 @@ import { join } from 'path'
 import { promises } from 'fs'
 
 const { writeFile } = promises
-
-console.log(process?.env);
+console.log('configure', {env: process.env.API_URL}, {public: process.env.NEXT_PUBLIC_API_URL});
 
 const config = {
   API_URL: process.env.API_URL,
@@ -130,6 +129,7 @@ const config = {
   ],
 }
 
+console.log('API_URL:', config.API_URL);
 
 const configure = async () => {
   await writeFile(join(__dirname, 'config.json'), JSON.stringify(config, null, 2))
