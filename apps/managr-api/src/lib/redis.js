@@ -2,7 +2,10 @@ import { createClient } from 'redis'
 
 const ONE_DAY = 60 * 60 * 24
 
-const redisClient = createClient({ url: 'redis://redis' })
+let redisClient
+createClient({ url: 'redis://redis' })
+  .on('error', err => console.log('Redis error', err))
+  .connect().then(client => { redisClient = client })
 
 export const MAILCOUNT_KEY = 'email.task'
 
