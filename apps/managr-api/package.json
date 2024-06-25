@@ -1,11 +1,11 @@
 {
-  "name": "managr",
+  "name": "managr-api",
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
     "configure": "babel-node --presets @babel/env src/configure.js",
-    "build": "pnpm run configure && babel src --out-dir dist --copy-files",
-    "start": "pnpm run configure && node --trace-warnings dist/index.js",
+    "build": "rm -rf dist && mkdir dist && pnpm run configure && babel src --out-dir dist --copy-files",
+    "start": "pnpm run configure && node dist/index.js",
     "dev": "pnpm run configure && babel-watch src/index.js"
   },
   "license": "MIT",
