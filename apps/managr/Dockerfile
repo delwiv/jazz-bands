@@ -1,6 +1,7 @@
 ARG BASE=node:16
 ARG PORT=3091
 ARG API_URL
+ENV API_URL $API_URL
 
 FROM $BASE AS builder
 
@@ -19,7 +20,7 @@ COPY static/ ./static
 
 COPY next.config.js ./
 
-RUN API_URL=${API_URL} pnpm build
+RUN API_URL=${API_URL} echo "api url : $API_URL" && pnpm build
 
 EXPOSE $PORT
 
