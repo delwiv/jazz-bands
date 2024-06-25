@@ -4,7 +4,7 @@
   "main": "src/index.js",
   "scripts": {
     "configure": "babel-node --presets @babel/env src/configure.js",
-    "build": "babel src --out-dir dist --copy-files",
+    "build": "pnpm run configure && babel src --out-dir dist --copy-files",
     "start": "pnpm run configure && node --trace-warnings dist/index.js",
     "dev": "pnpm run configure && babel-watch src/index.js"
   },
