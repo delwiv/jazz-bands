@@ -1,0 +1,33 @@
+.nav-wrapper {
+  display: flex;
+  /*flex-direction: row;*/
+  align-items: center;
+}
+
+.nav-wrapper a {
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.material-icons {
+  display: inline-block !important;
+  vertical-align: middle;
+}
+
+.progress {
+  margin: 0 !important;
+  background-color: #505050 !important;
+}
+
+[type='checkbox']:before,
+[type='checkbox']:after {
+  top: 10px !important;
+}
+
+#dropdownMonths {
+  width: 140px !important;
+}
+
+#dropdownActions {
+  width: 250px !important;
+}

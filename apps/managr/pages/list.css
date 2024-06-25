@@ -1,0 +1,55 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+}
+table {
+  /*position: relative;*/
+}
+
+.highlight {
+  background-color: #c5c5c5 !important;
+}
+
+.warning {
+  color: orange;
+}
+
+.error {
+  color: red;
+}
+table * {
+  border-radius: 0 !important;
+}
+
+th {
+  /*text-transform: uppercase;*/
+  color: #ffffff;
+  background-color: #505050;
+  padding-left: 15px;
+}
+
+thead > tr {
+  font-size: 14px;
+}
+
+thead th {
+  z-index: 200;
+  /*border-bottom: 1px solid black;*/
+  /*max-width: 0;*/
+  /*overflow: hidden;*/
+  /*text-overflow: ellipsis;*/
+  white-space: nowrap;
+  position: sticky;
+  top: 64px;
+  /*padding: 0;*/
+}
+.openContact:hover {
+  background: #dddddd;
+  cursor: pointer;
+}
+
+.action-checkbox {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}

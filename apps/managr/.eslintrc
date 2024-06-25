@@ -1,0 +1,8 @@
+{
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "parser": "babel-eslint",
+  "plugins": ["react", "sort-imports-es6-autofix"],
+  "rules": {
+    "react/react-in-jsx-scope": 0
+  }
+}
