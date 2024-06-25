@@ -5,6 +5,8 @@ import { promises } from 'fs'
 
 const { writeFile } = promises
 
+console.log(process?.env);
+
 const config = {
   API_URL: process.env.API_URL,
   PAGINATION: process.env.MANAGR_PAGINATION,

@@ -5,7 +5,7 @@ import config from '../src/config'
 
 const API_URL = config.API_URL
 
-console.log({API_URL}, config);
+console.log({API_URL}, config, {env: process.env.NEXT_PUBLIC_API_URL});
 
 export const sendMails = async params => {
   console.log({ params })

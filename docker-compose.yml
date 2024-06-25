@@ -90,7 +90,7 @@ services:
         API_URL: $MANAGR_API_URL
     environment:
       PORT: 3091
-      API_URL: $MANAGR_API_URL
+      NEXT_PUBLIC_API_URL: $MANAGR_API_URL
     ports:
       - "3091:3091"
     networks:
