@@ -1,11 +1,7 @@
 import fetch from 'isomorphic-unfetch'
 import qs from 'querystring'
-import config from '../src/config'
 
-
-const API_URL = config.API_URL
-
-console.log({API_URL}, config, {env: process.env.NEXT_PUBLIC_API_URL});
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export const sendMails = async params => {
   console.log({ params })
