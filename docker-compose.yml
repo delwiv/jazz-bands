@@ -94,6 +94,20 @@ services:
     depends_on:
       - mongo
 
+  managr-api:
+    env_file: .env
+    restart: always
+    build: ./apps/managr-api
+    environment:
+      PORT: 3092
+    ports:
+      - "3092:3092"
+    networks:
+      - api-network
+    depends_on:
+      - mongo
+      - redis
+
   mongo:
     image: 'bitnami/mongodb:latest'
     environment:
@@ -107,6 +121,15 @@ services:
     #   - ./data/mongo:/bitnami/mongodb
     networks:
       - api-network
+
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - api-network
+    volumes:
+      - ./data/redis:/bitnami/redis
 
   webserver:
     depends_on:
@@ -130,15 +153,4 @@ services:
       - ./data/letsencrypt:/etc/letsencrypt
       - ./data/certbot:/var/www/certbot
 
-  redis:
-    image: 'bitnami/redis:latest'
-    env_file: .env
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-    ports:
-      - 6369:6379
-    networks:
-      - api-network
-    volumes:
-      - ./data/redis:/bitnami/redis
 

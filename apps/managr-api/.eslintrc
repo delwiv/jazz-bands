@@ -1,0 +1,25 @@
+{
+  "extends": ["eslint:recommended"],
+  "parser": "@babel/eslint-parser",
+  "plugins": ["sort-imports-es6-autofix"],
+  "globals": {
+    "__dirname": true,
+    "Promise": true,
+    "console": true
+  },
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "no-console": 0,
+    "curly": ["error", "multi-or-nest"],
+    "sort-imports-es6-autofix/sort-imports-es6": [
+      "error",
+      {
+        "ignoreCase": false,
+        "ignoreMemberSort": false,
+        "memberSyntaxSortOrder": ["none", "all", "single", "multiple"]
+      }
+    ]
+  }
+}

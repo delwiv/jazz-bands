@@ -1,0 +1,9 @@
+node_modules
+data.json
+.env
+src/config.json
+dist
+mongo-seed
+.tern-port
+credentials.json
+token.json
