@@ -132,6 +132,15 @@ services:
       - ./data/redis:/bitnami/redis
 
   webserver:
+    depends_on:
+      - canto
+      - boheme
+      - jazzola
+      - managr
+      - managr-api
+      - swing-family
+      - trio-rsh
+      - west-side-trio
     image: nginx:alpine
     restart: unless-stopped
     ports:
