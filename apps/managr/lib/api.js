@@ -1,6 +1,10 @@
 import fetch from 'isomorphic-unfetch'
 import qs from 'querystring'
-import { API_URL } from '../src/config'
+import config from '../src/config'
+
+console.log({config});
+
+const {API_URL} = config
 
 export const sendMails = async params => {
   console.log({ params })
