@@ -1,5 +1,4 @@
 import '@babel/polyfill'
-import 'dotenv/config'
 
 import { join } from 'path'
 import { promises } from 'fs'
