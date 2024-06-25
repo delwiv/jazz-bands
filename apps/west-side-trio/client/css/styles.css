@@ -20,8 +20,8 @@ body {
   background-attachment: fixed;
   background-size: 100% auto;
   background-repeat: no-repeat;
+  min-height: 100vh;
   /*min-width: 100%;
-  min-height: 100%;
   *//*font-family: 'Comic Sans Ms';
     font-style: normal;
     font-variant: normal;
@@ -213,7 +213,11 @@ canvas {
 
 #sidebar {
   background-color: rgba(0, 0, 0, 0.6);
-  overflow: hidden;
+  overflow-y: scroll;
+}
+
+.intro-musician {
+  font-size: 100%;
 }
 
 .container-fluid {

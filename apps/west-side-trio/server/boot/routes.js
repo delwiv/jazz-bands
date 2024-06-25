@@ -54,9 +54,7 @@ module.exports = function(app) {
 
     app.get('/photos', function(req, res) {
         fs.readdir(photosFolder, function(error, result) {
-            // console.log(error);
-            // console.log(result);
-            res.json(result);
+          res.json(result.sort((a, b) => +(a.split(' ')[0] ) - +(b.split(' ')[0])));
         });
     });
 
