@@ -1,0 +1,38 @@
+<nav id="leftcol" class="sidebar col-md-2">
+    <!-- <div class="well"> -->
+    <ul id="sidebar" class="nav sidenav well" data-spy="affix">
+        <h2>Menu</h2>
+        <li ng-repeat="option in options">
+            <a ng-hide="!logged && option.admin" href="#{{option.state}}" title="{{option.title}}" du-smooth-scroll duration="1000">{{option.name}}</a>
+        </li>
+        <li><a href="#top" title="Retourner en haut de la page" du-smooth-scroll duration="1500">Retour en haut</a>
+        </li>
+    </ul>
+    <!-- </div> -->
+
+</nav>
+
+
+<script type="text/javascript">
+/* Responsive width when using the bootstrap affix plugin (width became absolute) with a fluid grid */
+$(function() {
+    vWidth = $('#leftcol').width();
+    $('#sidebar').css('width', vWidth);
+});
+
+
+$('#sidebar').affix({
+    offset: {
+        top: 70
+    }
+});
+
+/* activate scrollspy menu */
+var $body = $(document.body);
+var navHeight = $('.navbar').outerHeight(true) + 10;
+
+$body.scrollspy({
+    target: '#leftCol',
+    offset: navHeight
+});
+</script>

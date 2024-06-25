@@ -1,0 +1,66 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models"
+    ]
+  },
+  "User": {
+    "dataSource": "mongoDB",
+    "public": false
+  },
+  "AccessToken": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "ACL": {
+    "dataSource": "mongoDB",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "mongoDB",
+    "public": false
+  },
+  "Role": {
+    "dataSource": "mongoDB",
+    "public": false
+  },
+  "Home": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "Container": {
+    "dataSource": "storage",
+    "public": true
+  },
+  "Musician": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "UserBoheme": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "media": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "audio": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "Agenda": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "DateJazz": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "Video": {
+    "dataSource": "mongoDB",
+    "public": true
+  }
+}

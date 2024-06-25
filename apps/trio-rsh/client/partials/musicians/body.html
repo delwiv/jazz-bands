@@ -1,0 +1,98 @@
+<div class="myBody col-md-12">
+    <div class="well row" ng-show="logged">
+        <span class="anchor" id="newMusician"></span>
+        <h1>Ajouter un musicien</h1>
+        <!-- <div class="row form-group">
+            <button type="button" class="col-md-4 btn btn-success" ng-click="clickAddMusician()" ng-hide="addMusicianClicked">
+                <h3>Développer<i class="pull-right fa fa-arrow-circle-down"></i></h3>
+            </button>
+            <button type="button" class="col-md-4 btn btn-warning" ng-click="clickAddMusician()" ng-show="addMusicianClicked">
+                <h3>Masquer<i class="pull-right fa fa-arrow-circle-up"></i></h3>
+            </button>
+        </div> -->
+        <div class="col-md-2"></div>
+        <form class="form col-md-6" role="form">
+            <div class="form-group row">
+                <label for="newMusicianName">Nom du musicien </label>
+                <input class="form-control" id="newMusicianName" type="text" placeholder="Nom du musicien..." ng-model="newMusician.name">
+            </div>
+            <div class="form-group row">
+                <label for="newMusicianInstrument">Instrument </label>
+                <input class="form-control" id="newMusicianInstrument" type="text" placeholder="Instrument" ng-model="newMusician.instrument">
+            </div>
+            <!-- <div class="form-group" ng-model="newMusician.description" text-angular text-angular-name="Description du musicien"></div> -->
+            <button type="button" class="btn btn-success" ng-disabled="newMusician.name.empty()" ng-click="addMusician()">Sauver</button>
+        </form>
+    </div>
+    <div class="well row" ng-show="logged">
+        <span class="anchor" id="editMusicians"></span>
+        <h1>Musiciens</h1>
+        <h2>Ajout de photos, modifications ou suppression des musiciens</h2>
+        <div class="musician row border-row" ng-repeat="musician in musicians">
+            <div class="col-md-1"></div>
+            <button type="button" class="col-md-4 btn btn-success" ng-click="showMusician($index)" ng-show="!showArray[$index]">
+                Modifier {{musician.name}}<i class="pull-right fa fa-arrow-circle-down"></i>
+            </button>
+            <button type="button" class="col-md-4 btn btn-warning" ng-click="hideMusician($index)" ng-show="showArray[$index]">
+                Masquer<i class="pull-right fa fa-arrow-circle-up"></i>
+            </button>
+            <div class="col-md-1"></div>
+            <button type="button" class="col-md-3 btn btn-danger" ng-really-message="Supprimer {{musician.name}}? Ses données (photos, description) seront perdues." ng-really-click="deleteMusician($index)">
+                Supprimer!<i class="pull-right fa fa-times"></i>
+            </button>
+            <div class="col-md-10">
+                <div class="col-md-1"></div>
+                <form class="form" role="form" ng-show="showArray[$index]">
+                    <div class="form-group center-block">
+                        <label for="name-{{$index}}">Nom du musicien</label>
+                        <input class="form-control" id="name-{{$index}}" type="text" placeholder="Nom du musicien..." ng-model="musician.name" />
+                    </div>
+                    <div class="form-group center-block">
+                        <label for="instrument-{{$index}}">Instrument(s)</label>
+                        <input class="form-control" id="instrument-{{$index}}" type="text" placeholder="Instrument" ng-model="musician.instrument">
+                    </div>
+                    <div class="form-group center-block">
+                        <label for="desc-{{$index}}">Description</label>
+                        <div id="desc-{{$index}}" ng-model="musician.description" text-angular text-angular-name="Description du musicien"></div>
+                    </div>
+                    <div class="row">
+                        <h3>Photos</h3>
+                        <div class="col-md-2" ng-repeat="picture in musician.pictures">
+                            <a href="{{picture.dlPath}}" data-lightbox="{{musician.name}}" data-title="{{picture.name}}"> <img class="picture" ng-src="{{picture.dlPath}}" title="{{picture.name}}" />
+                            </a>
+                            <button type="button" class="center-block btn btn-danger" ng-click="deletePicture(musician, $index)">Supprimer</button>
+                        </div>
+                    </div>
+                    <h4> Ajouter une photo</h4>
+                    <input type="file" nv-file-select uploader="uploader" multiple/>
+                    <ul>
+                        <li ng-repeat="item in uploader.queue">
+                            <div ng-thumb="{ file: item._file, height: 100 }"></div>
+                            Nom du fichier n° {{$index}}: <strong><span ng-bind="item.file.name"></span></strong>
+                            <button type="button" class="btn btn-danger" ng-click="uploader.removeFromQueue(item)">Supprimer</button>
+                        </li>
+                    </ul>
+                    <button type="button" class="btn btn-success" ng-click="saveMusician(musician)">Sauver</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="well row">
+        <div class="col-md-11">
+            <div ng-repeat="musician in musicians" class="row border-row musician">
+                <span class="anchor" id="{{getMusicianAnchorID(musician)}}"></span>
+                <h1>{{musician.name}}</h1>
+                <h2>{{musician.instrument}}</h2>
+                <div class="row center">
+                    <div class="col-md-2" ng-repeat="picture in musician.pictures">
+                        <a href="{{picture.dlPath}}" data-lightbox="{{musician.name}}" data-title="{{picture.name}}"> <img class="picture" ng-src="{{picture.dlPath}}" title="{{picture.name}}" />
+                        </a>
+                    </div>
+                </div>
+                <!-- <h4>{{musician.instrument}}</h4> -->
+                <br/>
+                <div ng-bind-html="musician.description"></div>
+            </div>
+        </div>
+    </div>
+</div>

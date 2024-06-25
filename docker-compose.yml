@@ -55,6 +55,19 @@ services:
     depends_on:
       - mongo
 
+  trio-rsh:
+    env_file: .env
+    restart: always
+    build: ./apps/trio-rsh
+    environment:
+      PORT: 3027
+    ports:
+      - "3027:3027"
+    networks:
+      - api-network
+    depends_on:
+      - mongo
+
   west-side-trio:
     env_file: .env
     restart: always
@@ -72,9 +85,9 @@ services:
     image: 'bitnami/mongodb:latest'
     environment:
       - MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
-      - MONGODB_EXTRA_USERNAMES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio
-      - MONGODB_EXTRA_PASSWORDS=${MONGODB_BOHEME_PASSWORD};${MONGODB_MPQUARTET_PASSWORD};${MONGODB_JAZZOLA_PASSWORD};${MONGODB_SWINGFAMILY_PASSWORD};${MONGODB_TRIORSH_PASSWORD};${MONGODB_WESTSIDETRIO_PASSWORD}
-      - MONGODB_EXTRA_DATABASES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio
+      - MONGODB_EXTRA_USERNAMES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio,managr
+      - MONGODB_EXTRA_PASSWORDS=${MONGODB_BOHEME_PASSWORD};${MONGODB_MPQUARTET_PASSWORD};${MONGODB_JAZZOLA_PASSWORD};${MONGODB_SWINGFAMILY_PASSWORD};${MONGODB_TRIORSH_PASSWORD};${MONGODB_WESTSIDETRIO_PASSWORD};${MONGODB_MANAGR_PASSWORD}
+      - MONGODB_EXTRA_DATABASES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio,managr
     ports:
       - 27029:27017
     # volumes:

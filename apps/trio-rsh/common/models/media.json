@@ -1,0 +1,24 @@
+{
+  "name": "media",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "properties": {
+    "type": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "$unauthenticated",
+      "permission": "DENY"
+    }
+  ],
+  "methods": {}
+}
