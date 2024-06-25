@@ -7,7 +7,7 @@
     "configure": "babel-node --presets @babel/env src/configure.js",
     "dev": "pnpm run configure && next",
     "build": "pnpm run configure && next build",
-    "start": "pnpm run configure && next start -p $PORT"
+    "start": "next start -p $PORT"
   },
   "dependencies": {
     "@babel/core": "^7.24.7",
