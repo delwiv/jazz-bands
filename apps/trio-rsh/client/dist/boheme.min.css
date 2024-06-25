@@ -16,6 +16,13 @@
       padding-left: 10px;
       padding-right: 10px; } }
 
+#slideshow {
+  margin-bottom: 25px;
+  margin-top: 5px; }
+  #slideshow .carousel-indicators *,
+  #slideshow .carousel-control * {
+    display: none; }
+
 .videos .video-filelist {
   background-color: rgba(0, 0, 0, 0.85); }
 
@@ -30,10 +37,3 @@
 
 .ta-hidden-input {
   display: none; }
-
-#slideshow {
-  margin-bottom: 25px;
-  margin-top: 5px; }
-  #slideshow .carousel-indicators *,
-  #slideshow .carousel-control * {
-    display: none; }
