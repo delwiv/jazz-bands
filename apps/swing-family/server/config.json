@@ -5,12 +5,10 @@
   "legacyExplorer": false,
   "logoutSessionsOnSensitiveChanges": true,
   "remoting": {
-    "context": {
-      "enableHttpContext": false
-    },
     "rest": {
       "normalizeHttpPath": false,
-      "xml": false
+      "xml": false,
+      "handleErrors": false
     },
     "json": {
       "strict": false,
@@ -19,13 +17,6 @@
     "urlencoded": {
       "extended": true,
       "limit": "10000kb"
-    },
-    "cors": {
-      "origin": true,
-      "credentials": true
-    },
-    "errorHandler": {
-      "disableStackTrace": false
     }
   }
 }
