@@ -151,6 +151,7 @@ services:
       - ./data/nginx:/etc/nginx/conf.d:ro
       - ./data/letsencrypt:/etc/letsencrypt
       - ./data/certbot:/var/www/certbot
+      - ./data/static:/static
     networks:
       - api-network
 
