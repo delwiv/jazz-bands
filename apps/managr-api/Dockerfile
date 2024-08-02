@@ -12,8 +12,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 COPY src/ ./src/
-COPY static/ ./static/
-COPY babel.config.js getToken.js credentials.json ./
+COPY babel.config.js getToken.js credentials.json token.json ./
 
 RUN pnpm build
 
