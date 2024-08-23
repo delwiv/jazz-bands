@@ -41,9 +41,9 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
         { sendMailStatus: { date: new Date(), status: 'queued' } }
       )
       jobs.forEach(j => j.attempts(10).backoff({ type: 'exponential' }))
-      const last24hours = await redis.get(MAILCOUNT_KEY)
-      console.log({ last24hours: last24hours })
-      if (+last24hours >= 500) jobs.forEach(j => j.delay(JOB_DELAY))
+      const last24hours = await redis.find(`*${MAILCOUNT_KEY}.*`)
+      console.log({ last24hours: last24hours.length })
+      if (last24hours.length >= 500) jobs.forEach(j => j.delay(JOB_DELAY))
       await new Promise(resolve => setTimeout(resolve, 500))
     } catch (error) {
       console.log(require('util').inspect({ error }, true, 10, true))
@@ -87,8 +87,7 @@ mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
         }
       )
     }
-    const last24hours = await redis.get(MAILCOUNT_KEY)
-    await redis.set(MAILCOUNT_KEY, (+last24hours || 0) + 1)
+    await redis.set(`${MAILCOUNT_KEY}.${uuid()}`, true)
     done()
   } catch (error) {
     console.error({ error })
