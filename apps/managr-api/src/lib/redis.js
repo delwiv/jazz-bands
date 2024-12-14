@@ -10,7 +10,7 @@ createClient({ url: 'redis://redis' })
 export const MAILCOUNT_KEY = 'email.task'
 
 const client = {
-  set: (key, value, expire = ONE_DAY) => redisClient.set(key, value, 'EX', expire),
+  set: (key, value, expire = ONE_DAY) => redisClient.set(key, value, { expiration: { type: 'EX', value: expire } }),
   get: key => redisClient.get(key),
   del: key => redisClient.del(key),
   find: pattern => redisClient.keys(pattern),
