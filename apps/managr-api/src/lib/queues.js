@@ -87,7 +87,7 @@ mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
         }
       )
     }
-    await redis.set(`${MAILCOUNT_KEY}.${uuid()}`, true)
+    await redis.set(`${MAILCOUNT_KEY}.${uuid()}`, "true")
     done()
   } catch (error) {
     console.error({ error })
