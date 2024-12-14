@@ -12,7 +12,7 @@ import { sendMail } from './gmail'
 const getBody = type => fs.readFileSync(join(__dirname, `../mails/${type}.html`)).toString('utf8')
 
 const NB_PARALLEL_EMAILS = 2
-const mailJobs = kue.createQueue({redis: 'redis://redis'})
+const mailJobs = kue.createQueue({ redis: 'redis://redis' })
 
 const JOB_DELAY = 1000 * 60 * 60 * 3 // 3h
 
@@ -41,8 +41,8 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
         { sendMailStatus: { date: new Date(), status: 'queued' } }
       )
       jobs.forEach(j => j.attempts(10).backoff({ type: 'exponential' }))
-      const last24hours = await redis.find(`*${MAILCOUNT_KEY}.*`)
-      console.log({ last24hours: last24hours.length })
+      const last24hours = await redis.find(`${MAILCOUNT_KEY}.*`)
+      console.log({ last24hours })
       if (last24hours.length >= 500) jobs.forEach(j => j.delay(JOB_DELAY))
       await new Promise(resolve => setTimeout(resolve, 500))
     } catch (error) {
