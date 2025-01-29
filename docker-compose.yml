@@ -110,16 +110,16 @@ services:
       - redis
 
   mongo:
-    image: 'bitnami/mongodb:latest'
+    image: 'mongo:latest'
+    env_file: .env
     environment:
-      - MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
-      - MONGODB_EXTRA_USERNAMES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio,managr
-      - MONGODB_EXTRA_PASSWORDS=${MONGODB_BOHEME_PASSWORD};${MONGODB_MPQUARTET_PASSWORD};${MONGODB_JAZZOLA_PASSWORD};${MONGODB_SWINGFAMILY_PASSWORD};${MONGODB_TRIORSH_PASSWORD};${MONGODB_WESTSIDETRIO_PASSWORD};${MONGODB_MANAGR_PASSWORD}
-      - MONGODB_EXTRA_DATABASES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio,managr
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
     ports:
       - 27029:27017
     volumes:
       - ./data/mongo:/bitnami/mongodb
+      - ./data/mongo/init-mongo.js:/docker-entrypoint-inidb.d/init-mongo.js:ro
     networks:
       - api-network
 
