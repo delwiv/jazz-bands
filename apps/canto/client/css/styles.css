@@ -36,6 +36,8 @@ body {
   background-attachment: fixed;
   background-size: cover;
   background-repeat: no-repeat;
+  width: 100vh;
+  min-height: 100vh;
   /*font-family: 'Comic Sans Ms';
     font-style: normal;
     font-variant: normal;
