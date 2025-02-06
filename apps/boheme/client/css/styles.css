@@ -275,9 +275,6 @@ canvas {
     position: relative;
   }
 
-  body {
-    background-size: auto 100%;
-  }
 }
 
 @media (min-width: 992px) {
