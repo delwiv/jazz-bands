@@ -118,7 +118,7 @@ services:
       - redis
 
   mongo:
-    image: 'mongo:latest'
+    image: 'mongo:4.4.18'
     container_name: mongo
     platform: linux/arm64
     environment:
@@ -128,7 +128,7 @@ services:
       - 27029:27017
     volumes:
       - ./data/mongo:/bitnami/mongodb
-      - ./data/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+        #      - ./data/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - api-network
 
