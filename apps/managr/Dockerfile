@@ -5,7 +5,8 @@ FROM $BASE AS builder
 
 WORKDIR /app
 
-RUN npm i -g pnpm@latest-8
+RUN npm i -g corepack@latest
+RUN corepack enable pnpm
 
 COPY package.json pnpm-lock.yaml ./
 
