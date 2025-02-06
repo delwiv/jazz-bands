@@ -5,6 +5,7 @@ FROM $BASE AS builder
 
 WORKDIR /app
 
+RUN npm i -g corepack
 RUN corepack enable pnpm
 
 COPY package.json pnpm-lock.yaml bower.json .bowerrc ./
