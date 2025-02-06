@@ -33,11 +33,9 @@
 body {
   background-image: url('/assets/bg.jpg');
   background-position: top;
-  background-attachment: cover;
-  background-size: auto 100%;
+  background-attachment: fixed;
+  background-size: cover;
   background-repeat: no-repeat;
-  min-width: 100%;
-  min-height: 100vh;
   /*font-family: 'Comic Sans Ms';
     font-style: normal;
     font-variant: normal;

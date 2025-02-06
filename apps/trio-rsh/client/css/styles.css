@@ -18,7 +18,7 @@ body {
   background-image: url('/assets/bg.jpg');
   background-position: top;
   background-attachment: fixed;
-  background-size: 100% auto;
+  background-size: cover;
   background-repeat: no-repeat;
   /*min-width: 100%;
   min-height: 100%;
