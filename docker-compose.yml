@@ -110,16 +110,16 @@ services:
       - redis
 
   mongo:
-    image: 'bitnami/mongodb:latest'
+    image: 'mongo:latest'
+    platform: linux/arm64
     environment:
-      - MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
-      - MONGODB_EXTRA_USERNAMES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio,managr
-      - MONGODB_EXTRA_PASSWORDS=${MONGODB_BOHEME_PASSWORD};${MONGODB_MPQUARTET_PASSWORD};${MONGODB_JAZZOLA_PASSWORD};${MONGODB_SWINGFAMILY_PASSWORD};${MONGODB_TRIORSH_PASSWORD};${MONGODB_WESTSIDETRIO_PASSWORD};${MONGODB_MANAGR_PASSWORD}
-      - MONGODB_EXTRA_DATABASES=boheme,mpquartet,jazzola,swing-family,trio-rsh,west-side-trio,managr
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
     ports:
       - 27029:27017
     volumes:
       - ./data/mongo:/bitnami/mongodb
+      - ./data/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - api-network
 
@@ -132,33 +132,33 @@ services:
     volumes:
       - ./data/redis:/bitnami/redis
 
-  webserver:
-    depends_on:
-      - canto
-      - boheme
-      - jazzola
-      - managr
-      - managr-api
-      - swing-family
-      - trio-rsh
-      - west-side-trio
-    image: nginx:alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./data/nginx:/etc/nginx/conf.d:ro
-      - ./data/letsencrypt:/etc/letsencrypt
-      - ./data/certbot:/var/www/certbot
-      - ./data/static:/static
-    networks:
-      - api-network
-
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./data/letsencrypt:/etc/letsencrypt
-      - ./data/certbot:/var/www/certbot
+        #  webserver:
+        #    depends_on:
+        #      - canto
+        #      - boheme
+        #      - jazzola
+        #      - managr
+        #      - managr-api
+        #      - swing-family
+        #      - trio-rsh
+        #      - west-side-trio
+        #    image: nginx:alpine
+        #    restart: unless-stopped
+        #    ports:
+        #      - "80:80"
+        #      - "443:443"
+        #    volumes:
+        #      - ./data/nginx:/etc/nginx/conf.d:ro
+        #      - ./data/letsencrypt:/etc/letsencrypt
+        #      - ./data/certbot:/var/www/certbot
+        #      - ./data/static:/static
+        #    networks:
+        #      - api-network
+        #
+        #  certbot:
+        #    image: certbot/certbot
+        #    volumes:
+        #      - ./data/letsencrypt:/etc/letsencrypt
+        #      - ./data/certbot:/var/www/certbot
 
 

@@ -7,3 +7,7 @@ data/redis/data/*
 data/letsencrypt/renewal
 server/datasources.json
 data/nginx/.htpasswd
+data/letsencrypt/accounts/
+data/letsencrypt/archive/
+data/letsencrypt/live/
+jazz-bands-data.tar.gz
