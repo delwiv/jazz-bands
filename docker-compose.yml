@@ -128,19 +128,20 @@ services:
       - 27029:27017
     volumes:
       - ./data/mongo:/bitnami/mongodb
-        #      - ./data/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - api-network
 
   redis:
     image: 'bitnami/redis:latest'
     container_name: redis
+    user: "1001"
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     networks:
       - api-network
+    command: /opt/bitnami/scripts/redis/run.sh --appendonly no
     volumes:
-      - ./data/redis:/bitnami/redis
+      - ./data/redis:/bitnami/redis/data
 
         #  webserver:
         #    depends_on:
