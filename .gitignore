@@ -3,7 +3,7 @@ node_modules
 .env
 dump
 data/mongo/data/db
-data/redis/data/*
+data/redis
 data/letsencrypt/renewal
 server/datasources.json
 data/nginx/.htpasswd

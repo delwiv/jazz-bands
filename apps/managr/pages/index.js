@@ -41,7 +41,7 @@ class Index extends React.Component {
     if (isClient) {
       try {
         window.M.AutoInit()
-      } catch (err) {}
+      } catch (err) { }
     }
     if (!this.props.contacts.length) {
       return this.loadContacts()
@@ -146,7 +146,6 @@ class Index extends React.Component {
           ) : null}
         </td>
         <td>{months[+contact.mois_contact]}</td>
-        <td>{contact.vu_le}</td>
       </tr>,
     ]
     if (displayFullContact) {
@@ -189,7 +188,6 @@ class Index extends React.Component {
               <th>Mail</th>
               <th>Mail Envoyé le</th>
               <th>Contact</th>
-              <th>Vu le</th>
             </tr>
           </thead>
           <tbody>{rows}</tbody>

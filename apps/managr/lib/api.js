@@ -3,7 +3,7 @@ import qs from 'querystring'
 import config from '../src/config'
 
 
-const API_URL = config.API_URL
+const { API_URL, apiKey } = config
 
 export const sendMails = async params => {
   console.log({ params })
@@ -14,18 +14,24 @@ export const sendMails = async params => {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
     },
   })
   return data.json()
 }
 
 export const fetchContacts = async (params = {}, config) => {
-  const data = await fetch(`${API_URL}/contacts?${qs.stringify(params)}`, { cors: true })
+  const data = await fetch(`${API_URL}/contacts?${qs.stringify(params)}`, {
+    cors: true,
+    headers: {
+      'Authorization': 'Bearer ' + apiKey
+    }
+  })
   return data.json()
 }
 
 export const fetchContact = async id => {
-  const data = await fetch(`${API_URL}/contacts/${id}`, { cors: true })
+  const data = await fetch(`${API_URL}/contacts/${id}`, { cors: true, headers: { 'Authorization': 'Bearer ' + apiKey } })
   return data.json()
 }
 
@@ -35,6 +41,7 @@ export const updateContact = async contact => {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey,
     },
     method: 'PUT',
     body: JSON.stringify(contact),
@@ -47,6 +54,7 @@ export const createContact = async contact => {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey,
     },
     method: 'POST',
     body: JSON.stringify(contact),
@@ -54,4 +62,8 @@ export const createContact = async contact => {
   return data.json()
 }
 
-export const deleteContact = contactId => fetch(`${API_URL}/contacts/${contactId}`, { cors: true, method: 'DELETE' })
+export const deleteContact = contactId => fetch(`${API_URL}/contacts/${contactId}`, {
+  cors: true, method: 'DELETE', headers: {
+    'Authorization': 'Bearer ' + apiKey,
+  }
+})

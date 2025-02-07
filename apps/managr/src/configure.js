@@ -7,6 +7,7 @@ const { writeFile } = promises
 
 const config = {
   API_URL: process.env.API_URL,
+  apiKey: process.env.MANAGR_API_KEY,
   PAGINATION: process.env.MANAGR_PAGINATION,
   months: [
     'Ignorer',
