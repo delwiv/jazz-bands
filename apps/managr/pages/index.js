@@ -33,7 +33,11 @@ class Index extends React.Component {
 
   componentDidUpdate() {
     if (this.props.contacts.length !== this.state.contacts.length) {
-      this.setState({ contacts: this.props.contacts })
+      this.setState({ contacts: (this.state.contacts || []).concat(this.props.contacts) })
+    }
+    if (this.props.count > this.props.contacts.lenght) {
+      this.loadContacts({ skip: this.props.count, limit: 500 })
+
     }
   }
 
@@ -44,7 +48,7 @@ class Index extends React.Component {
       } catch (err) { }
     }
     if (!this.props.contacts.length) {
-      return this.loadContacts()
+      return this.loadContacts({ skip: 0, limit: 500 })
     }
     if (this.props.current) {
       const element = document.getElementById(`contact_${this.props.current}`)

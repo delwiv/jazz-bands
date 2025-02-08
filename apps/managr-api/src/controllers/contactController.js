@@ -5,7 +5,7 @@ import redis, { MAILCOUNT_KEY } from '../lib/redis'
 
 export default {
   list: async (req, res) => {
-    const { q } = req.query
+    const { q, skip, limit } = req.query
 
     const query = {}
     if (q) {
@@ -74,6 +74,7 @@ export default {
         ville: 1,
         nom: 1,
       },
+      skip, limit
     }
 
     console.log({ params, query })
