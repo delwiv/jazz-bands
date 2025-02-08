@@ -33,11 +33,7 @@ class Index extends React.Component {
 
   componentDidUpdate() {
     if (this.props.contacts.length !== this.state.contacts.length) {
-      this.setState({ contacts: (this.state.contacts || []).concat(this.props.contacts) })
-    }
-    if (this.props.count > this.props.contacts.lenght) {
-      this.loadContacts({ skip: this.props.count, limit: 500 })
-
+      this.setState({ contacts: this.props.contacts })
     }
   }
 

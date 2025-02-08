@@ -11,6 +11,7 @@ const config = {
   MAILCHIMP_API_KEY: process.env.MAILCHIMP_API_KEY,
   MAILCHIMP_BASE_URL: process.env.MAILCHIMP_BASE_URL,
   MONGODB_MANAGR_PASSWORD:process.env.MONGODB_MANAGR_PASSWORD,
+  MONGODB_HOST:process.env.MONGODB_HOST,
   months: [
     'Ignorer',
     'Janvier',

@@ -2,7 +2,7 @@ audit.json
 node_modules
 .env
 dump
-data/mongo/data/db
+data/mongo
 data/redis
 data/letsencrypt/renewal
 server/datasources.json

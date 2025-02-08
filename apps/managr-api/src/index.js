@@ -5,9 +5,9 @@ import emails from './routes/emails'
 import express from 'express'
 import mongoose from 'mongoose'
 import morgan from 'morgan'
-import { MONGODB_MANAGR_PASSWORD, PORT } from './config.json'
+import { MONGODB_HOST, MONGODB_MANAGR_PASSWORD, PORT } from './config.json'
 
-mongoose.connect(`mongodb://managr:${MONGODB_MANAGR_PASSWORD}@mongo/managr`, {
+mongoose.connect(`mongodb://managr:${MONGODB_MANAGR_PASSWORD}@${MONGODB_HOST}/managr`, {
   useNewUrlParser: true
 }, connectErr => {
   console.log(connectErr || `MongoDB connected to mongodb://mongo`)
@@ -23,9 +23,10 @@ app.use(cors({
 
 app.use((req, res, next) => {
   const auth = req.header('Authorization')?.split('Bearer ')?.[1]
-  if (auth !== process.env.MANAGR_API_KEY) {
+  if (auth !== process.env.MANAGR_API_KEY) 
     return res.status(401).send('Unauthorized')
-  }
+  
+  
   next()
 })
 
