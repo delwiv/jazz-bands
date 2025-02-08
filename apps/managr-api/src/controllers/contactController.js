@@ -87,7 +87,7 @@ export default {
       ContactModel.countDocuments(query),
     ])
 
-    const last24hours = await redis.find(`*${MAILCOUNT_KEY}.*`)
+    const last24hours = await redis.find(`${MAILCOUNT_KEY}.*`)
     return res.json({
       contacts: contacts.sort((a, b) => +a.departement - +b.departement),
       count,

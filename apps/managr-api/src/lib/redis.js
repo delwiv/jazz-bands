@@ -1,6 +1,6 @@
 import { createClient } from 'redis'
 
-const ONE_DAY = 60 * 60 * 24
+export const ONE_DAY = 60 * 60 * 24
 
 let redisClient
 createClient({ url: 'redis://redis' })
@@ -10,7 +10,7 @@ createClient({ url: 'redis://redis' })
 export const MAILCOUNT_KEY = 'email.task'
 
 const client = {
-  set: (key, value, expire = ONE_DAY) => redisClient.set(key, value, 'EX', expire),
+  set: (key, value) => redisClient.set(key, value),
   get: key => redisClient.get(key),
   del: key => redisClient.del(key),
   find: pattern => redisClient.keys(pattern),

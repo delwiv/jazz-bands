@@ -5,9 +5,8 @@ import { format } from 'date-fns'
 import { join } from 'path'
 
 import Contact from '../models/ContactModel'
-import redis, { MAILCOUNT_KEY } from './redis'
+import redis, { MAILCOUNT_KEY, ONE_DAY } from './redis'
 import { sendMail } from './gmail'
-// import { sendProgress } from './websocket'
 
 const getBody = type => fs.readFileSync(join(__dirname, `../mails/${type}.html`)).toString('utf8')
 
@@ -56,8 +55,6 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
   }
 }
 
-// const getProgress = progress => Math.round(+progress * 100) / 100
-
 mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
   const { name, email, total, type, toRecontact } = job.data
   console.log({ name, email, total, type, toRecontact })
@@ -87,7 +84,9 @@ mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
         }
       )
     }
-    await redis.set(`${MAILCOUNT_KEY}.${uuid()}`, "true")
+    const redisKey = `${MAILCOUNT_KEY}.${uuid()}`
+    await redis.set(redisKey, "true")
+    await redis.expire(redisKey, ONE_DAY)
     done()
   } catch (error) {
     console.error({ error })

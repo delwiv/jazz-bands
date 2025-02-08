@@ -22,8 +22,7 @@ app.use(cors({
 }))
 
 app.use((req, res, next) => {
-  const auth = req.headers.authorization.split('Bearer ')[1]
-  console.log({ auth });
+  const auth = req.header('Authorization')?.split('Bearer ')?.[1]
   if (auth !== process.env.MANAGR_API_KEY) {
     return res.status(401).send('Unauthorized')
   }
