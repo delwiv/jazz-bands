@@ -44,7 +44,7 @@ class Index extends React.Component {
       } catch (err) { }
     }
     if (!this.props.contacts.length) {
-      return this.loadContacts({ skip: 0, limit: 500 })
+      return this.loadContacts()
     }
     if (this.props.current) {
       const element = document.getElementById(`contact_${this.props.current}`)
