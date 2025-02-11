@@ -126,6 +126,6 @@ export async function sendMail({ subject, body, to }) {
       raw: encodedMessage,
     },
   })
-  console.log(res.data)
+  // console.log(res.data)
   return res
 }

@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
     const thisMonth = today.getMonth()
     const toRecontact = today.getMonth(today.setMonth(thisMonth + parseInt(toRecontactDelay)))
     const mails = emails.filter(e => typeof e === 'string' && e.trim().match(emailRegex))
-    console.log(require('util').inspect({ thisMonth, toRecontact, mails }, true, 10, true))
+    // console.log(require('util').inspect({ thisMonth, toRecontact, mails }, true, 10, true))
     await sendMails({
       toRecontact,
       emails: mails,
@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     })
     res.json({ status: 'queued', count: req.body.emails.length })
   } catch (error) {
-    console.log(require('util').inspect({ error }, true, 10, true))
+    console.error(require('util').inspect({ error }, true, 10, true))
     res.status(500).json(error)
   }
 })

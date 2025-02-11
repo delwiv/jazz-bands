@@ -66,7 +66,7 @@ class Index extends React.Component {
     let i = 0
     this.setState({
       contacts: this.state.contacts.map(c => {
-        const lessThan500 = i < 490
+        const lessThan500 = i < 500
         if (checked && lessThan500) {
           checkedContacts.push({ _id: c._id, email: c.mail })
           const { mail, mail2, mail3 } = c
