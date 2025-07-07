@@ -5,12 +5,15 @@ export const ONE_DAY = 60 * 60 * 24
 let redisClient
 createClient({ url: 'redis://redis' })
   .on('error', err => console.log('Redis error', err))
-  .connect().then(client => { redisClient = client })
+  .connect()
+  .then(client => {
+    redisClient = client
+  })
 
 export const MAILCOUNT_KEY = 'email.task'
 
 const client = {
-  set: (key, value) => redisClient.set(key, value),
+  set: (key, value, ...args) => redisClient.set(key, value, ...args),
   get: key => redisClient.get(key),
   del: key => redisClient.del(key),
   find: pattern => redisClient.keys(pattern),

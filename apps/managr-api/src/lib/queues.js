@@ -8,7 +8,8 @@ import Contact from '../models/ContactModel'
 import redis, { MAILCOUNT_KEY, ONE_DAY } from './redis'
 import { sendMail } from './gmail'
 
-const getBody = type => fs.readFileSync(join(__dirname, `../mails/${type}.html`)).toString('utf8')
+const getBody = type =>
+  fs.readFileSync(join(__dirname, `../mails/${type}.html`)).toString('utf8')
 
 const NB_PARALLEL_EMAILS = 2
 const mailJobs = kue.createQueue({ redis: 'redis://redis' })
@@ -28,12 +29,22 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
   for (const email of emails) {
     // console.log({ email })
     try {
-      const contact = await Contact.findOne({ $or: [{ mail: email }, { mail2: email }, { mail3: email }] })
+      const contact = await Contact.findOne({
+        $or: [{ mail: email }, { mail2: email }, { mail3: email }],
+      })
       const { mail, mail2, mail3 } = contact
       const jobs = [mail, mail2, mail3]
         .filter(m => !!m)
         .map(m =>
-          mailJobs.create('sendMail', { email: m, type, total: emails.length, toRecontact, name: contact.nom }).save()
+          mailJobs
+            .create('sendMail', {
+              email: m,
+              type,
+              total: emails.length,
+              toRecontact,
+              name: contact.nom,
+            })
+            .save()
         )
       await Contact.updateOne(
         { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
@@ -46,7 +57,10 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
       await new Promise(resolve => setTimeout(resolve, 500))
     } catch (error) {
       console.error(require('util').inspect({ error }, true, 10, true))
-      const errorMessage = error.message === 'Invalid to header' ? `Mauvaise adresse email : ${email}` : error.message
+      const errorMessage =
+        error.message === 'Invalid to header'
+          ? `Mauvaise adresse email : ${email}`
+          : error.message
       await Contact.updateOne(
         { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
         { sendMailStatus: { date: new Date(), error: errorMessage } }
@@ -61,8 +75,7 @@ mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
   try {
     const subjects = {
       '4bands': `${name} - Proposition spectacle`,
-      jazzola: "Hommage à Marcel Azzola"
-
+      jazzola: 'Hommage à Marcel Azzola',
     }
     await Contact.updateOne(
       { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
@@ -85,8 +98,8 @@ mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
       )
     }
     const redisKey = `${MAILCOUNT_KEY}.${uuid()}`
-    await redis.set(redisKey, "true")
-    await redis.expire(redisKey, ONE_DAY)
+    await redis.set(redisKey, 'true', { EX: 60 })
+    // await redis.expire(redisKey, ONE_DAY)
     done()
   } catch (error) {
     console.error({ error })
