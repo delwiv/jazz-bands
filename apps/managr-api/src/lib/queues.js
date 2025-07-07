@@ -98,7 +98,7 @@ mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
       )
     }
     const redisKey = `${MAILCOUNT_KEY}.${uuid()}`
-    await redis.set(redisKey, 'true', { EX: 60 })
+    await redis.set(redisKey, 'true', { EX: ONE_DAY })
     // await redis.expire(redisKey, ONE_DAY)
     done()
   } catch (error) {
