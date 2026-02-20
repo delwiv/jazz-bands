@@ -15,7 +15,7 @@
   "dependencies": {
     "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "express": "^4.11.1",
+    "express": "^4.22.0",
     "loopback": "^3",
     "loopback-boot": "^3",
     "loopback-component-storage": "^3",
