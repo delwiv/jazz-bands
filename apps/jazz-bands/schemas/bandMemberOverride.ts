@@ -19,12 +19,23 @@ export const bandMemberOverrideType = defineType({
       of: [{ type: "block" }],
     }),
     defineField({
-      name: "photo",
-      title: "Photo Override",
-      type: "image",
-      options: {
-        hotspot: true,
-      },
+      name: "images",
+      title: "Images Override",
+      type: "array",
+      of: [
+        {
+          type: "image",
+          options: { hotspot: true },
+          fields: [
+            defineField({
+              name: "caption",
+              title: "Caption",
+              type: "string",
+            }),
+          ],
+        },
+      ],
+      description: "Override images for this specific band - first image is the main one",
     }),
     defineField({
       name: "instrument",

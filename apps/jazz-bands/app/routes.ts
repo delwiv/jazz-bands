@@ -1,14 +1,10 @@
-import {
-  type RouteConfig,
-  index,
-  route,
-} from "@react-router/dev/routes";
+import { type RouteConfig, route } from '@react-router/dev/routes'
 
 export default [
-  route("$subdomain", "./routes/$subdomain/index.tsx", [
-    route("musicians", "./routes/$subdomain/musicians.tsx"),
-    route("tour", "./routes/$subdomain/tour.tsx"),
-    route("music", "./routes/$subdomain/music.tsx"),
-    route("contact", "./routes/$subdomain/contact.tsx"),
-  ]),
-] satisfies RouteConfig;
+  route('/', './routes/index.tsx'),
+  route('/musicians', './routes/musicians.tsx'),
+  route('/tour', './routes/tour.tsx'),
+  route('/music', './routes/music.tsx'),
+  route('/contact', './routes/contact.tsx'),
+  route('*', './routes/__catchall.tsx'),
+] satisfies RouteConfig

@@ -1,8 +1,8 @@
-import type { FunctionComponent } from "react";
+import type { FunctionComponent } from 'react'
 
 interface ErrorBoundaryProps {
-  error: unknown;
-  resetErrorBoundaries?: () => void;
+  error: unknown
+  resetErrorBoundaries?: () => void
 }
 
 export const ErrorBoundary: FunctionComponent<ErrorBoundaryProps> = ({
@@ -11,13 +11,13 @@ export const ErrorBoundary: FunctionComponent<ErrorBoundaryProps> = ({
 }) => {
   const getErrorMessage = (): string => {
     if (error instanceof Error) {
-      return error.message;
+      return error.message
     }
-    if (typeof error === "string") {
-      return error;
+    if (typeof error === 'string') {
+      return error
     }
-    return "Something went wrong. Please try again.";
-  };
+    return 'Something went wrong. Please try again.'
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-6">
@@ -77,5 +77,5 @@ export const ErrorBoundary: FunctionComponent<ErrorBoundaryProps> = ({
         </p>
       </div>
     </div>
-  );
-};
+  )
+}

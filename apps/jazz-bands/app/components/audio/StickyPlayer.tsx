@@ -1,33 +1,31 @@
-import { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core'
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
-  type SortableContextProps,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { useAudio } from "~/contexts/AudioContext";
-import type { Recording } from "~/lib/types";
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useCallback, useState } from 'react'
+import { useAudio } from '~/contexts/AudioContext'
+import type { Recording } from '~/lib/types'
 
 function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${String(secs).padStart(2, "0")}`;
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins}:${String(secs).padStart(2, '0')}`
 }
 
 interface SortableTrackProps {
-  track: Recording;
+  track: Recording
 }
 
 function SortableTrack({ track }: SortableTrackProps) {
@@ -38,13 +36,13 @@ function SortableTrack({ track }: SortableTrackProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: track.title });
+  } = useSortable({ id: track.title })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-  };
+  }
 
   return (
     <div
@@ -81,18 +79,18 @@ function SortableTrack({ track }: SortableTrackProps) {
         </div>
       </div>
       <span className="text-sm text-gray-500 ml-2 shrink-0">
-        {track.duration ? formatTime(track.duration) : "--:--"}
+        {track.duration ? formatTime(track.duration) : '--:--'}
       </span>
     </div>
-  );
+  )
 }
 
 interface QueuePanelProps {
-  queue: Recording[];
-  isOpen: boolean;
-  onClose: () => void;
-  onRemove: (trackTitle: string) => void;
-  onReorder: (oldIndex: number, newIndex: number) => void;
+  queue: Recording[]
+  isOpen: boolean
+  onClose: () => void
+  onRemove: (trackTitle: string) => void
+  onReorder: (oldIndex: number, newIndex: number) => void
 }
 
 function QueuePanel({
@@ -110,24 +108,24 @@ function QueuePanel({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+    }),
+  )
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event;
+      const { active, over } = event
 
       if (over && active.id !== over.id) {
-        const oldIndex = queue.findIndex((t) => t.title === active.id);
-        const newIndex = queue.findIndex((t) => t.title === over.id);
+        const oldIndex = queue.findIndex((t) => t.title === active.id)
+        const newIndex = queue.findIndex((t) => t.title === over.id)
 
         if (oldIndex !== -1 && newIndex !== -1) {
-          onReorder(oldIndex, newIndex);
+          onReorder(oldIndex, newIndex)
         }
       }
     },
-    [queue, onReorder]
-  );
+    [queue, onReorder],
+  )
 
   return (
     <AnimatePresence>
@@ -136,7 +134,7 @@ function QueuePanel({
           initial={{ opacity: 0, y: 200 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 200 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           className="fixed bottom-80 left-0 right-0 mx-4 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden z-4999"
           role="region"
           aria-label="Playback queue"
@@ -145,7 +143,7 @@ function QueuePanel({
             <h3 className="text-lg font-semibold text-white">Queue</h3>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-400">
-                {queue.length} {queue.length === 1 ? "track" : "tracks"}
+                {queue.length} {queue.length === 1 ? 'track' : 'tracks'}
               </span>
               <button
                 onClick={onClose}
@@ -214,7 +212,7 @@ function QueuePanel({
         </motion.div>
       )}
     </AnimatePresence>
-  );
+  )
 }
 
 export function StickyPlayer() {
@@ -233,26 +231,26 @@ export function StickyPlayer() {
     removeFromQueue,
     reorderQueue,
     clearQueue,
-  } = useAudio();
+  } = useAudio()
 
-  const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const [isQueueOpen, setIsQueueOpen] = useState(false)
 
   const handleSeek = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      seek(Number(e.target.value));
+      seek(Number(e.target.value))
     },
-    [seek]
-  );
+    [seek],
+  )
 
   const handleVolumeChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setVolumeHandler(Number(e.target.value));
+      setVolumeHandler(Number(e.target.value))
     },
-    [setVolumeHandler]
-  );
+    [setVolumeHandler],
+  )
 
   if (!currentTrack) {
-    return null;
+    return null
   }
 
   return (
@@ -288,72 +286,72 @@ export function StickyPlayer() {
                     {currentTrack.title}
                   </h4>
                   <p className="text-sm text-gray-400 truncate">
-                    {currentTrack.album || "Single"}
+                    {currentTrack.album || 'Single'}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col items-center gap-2 flex-1 w-full">
-               <div className="flex items-center gap-4">
-                 <motion.button
-                   onClick={prev}
-                   className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
-                   aria-label="Previous track"
-                   whileHover={{ scale: 1.1 }}
-                   whileTap={{ scale: 0.9 }}
-                 >
-                   <svg
-                     className="w-5 h-5 text-gray-300"
-                     fill="currentColor"
-                     viewBox="0 0 24 24"
-                   >
-                     <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-                   </svg>
-                 </motion.button>
+              <div className="flex items-center gap-4">
+                <motion.button
+                  onClick={prev}
+                  className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  aria-label="Previous track"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <svg
+                    className="w-5 h-5 text-gray-300"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                  </svg>
+                </motion.button>
 
-                 <motion.button
-                   onClick={togglePlay}
-                   className="p-3 bg-white hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
-                   aria-label={isPlaying ? "Pause" : "Play"}
-                   whileHover={{ scale: 1.1 }}
-                   whileTap={{ scale: 0.9 }}
-                 >
-                   {isPlaying ? (
-                     <svg
-                       className="w-6 h-6 text-gray-900"
-                       fill="currentColor"
-                       viewBox="0 0 24 24"
-                     >
-                       <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
-                     </svg>
-                   ) : (
-                     <svg
-                       className="w-6 h-6 text-gray-900 ml-1"
-                       fill="currentColor"
-                       viewBox="0 0 24 24"
-                     >
-                       <path d="M8 5v14l11-7z" />
-                     </svg>
-                   )}
-                 </motion.button>
+                <motion.button
+                  onClick={togglePlay}
+                  className="p-3 bg-white hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {isPlaying ? (
+                    <svg
+                      className="w-6 h-6 text-gray-900"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-6 h-6 text-gray-900 ml-1"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  )}
+                </motion.button>
 
-                 <motion.button
-                   onClick={next}
-                   className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
-                   aria-label="Next track"
-                   whileHover={{ scale: 1.1 }}
-                   whileTap={{ scale: 0.9 }}
-                 >
-                   <svg
-                     className="w-5 h-5 text-gray-300"
-                     fill="currentColor"
-                     viewBox="0 0 24 24"
-                   >
-                     <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-                   </svg>
-                 </motion.button>
-               </div>
+                <motion.button
+                  onClick={next}
+                  className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  aria-label="Next track"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <svg
+                    className="w-5 h-5 text-gray-300"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                  </svg>
+                </motion.button>
+              </div>
 
               <div className="flex items-center gap-2 w-full max-w-md">
                 <span className="text-xs text-gray-400 w-10 text-right">
@@ -411,8 +409,8 @@ export function StickyPlayer() {
                 onClick={() => setIsQueueOpen(!isQueueOpen)}
                 className={`p-2 rounded-lg transition-colors ${
                   isQueueOpen
-                    ? "bg-amber-500 text-white"
-                    : "hover:bg-gray-700 text-gray-300"
+                    ? 'bg-amber-500 text-white'
+                    : 'hover:bg-gray-700 text-gray-300'
                 }`}
                 aria-label="Toggle queue"
                 aria-expanded={isQueueOpen}
@@ -467,5 +465,5 @@ export function StickyPlayer() {
         onReorder={reorderQueue}
       />
     </>
-  );
+  )
 }

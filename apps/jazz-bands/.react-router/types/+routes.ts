@@ -14,55 +14,62 @@ type Pages = {
   "/": {
     params: {};
   };
-  "/$subdomain": {
+  "/musicians": {
     params: {};
   };
-  "/$subdomain/musicians": {
+  "/tour": {
     params: {};
   };
-  "/$subdomain/tour": {
+  "/music": {
     params: {};
   };
-  "/$subdomain/music": {
+  "/contact": {
     params: {};
   };
-  "/$subdomain/contact": {
-    params: {};
+  "/*": {
+    params: {
+      "*": string;
+    };
   };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/$subdomain" | "/$subdomain/musicians" | "/$subdomain/tour" | "/$subdomain/music" | "/$subdomain/contact";
+    page: "/" | "/musicians" | "/tour" | "/music" | "/contact" | "/*";
   };
-  "./routes/$subdomain/index.tsx": {
-    id: "routes/$subdomain/index";
-    page: "/$subdomain" | "/$subdomain/musicians" | "/$subdomain/tour" | "/$subdomain/music" | "/$subdomain/contact";
+  "./routes/index.tsx": {
+    id: "routes/index";
+    page: "/";
   };
-  "./routes/$subdomain/musicians.tsx": {
-    id: "routes/$subdomain/musicians";
-    page: "/$subdomain/musicians";
+  "./routes/musicians.tsx": {
+    id: "routes/musicians";
+    page: "/musicians";
   };
-  "./routes/$subdomain/tour.tsx": {
-    id: "routes/$subdomain/tour";
-    page: "/$subdomain/tour";
+  "./routes/tour.tsx": {
+    id: "routes/tour";
+    page: "/tour";
   };
-  "./routes/$subdomain/music.tsx": {
-    id: "routes/$subdomain/music";
-    page: "/$subdomain/music";
+  "./routes/music.tsx": {
+    id: "routes/music";
+    page: "/music";
   };
-  "./routes/$subdomain/contact.tsx": {
-    id: "routes/$subdomain/contact";
-    page: "/$subdomain/contact";
+  "./routes/contact.tsx": {
+    id: "routes/contact";
+    page: "/contact";
+  };
+  "./routes/__catchall.tsx": {
+    id: "routes/__catchall";
+    page: "/*";
   };
 };
 
 type RouteModules = {
   "root": typeof import("./app/root.tsx");
-  "routes/$subdomain/index": typeof import("./app/./routes/$subdomain/index.tsx");
-  "routes/$subdomain/musicians": typeof import("./app/./routes/$subdomain/musicians.tsx");
-  "routes/$subdomain/tour": typeof import("./app/./routes/$subdomain/tour.tsx");
-  "routes/$subdomain/music": typeof import("./app/./routes/$subdomain/music.tsx");
-  "routes/$subdomain/contact": typeof import("./app/./routes/$subdomain/contact.tsx");
+  "routes/index": typeof import("./app/./routes/index.tsx");
+  "routes/musicians": typeof import("./app/./routes/musicians.tsx");
+  "routes/tour": typeof import("./app/./routes/tour.tsx");
+  "routes/music": typeof import("./app/./routes/music.tsx");
+  "routes/contact": typeof import("./app/./routes/contact.tsx");
+  "routes/__catchall": typeof import("./app/./routes/__catchall.tsx");
 };

@@ -1,4 +1,4 @@
-import { Variants } from "framer-motion";
+import type { Variants } from 'framer-motion'
 
 export const pageVariants: Variants = {
   initial: {
@@ -10,7 +10,7 @@ export const pageVariants: Variants = {
     y: 0,
     transition: {
       duration: 0.5,
-      ease: "easeOut",
+      ease: 'easeOut',
     },
   },
   exit: {
@@ -18,10 +18,10 @@ export const pageVariants: Variants = {
     y: -20,
     transition: {
       duration: 0.3,
-      ease: "easeIn",
+      ease: 'easeIn',
     },
   },
-};
+}
 
 export const staggerContainerVariants: Variants = {
   hidden: {
@@ -31,10 +31,10 @@ export const staggerContainerVariants: Variants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-delayChildren: 0.1,
-     }),
-   },
-};
+      delayChildren: 0.1,
+    },
+  },
+}
 
 export const itemVariants: Variants = {
   hidden: {
@@ -46,10 +46,10 @@ export const itemVariants: Variants = {
     y: 0,
     transition: {
       duration: 0.5,
-ease: "easeOut",
-     }),
-   },
-};
+      ease: 'easeOut',
+    },
+  },
+}
 
 export const fadeUpVariants = {
   initial: {
@@ -61,10 +61,10 @@ export const fadeUpVariants = {
     y: 0,
     transition: {
       duration: 0.6,
-      ease: "easeOut",
+      ease: 'easeOut',
     },
   },
-};
+}
 
 export const fadeInVariants = {
   initial: {
@@ -74,10 +74,10 @@ export const fadeInVariants = {
     opacity: 1,
     transition: {
       duration: 0.5,
-      ease: "easeOut",
+      ease: 'easeOut',
     },
   },
-};
+}
 
 export const scaleInVariants = {
   initial: {
@@ -89,10 +89,10 @@ export const scaleInVariants = {
     scale: 1,
     transition: {
       duration: 0.4,
-ease: "easeOut",
-     }),
-   },
-};
+      ease: 'easeOut',
+    },
+  },
+}
 
 export const heroParallaxVariants = {
   container: {
@@ -102,32 +102,32 @@ export const heroParallaxVariants = {
   },
   background: {
     transition: {
-      type: "tween",
-      ease: "linear",
+      type: 'tween',
+      ease: 'linear',
     },
   },
   content: {
     transition: {
-      type: "tween",
-ease: "easeOut",
-     }),
-   },
-};
+      type: 'tween',
+      ease: 'easeOut',
+    },
+  },
+}
 
 export const cardHoverVariants = {
   initial: {
     y: 0,
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
   },
   hover: {
     y: -4,
-    boxShadow: "0 12px 24px -8px rgba(0, 0, 0, 0.2)",
+    boxShadow: '0 12px 24px -8px rgba(0, 0, 0, 0.2)',
     transition: {
       duration: 0.3,
-ease: "easeOut",
-     }),
-   },
-};
+      ease: 'easeOut',
+    },
+  },
+}
 
 export const buttonVariants = {
   initial: {
@@ -137,32 +137,32 @@ export const buttonVariants = {
     scale: 1.05,
     transition: {
       duration: 0.2,
-      ease: "easeOut",
+      ease: 'easeOut',
     },
   },
   tap: {
     scale: 0.95,
     transition: {
       duration: 0.1,
-ease: "easeIn",
-     }),
-   },
-};
+      ease: 'easeIn',
+    },
+  },
+}
 
 export const navUnderlineVariants = {
   hidden: {
-    width: "0%",
-    x: "-100%",
+    width: '0%',
+    x: '-100%',
   },
   visible: {
-    width: "100%",
+    width: '100%',
     x: 0,
     transition: {
       duration: 0.3,
-ease: "easeOut",
-     }),
-   },
-};
+      ease: 'easeOut',
+    },
+  },
+}
 
 export const galleryItemVariants: Variants = {
   hidden: {
@@ -176,7 +176,7 @@ export const galleryItemVariants: Variants = {
     y: 0,
     transition: {
       duration: 0.5,
-      ease: "easeOut",
+      ease: 'easeOut',
     },
   },
-};
+}

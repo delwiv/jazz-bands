@@ -10,6 +10,7 @@
  *   node migration/migrate.mjs               # Execute migration
  */
 
+import 'dotenv/config';
 import { MongoClient } from "mongodb";
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
@@ -22,6 +23,7 @@ import {
   formatBytes,
   isImageFile,
   isAudioFile,
+  estimateOutputSize,
 } from "./optimize.js";
 import {
   scanMongoAssets,
@@ -112,8 +114,8 @@ async function scanAllStorageAssets(bandSlug, stats, referencedFiles = new Set()
       GLOBAL_STATS.byTier[category].size += fileStat.size;
       
       if (DRY_RUN) {
-        console.log(`  ⚠️  Image: ${file} (${formatBytes(fileStat.size)}) - ${category} (DRY_RUN)`);
-      }
+         console.log(`  ⚠️  Image: ${file} (${formatBytes(fileStat.size)}) - will optimize to ~${formatBytes(estimateOutputSize(fileStat.size, 'sanity-source'))} for Sanity (DRY_RUN)`);
+       }
     }
   }
 }
@@ -288,10 +290,11 @@ async function createSanityMusicianFromMongo(mongoMusician, sourceBands, bandSlu
       },
     ] : [],
     instrument: mongoMusician.instrument,
+    images: [],
     bands,
   };
 
-  // Process images
+  // Process images - upload all pictures to Sanity
   if (mongoMusician.pictures && mongoMusician.pictures.length > 0) {
     const storageBase = getStoragePath(bandSlug, '');
     const storageDirs = ['Musicians', 'img', 'photos', ''];
@@ -311,32 +314,30 @@ async function createSanityMusicianFromMongo(mongoMusician, sourceBands, bandSlu
       }
 
       if (actualPath && existsSync(actualPath)) {
-        const category = classifyImage(fileName, actualPath);
-        
-        if (DRY_RUN) {
-          // Don't do anything in dry run
-        } else {
+        if (!DRY_RUN) {
+          // Optimize for Sanity: single high-quality source image
           const optimized = await optimizeImage(
             actualPath,
             join(ASSETS_DIR, bandSlug, 'musicians'),
-            category,
+            'sanity-source', // Use Sanity-specific preset
             false
           );
 
-          if (optimized.success) {
-            const assetId = await uploadAssetsToSanity(
+          if (optimized.success && optimized.optimizedFiles.length > 0) {
+            // Upload the single optimized source image to Sanity
+            const uploadedAssets = await uploadAssetsToSanity(
               optimized.optimizedFiles,
               sanityClient,
               bandSlug
             );
-            if (assetId && !sanityMusician.image) {
-              sanityMusician.image = {
+            for (const asset of uploadedAssets) {
+              sanityMusician.images.push({
                 _type: "image",
                 asset: {
                   _type: "reference",
-                  _ref: assetId,
+                  _ref: asset.assetId,
                 },
-              };
+              });
             }
           }
         }
@@ -495,16 +496,26 @@ async function migrate() {
         
         if (overrideEntry) {
           // Use override
-          bandMembers.push({
+          const bandMemberOverride = {
             _type: "bandMemberOverride",
             musician: {
               _type: "reference",
               _ref: musicianId,
             },
-            bio: overrideEntry.override.bio,
-            photo: overrideEntry.override.photo,
-            instrument: overrideEntry.override.instrument,
-          });
+          };
+          
+          // Add override fields if they exist
+          if (overrideEntry.override.bio) {
+            bandMemberOverride.bio = overrideEntry.override.bio;
+          }
+          if (overrideEntry.override.images) {
+            bandMemberOverride.images = overrideEntry.override.images;
+          }
+          if (overrideEntry.override.instrument) {
+            bandMemberOverride.instrument = overrideEntry.override.instrument;
+          }
+          
+          bandMembers.push(bandMemberOverride);
         } else {
           // No override - just reference the musician
           bandMembers.push({
@@ -722,41 +733,26 @@ async function uploadAssetsToSanity(files, sanityClient, bandSlug) {
   const assets = [];
 
   for (const file of files) {
-    const { createAsset } = await import('@sanity/client');
-    const asset = sanityClient.assets.image.create({
+    const buffer = await import('fs/promises').then(m => m.readFile(file.path));
+    
+   const result = await sanityClient.assets.upload('image', buffer, {
       filename: file.name,
     });
 
-    const buffer = await import('fs/promises').then(m => m.readFile(file.path));
-
-    await asset
-      .patch({
-        _type: 'image',
-      })
-      .setFile(buffer)
-      .commit();
-
-    assets.push(file.size);
+    assets.push({ size: file.size, assetId: result._id });
   }
 
-  return assets.length > 0 ? `image_${bandSlug}_${Date.now()}` : null;
+  return assets;
 }
 
 async function uploadAudioToSanity(filePath, sanityClient, bandSlug) {
   const buffer = await import('fs/promises').then(m => m.readFile(filePath));
 
-  const asset = sanityClient.assets.file.create({
-    filename: basename(filePath),
+  const result = await sanityClient.assets.upload('file', buffer, {
+    filename: filePath.split('/').pop(),
   });
 
-  await asset
-    .patch({
-      _type: 'file',
-    })
-    .setFile(buffer)
-    .commit();
-
-  return `audio_${bandSlug}_${Date.now()}`;
+  return result._id;
 }
 
 function printBandStats(bandSlug, stats) {
