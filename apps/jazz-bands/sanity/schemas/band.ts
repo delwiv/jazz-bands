@@ -4,6 +4,12 @@ export const bandType = defineType({
   name: 'band',
   title: 'Band',
   type: 'document',
+  groups: [
+    {
+      name: 'seo',
+      title: 'SEO',
+    },
+  ],
   fields: [
     defineField({
       name: 'name',
@@ -50,9 +56,8 @@ export const bandType = defineType({
       of: [{ type: 'reference', to: [{ type: 'musician' }] }],
       description:
         "⚠️ Deprecated: Use 'bandMembers' for new entries to support per-band overrides",
-      options: {
-        hidden: true,
-      },
+      hidden: true,
+      readOnly: true,
     }),
     defineField({
       name: 'bandMembers',
@@ -131,13 +136,13 @@ export const bandType = defineType({
           name: 'primaryColor',
           title: 'Primary Color',
           type: 'color',
-          initialValue: '#1e3a8a',
+          initialValue: { hue: 231, saturation: 70, lightness: 35, alpha: 1 },
         }),
         defineField({
           name: 'secondaryColor',
           title: 'Secondary Color',
           type: 'color',
-          initialValue: '#dc2626',
+          initialValue: { hue: 0, saturation: 88, lightness: 54, alpha: 1 },
         }),
       ],
     }),
@@ -274,7 +279,7 @@ export const bandType = defineType({
           title: 'Creator Handle',
           type: 'string',
           description: 'Twitter handle of the creator (e.g., @boheme_jazz).',
-          validation: (Rule) => Rule.pattern(/^@?[a-zA-Z0-9_]+$/),
+          validation: (Rule) => Rule.regex(/^@?[a-zA-Z0-9_]+$/),
         }),
       ],
     }),

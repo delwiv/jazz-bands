@@ -1,12 +1,19 @@
-import { structureBuilder } from 'sanity/structure'
+import type { StructureResolver } from 'sanity/structure'
 
-export default structureBuilder.list().title('Jazz Bands CMS').items([
-  structureBuilder.documentTypeList('band').title('Bands'),
-  structureBuilder.documentTypeList('musician').title('Musicians'),
-  structureBuilder.divider(),
-  structureBuilder.documentTypeList('recording').title('Recordings'),
-  structureBuilder.documentTypeList('tourDate').title('Tour Dates'),
-  structureBuilder.divider(),
-  structureBuilder.documentTypeList('bandMember').title('Band Members'),
-  structureBuilder.documentTypeList('musicianBandOverride').title('Musician Band Overrides'),
-])
+export const structure: StructureResolver = (S) =>
+  S.list()
+    .title('Jazz Bands CMS')
+    .items([
+      S.documentTypeListItem('band').title('Bands'),
+      S.documentTypeListItem('musician').title('Musicians'),
+      S.divider(),
+      S.documentTypeListItem('recording').title('Recordings'),
+      S.documentTypeListItem('tourDate').title('Tour Dates'),
+      S.divider(),
+      S.documentTypeListItem('bandMember').title('Band Members'),
+      S.documentTypeListItem('musicianBandOverride').title(
+        'Musician Band Overrides',
+      ),
+    ])
+
+export default structure
