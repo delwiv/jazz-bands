@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 
 /**
  * Hook to detect user's reduced motion preference
@@ -6,24 +6,24 @@ import { useEffect, useState } from "react";
  * Used to disable animations for accessibility compliance
  */
 export function useReducedMotion(): boolean {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false)
 
   useEffect(() => {
     // Check initial preference
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mediaQuery.matches);
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReducedMotion(mediaQuery.matches)
 
     // Listen for changes
     const handleChange = (e: MediaQueryListEvent) => {
-      setReducedMotion(e.matches);
-    };
+      setReducedMotion(e.matches)
+    }
 
-    mediaQuery.addEventListener("change", handleChange);
+    mediaQuery.addEventListener('change', handleChange)
 
     return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
+      mediaQuery.removeEventListener('change', handleChange)
+    }
+  }, [])
 
-  return reducedMotion;
+  return reducedMotion
 }

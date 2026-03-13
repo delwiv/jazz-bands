@@ -1,13 +1,14 @@
-import { Outlet } from "react-router";
-import { Header } from "./Header";
-import { Footer } from "./Footer";
-import type { Band } from "~/lib/types";
+import type { ReactNode } from 'react'
+import type { Band } from '~/lib/types'
+import { Footer } from './Footer'
+import { Header } from './Header'
 
 interface LayoutProps {
-  band: Band;
+  band: Band
+  children: ReactNode
 }
 
-export function Layout({ band }: LayoutProps) {
+export function Layout({ band, children }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <a
@@ -18,9 +19,9 @@ export function Layout({ band }: LayoutProps) {
       </a>
       <Header band={band} />
       <main id="main-content" className="flex-1">
-        <Outlet context={{ band }} />
+        {children}
       </main>
       <Footer band={band} />
     </div>
-  );
+  )
 }

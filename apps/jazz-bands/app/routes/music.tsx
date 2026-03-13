@@ -1,73 +1,93 @@
-import { useLoaderData, type LoaderFunctionArgs } from "react-router";
-import { motion } from "framer-motion";
-import { Layout } from "~/components/shared/Layout";
-import { PageTransition } from "~/components/shared/PageTransition";
-import { contentService } from "~/lib/content.service";
-import { buildBandMeta } from "~/utils/seo";
-import { BandStructuredData, AlbumStructuredData, TrackStructuredData } from "~/components/StructuredData";
-import { AudioProvider, useAudio } from "~/contexts/AudioContext";
-import { StickyPlayer } from "~/components/audio/StickyPlayer";
-import type { Recording } from "~/lib/types";
-import { useReducedMotion } from "~/hooks/useReducedMotion";
-import { staggerContainerVariants, itemVariants, buttonVariants } from "~/lib/animationVariants";
+import { motion } from 'framer-motion'
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { StickyPlayer } from '~/components/audio/StickyPlayer'
+import {
+  AlbumStructuredData,
+  BandStructuredData,
+  TrackStructuredData,
+} from '~/components/StructuredData'
+import { Layout } from '~/components/shared/Layout'
+import { PageTransition } from '~/components/shared/PageTransition'
+import { AudioProvider, useAudio } from '~/contexts/AudioContext'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
+import { contentService } from '~/lib/content.service'
+import type { Recording } from '~/lib/types'
+import { buildBandMeta } from '~/utils/seo'
 
 interface LoaderData {
-  band: any;
-  request: Request;
+  band: any
+  request: Request
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
-  const { subdomain } = params;
-  const band = await contentService.getBandBySlug(subdomain);
-  
-  if (!band) {
-    throw new Response("Band not found", { status: 404 });
+export async function loader({ request }: LoaderFunctionArgs) {
+  const bandSlug = process.env.BAND_SLUG
+
+  if (!bandSlug) {
+    throw new Error('BAND_SLUG environment variable is required')
   }
-  
-  return { band, request };
+
+  const band = await contentService.getBandBySlug(bandSlug)
+
+  if (!band) {
+    throw new Response('Band not found', { status: 404 })
+  }
+
+  return { band, request }
 }
 
-export function meta({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> | null }) {
-  if (!loaderData?.band) return [];
-  return buildBandMeta(loaderData.band, loaderData.request, "music");
+export function meta({
+  loaderData,
+}: {
+  loaderData: Awaited<ReturnType<typeof loader>> | null
+}) {
+  if (!loaderData?.band) return []
+  return buildBandMeta(loaderData.band, loaderData.request, 'music')
 }
 
 function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${String(secs).padStart(2, "0")}`;
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins}:${String(secs).padStart(2, '0')}`
 }
 
 function hasAudio(recording: Recording): boolean {
-  return recording.audio?.asset?._ref != null;
+  return recording.audio?.asset?._ref != null
 }
 
 function getAudioUrl(recording: Recording): string | undefined {
-  const audioRef = recording.audio?.asset?._ref;
-  if (!audioRef) return undefined;
-  return `https://cdn.sanity.io/${process.env.SANITY_PROJECT_ID}/${process.env.SANITY_DATASET}/${audioRef}.mp3`;
+  const audioRef = recording.audio?.asset?._ref
+  if (!audioRef) return undefined
+  return `https://cdn.sanity.io/${process.env.SANITY_PROJECT_ID}/${process.env.SANITY_DATASET}/${audioRef}.mp3`
 }
 
 function MusicContent() {
-  const { band, request } = useLoaderData() as LoaderData;
-  const { currentTrack, playTrack, addToQueue } = useAudio();
-  const reducedMotion = useReducedMotion();
-  
-  const recordings = (band.recordings || []) as Recording[];
-  const primaryColor = band.branding?.primaryColor || "#2563eb";
-  
+  const { band, request } = useLoaderData() as LoaderData
+  const { currentTrack, playTrack, addToQueue } = useAudio()
+  const _reducedMotion = useReducedMotion()
+
+  const recordings = (band.recordings || []) as Recording[]
+  const primaryColor = band.branding?.primaryColor || '#2563eb'
+
   return (
     <>
       <BandStructuredData band={band} request={request} />
       {recordings.map((recording, idx) => (
-        <AlbumStructuredData key={idx} album={recording} band={band} request={request} />
+        <AlbumStructuredData
+          key={idx}
+          album={recording}
+          band={band}
+          request={request}
+        />
       ))}
       {recordings.map((recording, idx) => (
         <TrackStructuredData
           key={`track-${idx}`}
           track={{
             title: recording.title,
-            duration: recording.duration ? `PT${recording.duration}S` : undefined,
+            duration: recording.duration
+              ? `PT${recording.duration}S`
+              : undefined,
             audioUrl: hasAudio(recording) ? getAudioUrl(recording) : undefined,
           }}
           album={recording.album ? { title: recording.album } : undefined}
@@ -87,7 +107,7 @@ function MusicContent() {
               >
                 Music
               </motion.h1>
-              
+
               {recordings.length === 0 ? (
                 <p className="text-center text-gray-600 dark:text-gray-400">
                   No recordings available yet.
@@ -102,24 +122,27 @@ function MusicContent() {
                   {recordings.map((recording, idx) => {
                     const isPlaying =
                       currentTrack?.title === recording.title &&
-                      currentTrack?.album === recording.album;
-                    const audioRef = recording.audio?.asset?._ref;
-                    const hasAudio = audioRef != null;
+                      currentTrack?.album === recording.album
+                    const audioRef = recording.audio?.asset?._ref
+                    const hasAudio = audioRef != null
                     const audioUrl = hasAudio
                       ? `https://cdn.sanity.io/${process.env.SANITY_PROJECT_ID}/${process.env.SANITY_DATASET}/${audioRef}.mp3`
-                      : null;
-                    
+                      : null
+
                     return (
                       <motion.div
                         key={idx}
                         variants={itemVariants}
                         className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${
-                          isPlaying ? "ring-2" : "hover:shadow-lg"
+                          isPlaying ? 'ring-2' : 'hover:shadow-lg'
                         }`}
                         style={isPlaying ? { borderColor: primaryColor } : {}}
                         role="article"
                         aria-label={`${recording.title} by ${band.name}`}
-                        whileHover={{ y: -4, boxShadow: "0 12px 24px -8px rgba(0, 0, 0, 0.15)" }}
+                        whileHover={{
+                          y: -4,
+                          boxShadow: '0 12px 24px -8px rgba(0, 0, 0, 0.15)',
+                        }}
                         transition={{ duration: 0.3 }}
                       >
                         <div className="flex-1">
@@ -147,17 +170,19 @@ function MusicContent() {
                             </p>
                           )}
                         </div>
-                        
+
                         <div className="flex gap-4 w-full md:w-auto items-center flex-wrap">
                           {hasAudio && (
                             <motion.button
                               onClick={() => playTrack(recording)}
                               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
                                 isPlaying
-                                  ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
-                                  : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
+                                  ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
+                                  : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white'
                               }`}
-                              aria-label={isPlaying ? "Now playing" : "Play track"}
+                              aria-label={
+                                isPlaying ? 'Now playing' : 'Play track'
+                              }
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                             >
@@ -186,7 +211,7 @@ function MusicContent() {
                               )}
                             </motion.button>
                           )}
-                          
+
                           {hasAudio && (
                             <motion.button
                               onClick={() => addToQueue(recording)}
@@ -211,7 +236,7 @@ function MusicContent() {
                               Queue
                             </motion.button>
                           )}
-                          
+
                           {recording.downloadEnabled && audioUrl && (
                             <motion.a
                               href={audioUrl}
@@ -238,7 +263,7 @@ function MusicContent() {
                           )}
                         </div>
                       </motion.div>
-                    );
+                    )
                   })}
                 </motion.div>
               )}
@@ -248,15 +273,15 @@ function MusicContent() {
         <StickyPlayer />
       </Layout>
     </>
-  );
+  )
 }
 
 export default function MusicPage() {
-  const { band } = useLoaderData() as LoaderData;
-  
+  const { band } = useLoaderData() as LoaderData
+
   return (
     <AudioProvider initialPlaylist={band.recordings || []}>
       <MusicContent />
     </AudioProvider>
-  );
+  )
 }

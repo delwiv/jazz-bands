@@ -1,10 +1,10 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { ReactNode } from "react";
-import { pageVariants } from "~/lib/animationVariants";
-import { useReducedMotion } from "~/hooks/useReducedMotion";
+import { AnimatePresence, motion } from 'framer-motion'
+import type { ReactNode } from 'react'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { pageVariants } from '~/lib/animationVariants'
 
 interface PageTransitionProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 /**
@@ -13,10 +13,10 @@ interface PageTransitionProps {
  * Respects user's reduced motion preference
  */
 export function PageTransition({ children }: PageTransitionProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useReducedMotion()
 
   if (reducedMotion) {
-    return <>{children}</>;
+    return <>{children}</>
   }
 
   return (
@@ -31,5 +31,5 @@ export function PageTransition({ children }: PageTransitionProps) {
         {children}
       </motion.div>
     </AnimatePresence>
-  );
+  )
 }

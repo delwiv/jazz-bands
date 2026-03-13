@@ -6,29 +6,32 @@ import {
   ScrollRestoration,
   useLoaderData,
   useRouteError,
-} from "react-router";
-import type { Route } from "./+types/root";
-import "./tailwind.css";
+} from 'react-router'
+import type { Route } from './+types/root'
+import './tailwind.css'
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const host = new URL(request.url).hostname;
-  const subdomain = host.split(".")[0];
-  
+  const bandSlug = process.env.BAND_SLUG
+
+  if (!bandSlug && process.env.NODE_ENV === 'production') {
+    throw new Error('BAND_SLUG environment variable is required in production')
+  }
+
   return {
-    subdomain,
+    bandSlug,
     origin: new URL(request.url).origin,
-  };
+  }
 }
 
 export function meta({ data }: Route.MetaArgs) {
   return [
-    { title: data?.subdomain ? `${data.subdomain} - Jazz Band` : "Jazz Bands" },
-    { name: "description", content: "Jazz band website" },
-  ];
+    { title: data?.bandSlug ? `${data.bandSlug} - Jazz Band` : 'Jazz Bands' },
+    { name: 'description', content: 'Jazz band website' },
+  ]
 }
 
 export default function App() {
-  const { subdomain } = useLoaderData();
+  const { bandSlug } = useLoaderData()
 
   return (
     <html lang="en">
@@ -42,32 +45,35 @@ export default function App() {
         <Scripts />
       </body>
     </html>
-  );
+  )
 }
 
 export function ErrorPage() {
-  const error = useRouteError();
+  const error = useRouteError()
 
   const is404 =
-    error && typeof error === "object" && "status" in error && error.status === 404;
+    error &&
+    typeof error === 'object' &&
+    'status' in error &&
+    error.status === 404
 
   const getErrorMessage = (): string => {
     if (is404) {
-      return "The page you're looking for doesn't exist.";
+      return "The page you're looking for doesn't exist."
     }
     if (error instanceof Error) {
-      return error.message;
+      return error.message
     }
-    if (typeof error === "string") {
-      return error;
+    if (typeof error === 'string') {
+      return error
     }
-    return "Something went wrong. Please try again.";
-  };
+    return 'Something went wrong. Please try again.'
+  }
 
   return (
     <html lang="en">
       <head>
-        <title>{is404 ? "Page Not Found" : "Error"} - Jazz Bands</title>
+        <title>{is404 ? 'Page Not Found' : 'Error'} - Jazz Bands</title>
         <Meta />
         <Links />
       </head>
@@ -92,7 +98,7 @@ export function ErrorPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
-              {is404 ? "Page Not Found" : "Oops! Something went wrong"}
+              {is404 ? 'Page Not Found' : 'Oops! Something went wrong'}
             </h1>
 
             <div className="bg-red-50 rounded-lg p-4 mb-6">
@@ -119,13 +125,13 @@ export function ErrorPage() {
                   d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                 />
               </svg>
-              {is404 ? "Go Home" : "Go Back Home"}
+              {is404 ? 'Go Home' : 'Go Back Home'}
             </a>
 
             <p className="mt-6 text-sm text-gray-500">
               {is404
-                ? "Check the URL or return to the homepage."
-                : "If the problem persists, please contact support."}
+                ? 'Check the URL or return to the homepage.'
+                : 'If the problem persists, please contact support.'}
             </p>
           </div>
         </div>
@@ -133,5 +139,5 @@ export function ErrorPage() {
         <Scripts />
       </body>
     </html>
-  );
+  )
 }

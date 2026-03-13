@@ -1,0 +1,325 @@
+import { motion, useScroll, useTransform } from 'framer-motion'
+import {
+  type LoaderFunctionArgs,
+  useLoaderData,
+  useNavigation,
+} from 'react-router'
+import { BandStructuredData } from '~/components/StructuredData'
+import { Layout } from '~/components/shared/Layout'
+import { PageTransition } from '~/components/shared/PageTransition'
+import { Skeleton } from '~/components/shared/Skeleton'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
+import { contentService } from '~/lib/content.service'
+import { imageurl } from '~/lib/sanity.client'
+import { buildBandMeta } from '~/utils/seo'
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const bandSlug = process.env.BAND_SLUG
+
+  if (!bandSlug) {
+    throw new Error('BAND_SLUG environment variable is required')
+  }
+
+  const band = await contentService.getBandBySlug(bandSlug)
+
+  if (!band) {
+    throw new Response(`Band "${bandSlug}" not found`, { status: 404 })
+  }
+
+  return { band, request }
+}
+
+export function meta({
+  loaderData,
+}: {
+  loaderData: Awaited<ReturnType<typeof loader>> | null
+}) {
+  if (!loaderData?.band) return []
+
+  const meta = buildBandMeta(loaderData.band, loaderData.request, 'home')
+
+  // Preload hero image for LCP optimization
+  if (loaderData.band.heroImage) {
+    const heroUrl = imageurl(loaderData.band.heroImage)
+      .width(1920)
+      .height(1080)
+      .url()
+    meta.push({
+      rel: 'preload',
+      as: 'image',
+      href: heroUrl,
+      imagesrcset: heroUrl,
+    })
+  }
+
+  return meta
+}
+
+export default function BandHome() {
+  const { band, request } = useLoaderData()
+  const navigation = useNavigation()
+  const isLoading = navigation.state === 'loading'
+  const reducedMotion = useReducedMotion()
+
+  // Hero parallax scroll effect
+  const { scrollY } = useScroll()
+  const heroOpacity = useTransform(scrollY, [0, 300], [1, 0])
+  const heroScale = useTransform(scrollY, [0, 300], [1, 0.95])
+  const bgY = useTransform(scrollY, [0, 300], ['0%', '30%'])
+
+  if (isLoading) {
+    return (
+      <Layout band={band}>
+        <PageTransition>
+          {/* Hero Section Skeleton */}
+          <section className="relative h-96 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+            <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
+              <Skeleton variant="text" className="h-10 w-64 mx-auto mb-4" />
+              <Skeleton variant="text" className="mx-auto mb-2" />
+              <Skeleton variant="text" className="mx-auto w-3/4" />
+            </div>
+          </section>
+
+          {/* Musicians Section Skeleton */}
+          <section className="py-16 px-6 bg-gray-50 dark:bg-gray-800">
+            <div className="max-w-7xl mx-auto">
+              <Skeleton variant="text" className="h-8 w-48 mx-auto mb-12" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="text-center">
+                    <Skeleton variant="circle" className="mx-auto mb-4" />
+                    <Skeleton
+                      variant="text"
+                      className="h-5 w-32 mx-auto mb-2"
+                    />
+                    <Skeleton variant="text" className="h-4 w-24 mx-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Tour Dates Section Skeleton */}
+          <section className="py-16 px-6">
+            <div className="max-w-7xl mx-auto">
+              <Skeleton variant="text" className="h-8 w-56 mx-auto mb-12" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[0, 1].map((i) => (
+                  <div key={i} className="border rounded-lg p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-3">
+                        <Skeleton variant="text" className="h-6 w-48" />
+                        <Skeleton variant="text" className="h-5 w-40" />
+                        <Skeleton variant="text" className="h-4 w-32" />
+                      </div>
+                    </div>
+                    <Skeleton variant="text" className="h-9 w-28 mt-4" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </PageTransition>
+      </Layout>
+    )
+  }
+
+  return (
+    <>
+      <BandStructuredData band={band} request={request} />
+      <Layout band={band}>
+        <PageTransition>
+          {/* Hero Section with Parallax */}
+          <section
+            className="relative flex items-center justify-center overflow-hidden"
+            aria-labelledby="hero-title"
+            style={{ contain: 'layout', aspectRatio: '16/9' }}
+          >
+            {band.heroImage && (
+              <motion.div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url(${imageurl(band.heroImage).width(1920).height(1080).url()})`,
+                  backgroundPositionY: reducedMotion ? '0%' : bgY,
+                }}
+                animate={!reducedMotion ? { scale: heroScale } : {}}
+                transition={{ type: 'tween', ease: 'linear' }}
+              >
+                <div className="absolute inset-0 bg-black/50" />
+              </motion.div>
+            )}
+            <div
+              className="absolute inset-0 bg-gray-200 dark:bg-gray-700"
+              aria-hidden="true"
+            />
+            <motion.div
+              className="relative z-10 text-center text-white px-6"
+              style={{ opacity: reducedMotion ? 1 : heroOpacity }}
+              initial={{ y: 20 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
+              <h1 id="hero-title" className="text-5xl font-bold mb-4">
+                {band.name}
+              </h1>
+              <p className="text-xl max-w-2xl mx-auto">
+                {band.description?.[0]?.children?.[0]?.text}
+              </p>
+            </motion.div>
+          </section>
+
+          <div className="sr-only">
+            <p>Hero section with band name: {band.name}</p>
+          </div>
+
+          {/* Musicians Section with Stagger Animation */}
+          <section
+            className="py-16 px-6 bg-gray-50"
+            aria-labelledby="musicians-title"
+          >
+            <div className="max-w-7xl mx-auto">
+              <motion.h2
+                id="musicians-title"
+                className="text-3xl font-bold text-center mb-12"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                Our Musicians
+              </motion.h2>
+
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                variants={staggerContainerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: '-100px' }}
+              >
+                {band.members?.slice(0, 3).map((musician) => (
+                  <motion.div
+                    key={musician._id}
+                    variants={itemVariants}
+                    className="text-center group"
+                    whileHover={{ y: -4 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {musician.photo && (
+                      <img
+                        src={imageurl(musician.photo)
+                          .width(300)
+                          .height(300)
+                          .fit('crop')
+                          .url()}
+                        alt={musician.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-48 h-48 mx-auto rounded-full object-cover mb-4 shadow-lg group-hover:shadow-xl transition-shadow"
+                      />
+                    )}
+                    <h3 className="text-xl font-bold">{musician.name}</h3>
+                    {musician.instrument && (
+                      <p className="text-gray-600">{musician.instrument}</p>
+                    )}
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              <div className="text-center mt-8">
+                <motion.Link
+                  to="/musicians"
+                  className="text-blue-600 hover:underline inline-block"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  View All Musicians →
+                </motion.Link>
+              </div>
+            </div>
+          </section>
+
+          {/* Tour Dates Section with Scroll Animations */}
+          <section className="py-16 px-6" aria-labelledby="tour-dates-title">
+            <div className="max-w-7xl mx-auto">
+              <motion.h2
+                id="tour-dates-title"
+                className="text-3xl font-bold text-center mb-12"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                Upcoming Shows
+              </motion.h2>
+
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                variants={staggerContainerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+              >
+                {band.tourDates?.slice(0, 4).map((date, idx) => (
+                  <motion.div
+                    key={idx}
+                    variants={itemVariants}
+                    className="border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow"
+                    whileHover={{ y: -4 }}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {new Date(date.date).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </p>
+                        <p className="text-xl font-semibold">{date.venue}</p>
+                        <p className="text-gray-600">
+                          {date.city}
+                          {date.region && `, ${date.region}`}
+                        </p>
+                      </div>
+                      {date.soldOut && (
+                        <span className="bg-red-700 text-white px-3 py-1 rounded-full">
+                          Sold Out
+                        </span>
+                      )}
+                    </div>
+                    {date.ticketsUrl && (
+                      <motion.a
+                        href={date.ticketsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Get Tickets
+                      </motion.a>
+                    )}
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {band.tourDates?.length && (
+                <div className="text-center mt-8">
+                  <motion.Link
+                    to="/tour"
+                    className="text-blue-600 hover:underline inline-block"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    View All Shows →
+                  </motion.Link>
+                </div>
+              )}
+            </div>
+          </section>
+        </PageTransition>
+      </Layout>
+    </>
+  )
+}

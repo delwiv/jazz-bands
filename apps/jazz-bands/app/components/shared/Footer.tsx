@@ -1,22 +1,25 @@
-import type { Band } from "~/lib/types";
+import type { Band } from '~/lib/types'
 
 interface FooterProps {
-  band: Band;
+  band: Band
 }
 
 export function Footer({ band }: FooterProps) {
-  const secondaryColor = band.branding?.secondaryColor || "#dc2626";
-  
+  const secondaryColor = band.branding?.secondaryColor || '#dc2626'
+
   return (
-    <footer style={{ backgroundColor: secondaryColor }} className="py-8 px-6 mt-16">
+    <footer
+      style={{ backgroundColor: secondaryColor }}
+      className="py-8 px-6 mt-16"
+    >
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h3 className="text-white font-bold text-lg mb-4">{band.name}</h3>
           <p className="text-white/80">
-            {band.description?.[0]?.children?.[0]?.text || "Jazz band"}
+            {band.description?.[0]?.children?.[0]?.text || 'Jazz band'}
           </p>
         </div>
-        
+
         <div>
           <h4 className="text-white font-bold mb-4">Contact</h4>
           {band.contact?.email && (
@@ -26,7 +29,7 @@ export function Footer({ band }: FooterProps) {
             <p className="text-white/80">📞 {band.contact.phone}</p>
           )}
         </div>
-        
+
         <div>
           <h4 className="text-white font-bold mb-4">Follow Us</h4>
           <div className="flex gap-4">
@@ -44,10 +47,12 @@ export function Footer({ band }: FooterProps) {
           </div>
         </div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-white/20 text-center text-white/60">
-        <p>© {new Date().getFullYear()} {band.name}. All rights reserved.</p>
+        <p>
+          © {new Date().getFullYear()} {band.name}. All rights reserved.
+        </p>
       </div>
     </footer>
-  );
+  )
 }

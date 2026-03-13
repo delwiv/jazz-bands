@@ -1,0 +1,7 @@
+migration/assets
+build
+
+*.md
+!README.md
+!AGENTS.md
+migration/output

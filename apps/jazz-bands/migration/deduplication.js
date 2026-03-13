@@ -208,7 +208,7 @@ export async function mergeMusicianData(candidates, storageBase = '') {
   // Track which source contributed each field
   const selectedFrom = {
     bio: null,
-    photo: null,
+    images: null,
     instrument: null,
   };
 
@@ -225,45 +225,48 @@ export async function mergeMusicianData(candidates, storageBase = '') {
     }
   }
 
-  // Select best photo (highest resolution)
-  let bestPhoto = null;
-  let bestPhotoResolution = -1;
+  // Merge all images from all candidates (dedupe by filename)
+  // Select the best first image (main image) based on resolution
+  const allImagesMap = new Map(); // fileName -> { picture, source, resolution }
   
   for (const candidate of candidates) {
     if (!candidate.pictures || candidate.pictures.length === 0) continue;
-    
-    // Use first picture as main photo
-    const mainPicture = candidate.pictures[0];
-    const resolution = await estimateImageResolution(mainPicture, storageBase);
-    
-    if (resolution > bestPhotoResolution) {
-      bestPhotoResolution = resolution;
-      bestPhoto = mainPicture;
-      selectedFrom.photo = candidate;
-    }
-  }
-
-  // Merge gallery images (dedupe by filename)
-  const galleryMap = new Map();
-  
-  for (const candidate of candidates) {
-    if (!candidate.pictures) continue;
     
     for (const picture of candidate.pictures) {
       const fileName = extractPictureFileName(picture);
       if (!fileName) continue;
       
-      // Only add if not already in gallery
-      if (!galleryMap.has(fileName)) {
-        galleryMap.set(fileName, {
+      const resolution = await estimateImageResolution(picture, storageBase);
+      
+      // If this filename already exists, keep the higher resolution one
+      if (allImagesMap.has(fileName)) {
+        const existing = allImagesMap.get(fileName);
+        if (resolution > existing.resolution) {
+          allImagesMap.set(fileName, {
+            picture,
+            source: candidate,
+            resolution,
+          });
+        }
+      } else {
+        allImagesMap.set(fileName, {
           picture,
           source: candidate,
+          resolution,
         });
       }
     }
   }
 
-  const gallery = Array.from(galleryMap.values()).map(({ picture }) => picture);
+  // Sort images by resolution (highest first) to make the best image the main one
+  const allImages = Array.from(allImagesMap.values());
+  allImages.sort((a, b) => b.resolution - a.resolution);
+  
+  const images = allImages.map(({ picture }) => picture);
+  
+  if (images.length > 0) {
+    selectedFrom.images = allImages[0].source;
+  }
 
   // Determine instrument (majority vote)
   const instrumentCounts = new Map();
@@ -301,7 +304,7 @@ export async function mergeMusicianData(candidates, storageBase = '') {
       name,
       instrument: bestInstrument === 'unknown' ? undefined : bestInstrument,
       description: bestBio,
-      pictures: gallery.length > 0 ? gallery : undefined,
+      pictures: images.length > 0 ? images : undefined,
     },
     sources: candidates,
     selectedFrom,
@@ -416,18 +419,21 @@ export function createBandOverride(globalMusician, sourceData, bandSlug) {
     hasDifferences = true;
   }
 
-  // Compare photo (only main photo, first in pictures array)
-  const globalPhoto = globalMusician.pictures?.[0];
-  const sourcePhoto = sourceData.pictures?.[0];
+  // Compare images array (all pictures)
+  const globalImages = globalMusician.pictures || [];
+  const sourceImages = sourceData.pictures || [];
   
-  const globalPhotoName = extractPictureFileName(globalPhoto);
-  const sourcePhotoName = extractPictureFileName(sourcePhoto);
+  // Check if images differ by comparing filenames and order
+  const globalImageNames = globalImages.map(p => extractPictureFileName(p)).filter(Boolean);
+  const sourceImageNames = sourceImages.map(p => extractPictureFileName(p)).filter(Boolean);
   
-  if (globalPhotoName !== sourcePhotoName) {
-    if (sourcePhoto) {
-      override.photo = sourcePhoto;
-      hasDifferences = true;
-    }
+  const imagesDiffer = 
+    globalImageNames.length !== sourceImageNames.length ||
+    globalImageNames.some((name, i) => name !== sourceImageNames[i]);
+  
+  if (imagesDiffer && sourceImages.length > 0) {
+    override.images = sourceImages;
+    hasDifferences = true;
   }
 
   // Compare instrument
