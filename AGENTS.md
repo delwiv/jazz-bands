@@ -488,4 +488,27 @@ For questions or issues:
 
 ---
 
+## 🤖 AI Agent Guidelines
+
+### Development Environment
+
+- **Dev server**: Launched by the user, **do not kill it**. The user manages the development server lifecycle.
+- **Logs**: Monitor logs in `/tmp/opencode` folder when debugging issues.
+- **Single developer**: You are the only developer on this project. No team coordination needed.
+
+### Git & Commits
+
+- **Commit style**: Use semantic commits (`feat:`, `fix:`, `chore:`, `docs:`, etc.) in English.
+- **No author attribution**: Do **not** add co-author, "Ultraworked with", or similar attribution lines in commit messages.
+- **Interactive rebase**: Safety rules block destructive git commands. User will handle `git rebase -i` and commit rewriting manually.
+- **Markdown files**: Do **not** commit agent-generated markdown files (e.g., `MIGRATION-CHANGES.md`, task summaries). Only `README.md` and `AGENTS.md` are tracked. These files pollute the repo and should remain in `.gitignore`.
+
+### General
+
+- **Verify before acting**: When in doubt about scope or approach, ask clarifying questions.
+- **Match existing patterns**: Follow established codebase conventions when making changes.
+- **Minimal changes**: Prefer small, focused changes over large refactors unless explicitly requested.
+
+---
+
 *Last updated: March 2026*
