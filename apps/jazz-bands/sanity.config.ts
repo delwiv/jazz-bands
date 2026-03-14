@@ -10,8 +10,8 @@ export default defineConfig({
   name: 'jazz-bands',
   title: 'Jazz Bands CMS',
   // Use SANITY_STUDIO_ prefix for auto-injection by Sanity Studio
-  projectId: process.env.SANITY_STUDIO_PROJECT_ID || '94fpfdn8',
-  dataset: process.env.SANITY_STUDIO_DATASET || 'production',
+  projectId: process.env.SANITY_STUDIO_PROJECT_ID,
+  dataset: process.env.SANITY_STUDIO_DATASET,
 
   plugins: [
     visionTool({}),

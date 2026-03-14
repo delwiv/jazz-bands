@@ -340,31 +340,64 @@ function biosAreEqual(bio1, bio2) {
 }
 
 /**
- * Converts HTML description to Sanity block format
+ * Converts HTML description to Sanity Portable Text block format
+ * Preserves paragraph structure and basic formatting
  */
 export function htmlToSanityBlock(html) {
-  if (!html) return [];
+  if (!html || typeof html !== 'string') return [];
   
-  // Strip HTML tags for text content
-  const text = html
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  
-  if (!text) return [];
-  
-  return [
-    {
-      _type: 'block',
-      children: [
-        {
-          _type: 'span',
-          text,
-        },
-      ],
-      style: 'normal',
-    },
-  ];
+  try {
+    // Split by paragraph tags to preserve structure
+    const paragraphs = html
+      .split(/<p[^>]*>/i)
+      .filter(p => p.trim() && !p.startsWith('</p>'))
+      .map(p => {
+        // Strip remaining HTML tags but preserve text
+        let text = p
+          .replace(/<\/[^>]+>/g, ' ')  // Close tags → space
+          .replace(/<[^>]+>/g, ' ')    // Open tags → space
+          .replace(/\s+/g, ' ')        // Multiple spaces → single
+          .trim();
+        
+        if (!text) return null;
+        
+        return {
+          _type: 'block',
+          children: [
+            {
+              _type: 'span',
+              text,
+            },
+          ],
+          style: 'normal',
+        };
+      })
+      .filter(block => block !== null);
+    
+    // If no paragraphs found, try single block
+    if (paragraphs.length === 0) {
+      const text = html
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (text) {
+        return [
+          {
+            _type: 'block',
+            children: [{ _type: 'span', text }],
+            style: 'normal',
+          },
+        ];
+      }
+    }
+    
+    return paragraphs;
+  } catch (error) {
+    console.warn(`HTML conversion failed:`, error.message);
+    // Fallback: return empty array
+    return [];
+  }
 }
 
 /**
