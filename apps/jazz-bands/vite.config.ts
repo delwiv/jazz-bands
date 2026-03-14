@@ -17,11 +17,4 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
-  // Define environment variables for both app and Sanity Studio
-  define: {
-    'process.env.SANITY_PROJECT_ID': JSON.stringify(process.env.SANITY_PROJECT_ID || '94fpfdn8'),
-    'process.env.SANITY_DATASET': JSON.stringify(process.env.SANITY_DATASET || 'production'),
-    'process.env.SANITY_API_READ_TOKEN': JSON.stringify(process.env.SANITY_API_READ_TOKEN || ''),
-    'process.env.SANITY_API_WRITE_TOKEN': JSON.stringify(process.env.SANITY_API_WRITE_TOKEN || ''),
-  },
 })
