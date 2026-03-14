@@ -12,7 +12,7 @@
 
 import 'dotenv/config'
 import { MongoClient } from 'mongodb'
-import { writeFileSync, mkdirSync, existsSync, copyFileSync } from 'fs'
+import { writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync } from 'fs'
 import { join, dirname } from 'path'
 import { mkdir, stat } from 'fs/promises'
 import id3 from 'id3'
@@ -385,22 +385,48 @@ function extractFileNameFromMongoPath(pictureData) {
   return null
 }
 
+// Clean output directories before migration
+function cleanOutputDirs() {
+  if (DRY_RUN) {
+    console.log('🧹 Skipping cleanup (DRY_RUN mode)')
+    return
+  }
+
+  console.log('🧹 Cleaning output directories...')
+
+  // Remove output directory contents
+  if (existsSync(OUTPUT_DIR)) {
+    rmSync(OUTPUT_DIR, { recursive: true, force: true })
+    console.log(`   ✅ Cleaned ${OUTPUT_DIR}`)
+  }
+
+  // Remove assets directory contents
+  if (existsSync(ASSETS_DIR)) {
+    rmSync(ASSETS_DIR, { recursive: true, force: true })
+    console.log(`   ✅ Cleaned ${ASSETS_DIR}`)
+  }
+
+  // Recreate directories
+  mkdirSync(OUTPUT_DIR, { recursive: true })
+  mkdirSync(ASSETS_DIR, { recursive: true })
+  console.log('   ✅ Created fresh output directories')
+  console.log('')
+}
+
 async function migrate() {
   console.log('')
   console.log('🔍 MONGODB → SANITY MIGRATION' + (DRY_RUN ? ' (DRY RUN)' : ''))
   console.log('═══════════════════════════════════════')
   console.log('')
 
+  // Clean previous migration output
+  cleanOutputDirs()
+
   const client = new MongoClient(MONGODB_URI)
 
   try {
     await client.connect({ serverSelectionTimeoutMS: 5000 })
     console.log('✅ Connected to MongoDB')
-
-    if (!DRY_RUN) {
-      mkdirSync(OUTPUT_DIR, { recursive: true })
-      mkdirSync(ASSETS_DIR, { recursive: true })
-    }
 
     const allDocuments = []
     let dedupeStats = null
