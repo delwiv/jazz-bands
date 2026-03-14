@@ -9,8 +9,7 @@
     "typecheck": "tsc --noEmit",
     "studio:dev": "sanity dev --host 0.0.0.0",
     "migrate": "npx dotenv-cli -e .env -- node migration/migrate.mjs",
-    "import:staging": "npx dotenv-cli -e .env -- npx sanity@latest import ./migration/output/sanity-import.json --dataset staging --project $SANITY_PROJECT_ID",
-    "import:production": "npx dotenv-cli -e .env -- npx sanity@latest import ./migration/output/sanity-import.json --dataset production --project $SANITY_PROJECT_ID",
+    "import": "npx dotenv-cli -e .env -- npx sanity@latest import ./migration/output/sanity-import.json --dataset $1 --project $SANITY_PROJECT_ID"
     "lint": "biome check --write",
     "lint:check": "biome check",
     "format": "biome format --write",
