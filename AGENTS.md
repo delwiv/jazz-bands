@@ -488,6 +488,54 @@ For questions or issues:
 
 ---
 
+## 🔄 Migration Workflow
+
+### Commands
+
+```bash
+# Extract data from MongoDB and optimize assets
+npm run extract
+
+# Import into Sanity (choose dataset)
+npm run import staging      # Import to staging dataset
+npm run import production   # Import to production dataset
+```
+
+### What Extract Does
+
+1. **Cleans previous output**: Removes `./migration/output` directory
+2. **Extracts from MongoDB**: Fetches musicians, tour dates, recordings
+3. **Optimizes images**: Converts to JPEG, resizes, reduces quality for Sanity
+4. **Deduplicates musicians**: Merges duplicate entries across bands
+5. **Creates asset documents**: Generates proper Sanity asset references
+6. **Outputs NDJSON**: Formats data for Sanity import
+
+### What Import Does
+
+1. **Validates NDJSON**: Checks file format
+2. **Creates assets**: Uploads audio/images to Sanity and creates asset documents
+3. **Creates documents**: Imports bands, musicians with proper references
+4. **Resolves references**: Links documents to uploaded assets
+
+### Environment Variables
+
+**For extract:**
+```bash
+MONGODB_URI=mongodb://...
+# Or:
+MONGODB_HOST=localhost
+MONGODB_ROOT_PASSWORD=...
+```
+
+**For import:**
+```bash
+SANITY_API_WRITE_TOKEN=your-token-here
+# Or:
+SANITY_IMPORT_TOKEN=your-token-here
+```
+
+---
+
 ## 🤖 AI Agent Guidelines
 
 ### Development Environment
