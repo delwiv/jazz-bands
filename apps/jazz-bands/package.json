@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "studio:dev": "sanity dev --host 0.0.0.0",
     "extract": "npx dotenv-cli -e .env -- node migration/migrate.mjs",
-    "import": "npx dotenv-cli -e .env -- npx sanity@latest import ./migration/output/sanity-import.json --dataset $1 --project $SANITY_PROJECT_ID"
+    "import": "node scripts/import.js",
     "lint": "biome check --write",
     "lint:check": "biome check",
     "format": "biome format --write",
