@@ -867,10 +867,7 @@ async function migrateBand(
 
 // Copy assets to local directory for sanity import
 // Returns reference using relative path from sanity-import.json
-// Global asset document generator
-let assetCounter = 0
-
-function createAssetDocument(fileType, relativePath, allAssets) {
+async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets) {
   const assetId = `${fileType}-asset-${String(++assetCounter).padStart(6, '0')}`
   const assetDoc = {
     _id: assetId,
