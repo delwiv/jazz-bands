@@ -43,7 +43,6 @@ const MONGODB_URI =
   `mongodb://root:${process.env.MONGODB_ROOT_PASSWORD || ''}@${process.env.MONGODB_HOST || 'localhost'}:27017`
 
 const OUTPUT_DIR = './migration/output'
-const ASSETS_DIR = './migration/assets'
 
 const DRY_RUN = process.env.DRY_RUN === 'true'
 
@@ -343,7 +342,7 @@ async function createSanityMusicianFromMongo(
           // Optimize for Sanity: single high-quality source image
           const optimized = await optimizeImage(
             actualPath,
-            join(ASSETS_DIR, bandSlug, 'musicians'),
+            join(OUTPUT_DIR, 'assets', bandSlug, 'musicians'),
             'sanity-source', // Use Sanity-specific preset
             false,
           )
@@ -392,21 +391,14 @@ function cleanOutputDirs() {
 
   console.log('🧹 Cleaning output directories...')
 
-  // Remove output directory contents
+  // Remove output directory
   if (existsSync(OUTPUT_DIR)) {
     rmSync(OUTPUT_DIR, { recursive: true, force: true })
     console.log(`   ✅ Cleaned ${OUTPUT_DIR}`)
   }
 
-  // Remove assets directory contents
-  if (existsSync(ASSETS_DIR)) {
-    rmSync(ASSETS_DIR, { recursive: true, force: true })
-    console.log(`   ✅ Cleaned ${ASSETS_DIR}`)
-  }
-
-  // Recreate directories
+  // Recreate output directory
   mkdirSync(OUTPUT_DIR, { recursive: true })
-  mkdirSync(ASSETS_DIR, { recursive: true })
   console.log('   ✅ Created fresh output directories')
   console.log('')
 }
