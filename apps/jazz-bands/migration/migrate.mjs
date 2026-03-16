@@ -620,10 +620,9 @@ async function migrate() {
       console.log('\n✅ DRY RUN COMPLETE - No changes made')
       console.log('Run without DRY_RUN=true to execute migration')
     } else {
-      writeFileSync(
-        join(OUTPUT_DIR, 'sanity-import.json'),
-        JSON.stringify(allDocuments, null, 2),
-      )
+      // Write NDJSON format (one JSON document per line) as required by Sanity import
+      const ndjsonContent = allDocuments.map(doc => JSON.stringify(doc)).join('\n')
+      writeFileSync(join(OUTPUT_DIR, 'sanity-import.json'), ndjsonContent)
 
       console.log('\n✅ Migration complete!')
       console.log(`📁 Output: ${OUTPUT_DIR}/sanity-import.json`)
