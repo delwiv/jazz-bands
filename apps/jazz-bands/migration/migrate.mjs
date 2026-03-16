@@ -866,24 +866,6 @@ async function migrateBand(
 }
 
 // Copy assets to local directory for sanity import
-// Returns reference using relative path from sanity-import.json
-async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets) {
-  const assetId = `${fileType}-asset-${String(++assetCounter).padStart(6, '0')}`
-  const assetDoc = {
-    _id: assetId,
-    _type: `${fileType}Asset`,
-    originalFilename: relativePath.split('/').pop(),
-    sha1hash: 'mock-sha1',
-    extension: relativePath.split('.').pop(),
-    mimeType: fileType === 'image' ? 'image/jpeg' : 'audio/mp3',
-    size: 0,
-    universeId: 'migration',
-    uploadId: `migration-${assetId}`,
-  }
-  allAssets.push(assetDoc)
-  return assetId
-}
-
 async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets) {
   // Assets go in: output/assets/{band}/{type}/images or audio
   const destDir = join(OUTPUT_DIR, 'assets', bandSlug, type === 'image' ? 'images' : 'audio')
