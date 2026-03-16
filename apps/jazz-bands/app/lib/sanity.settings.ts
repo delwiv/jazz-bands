@@ -15,9 +15,22 @@ import { type ClientConfig, createClient } from '@sanity/client'
 import { type ImageMetadata } from 'sanity'
 import createImageUrlBuilder from '@sanity/image-url'
 
-// Environment variables with defaults
-const projectId = process.env.SANITY_STUDIO_PROJECT_ID || ''
-const dataset = process.env.SANITY_STUDIO_DATASET || 'production'
+// Environment variables (required: projectId, dataset)
+const projectId = process.env.SANITY_STUDIO_PROJECT_ID
+const dataset = process.env.SANITY_STUDIO_DATASET
+
+if (!projectId) {
+  throw new Error(
+    'Missing required environment variable: SANITY_STUDIO_PROJECT_ID',
+  )
+}
+
+if (!dataset) {
+  throw new Error(
+    'Missing required environment variable: SANITY_STUDIO_DATASET',
+  )
+}
+
 const apiReadToken = process.env.SANITY_STUDIO_API_READ_TOKEN
 const apiWriteToken = process.env.SANITY_STUDIO_API_WRITE_TOKEN
 
