@@ -16,7 +16,15 @@ if (!dataset) {
   process.exit(1)
 }
 
-const command = `sanity dataset import ./migration/output/sanity-import.json ${dataset}`
+const token = process.env.SANITY_API_WRITE_TOKEN || process.env.SANITY_IMPORT_TOKEN
+
+if (!token) {
+  console.error('Error: SANITY_API_WRITE_TOKEN or SANITY_IMPORT_TOKEN not set')
+  console.error('Please set one of these in your .env file')
+  process.exit(1)
+}
+
+const command = `sanity dataset import ./migration/output/sanity-import.json --dataset ${dataset} --token ${token}`
 
 try {
   execSync(command, { stdio: 'inherit' })
