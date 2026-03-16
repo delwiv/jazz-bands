@@ -5,7 +5,13 @@
  */
 
 import { execSync } from 'child_process'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import 'dotenv/config'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const PROJECT_ROOT = join(__dirname, '..')
+const IMPORT_FILE = join(PROJECT_ROOT, 'migration', 'output', 'sanity-import.json')
 
 const dataset = process.argv[2]
 
@@ -24,7 +30,7 @@ if (!token) {
   process.exit(1)
 }
 
-const command = `sanity dataset import ./migration/output/sanity-import.json --dataset ${dataset} --token ${token}`
+const command = `sanity dataset import "${IMPORT_FILE}" --dataset ${dataset} --token ${token}`
 
 try {
   execSync(command, { stdio: 'inherit' })
