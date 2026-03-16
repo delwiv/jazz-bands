@@ -887,6 +887,24 @@ async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets) {
   }
 }
 
+// Create asset document with proper ID
+function createAssetDocument(fileType, relativePath, allAssets) {
+  const assetId = `${fileType}-asset-${String(++assetCounter).padStart(6, '0')}`
+  const assetDoc = {
+    _id: assetId,
+    _type: `${fileType}Asset`,
+    originalFilename: relativePath.split('/').pop(),
+    sha1hash: 'mock-sha1',
+    extension: relativePath.split('.').pop(),
+    mimeType: fileType === 'image' ? 'image/jpeg' : 'audio/mp3',
+    size: 0,
+    universeId: 'migration',
+    uploadId: `migration-${assetId}`,
+  }
+  allAssets.push(assetDoc)
+  return assetId
+}
+
 function printBandStats(bandSlug, stats) {
   const totalAssets =
     stats.assets.background.count +
