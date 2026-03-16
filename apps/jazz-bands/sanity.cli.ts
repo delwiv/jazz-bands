@@ -1,8 +1,9 @@
 import { defineCliConfig } from 'sanity/cli'
+import { SANITY_PROJECT_ID, SANITY_DATASET } from './lib/sanity-settings'
 
 export default defineCliConfig({
   api: {
-    projectId: process.env.SANITY_PROJECT_ID || '94fpfdn8',
-    dataset: process.env.SANITY_DATASET || 'staging',
+    projectId: SANITY_PROJECT_ID || '94fpfdn8',
+    dataset: SANITY_DATASET || 'staging',
   },
 })

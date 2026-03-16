@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { getAudioCdnUrl } from '~/lib/sanity.settings'
 import type { Recording } from '~/lib/types'
 
 interface AudioContextType {
@@ -100,7 +101,7 @@ export function AudioProvider({
         return
       }
 
-      const audioUrl = `https://cdn.sanity.io/${process.env.SANITY_PROJECT_ID}/${process.env.SANITY_DATASET}/${track.audio.asset._ref}.mp3`
+      const audioUrl = getAudioCdnUrl(track.audio.asset._ref)
 
       setCurrentTrack(track)
       setIsPlaying(true)

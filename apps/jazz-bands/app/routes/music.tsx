@@ -10,6 +10,7 @@ import { Layout } from '~/components/shared/Layout'
 import { PageTransition } from '~/components/shared/PageTransition'
 import { AudioProvider, useAudio } from '~/contexts/AudioContext'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { getAudioCdnUrl } from '~/lib/sanity.settings'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
 import { contentService } from '~/lib/content.service'
 import type { Recording } from '~/lib/types'
@@ -58,7 +59,7 @@ function hasAudio(recording: Recording): boolean {
 function getAudioUrl(recording: Recording): string | undefined {
   const audioRef = recording.audio?.asset?._ref
   if (!audioRef) return undefined
-  return `https://cdn.sanity.io/${process.env.SANITY_PROJECT_ID}/${process.env.SANITY_DATASET}/${audioRef}.mp3`
+  return getAudioCdnUrl(audioRef)
 }
 
 function MusicContent() {
@@ -125,9 +126,7 @@ function MusicContent() {
                       currentTrack?.album === recording.album
                     const audioRef = recording.audio?.asset?._ref
                     const hasAudio = audioRef != null
-                    const audioUrl = hasAudio
-                      ? `https://cdn.sanity.io/${process.env.SANITY_PROJECT_ID}/${process.env.SANITY_DATASET}/${audioRef}.mp3`
-                      : null
+                    const audioUrl = hasAudio ? getAudioCdnUrl(audioRef) : null
 
                     return (
                       <motion.div

@@ -35,10 +35,10 @@ import {
   getExpectedNormalizedNames,
 } from './fixtures.js';
 
+import { SANITY_PROJECT_ID, SANITY_DATASET, SANITY_API_WRITE_TOKEN } from '../../lib/sanity-settings'
+
 const OUTPUT_DIR = './migration/output';
-const SANITY_PROJECT_ID = process.env.SANITY_PROJECT_ID;
-const SANITY_DATASET = process.env.SANITY_DATASET || 'production';
-const SANITY_TOKEN = process.env.SANITY_TOKEN;
+const SANITY_TOKEN = SANITY_API_WRITE_TOKEN;
 
 let sanityClient;
 let useDryRun = false;
