@@ -69,6 +69,12 @@ const GLOBAL_STATS = {
   },
 }
 
+// Global asset collection
+global.allAssets = []
+
+// Global asset document generator
+let assetCounter = 0
+
 // Helper to construct storage path for legacy apps
 function getStoragePath(bandSlug, relativePath) {
   const storageBase = `/home/leon/dev/jazz-bands/apps/${bandSlug}/server/storage`
@@ -350,7 +356,7 @@ async function createSanityMusicianFromMongo(
           if (optimized.success && optimized.optimizedFiles.length > 0) {
             // Copy optimized image to local assets directory for sanity import
             for (const file of optimized.optimizedFiles) {
-              const assetRef = await copyAssetToLocal(file.path, bandSlug, 'image')
+              const assetRef = await copyAssetToLocal(file.path, bandSlug, 'image', global.allAssets)
               sanityMusician.images.push({
                 _type: 'image',
                 asset: assetRef,
@@ -420,6 +426,7 @@ async function migrate() {
 
     const allDocuments = []
     let dedupeStats = null
+    global.allAssets = [] // Reset global asset collection
 
     // =====================================================
     // PHASE 1: Collect all musicians from all bands
@@ -620,6 +627,9 @@ async function migrate() {
       console.log('\n✅ DRY RUN COMPLETE - No changes made')
       console.log('Run without DRY_RUN=true to execute migration')
     } else {
+      // Add asset documents to import
+      allDocuments.push(...global.allAssets)
+
       // Write NDJSON format (one JSON document per line) as required by Sanity import
       const ndjsonContent = allDocuments.map(doc => JSON.stringify(doc)).join('\n')
       writeFileSync(join(OUTPUT_DIR, 'sanity-import.json'), ndjsonContent)
@@ -771,7 +781,7 @@ async function migrateBand(
               releaseYear,
               audio: {
                 _type: 'file',
-                asset: await copyAssetToLocal(audioPath, bandSlug, 'audio'),
+                asset: await copyAssetToLocal(audioPath, bandSlug, 'audio', global.allAssets),
               },
             }
             recordings.push(recording)
@@ -857,8 +867,28 @@ async function migrateBand(
 
 // Copy assets to local directory for sanity import
 // Returns reference using relative path from sanity-import.json
-async function copyAssetToLocal(filePath, bandSlug, type = 'image') {
-  // Assets go in: output/assets/{band}/{type}
+// Global asset document generator
+let assetCounter = 0
+
+function createAssetDocument(fileType, relativePath, allAssets) {
+  const assetId = `${fileType}-asset-${String(++assetCounter).padStart(6, '0')}`
+  const assetDoc = {
+    _id: assetId,
+    _type: `${fileType}Asset`,
+    originalFilename: relativePath.split('/').pop(),
+    sha1hash: 'mock-sha1',
+    extension: relativePath.split('.').pop(),
+    mimeType: fileType === 'image' ? 'image/jpeg' : 'audio/mp3',
+    size: 0,
+    universeId: 'migration',
+    uploadId: `migration-${assetId}`,
+  }
+  allAssets.push(assetDoc)
+  return assetId
+}
+
+async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets) {
+  // Assets go in: output/assets/{band}/{type}/images or audio
   const destDir = join(OUTPUT_DIR, 'assets', bandSlug, type === 'image' ? 'images' : 'audio')
   mkdirSync(destDir, { recursive: true })
 
@@ -867,14 +897,14 @@ async function copyAssetToLocal(filePath, bandSlug, type = 'image') {
 
   copyFileSync(filePath, destPath)
 
-  // Return relative path from sanity-import.json (located in output/) to the asset file
-  // Result: assets/{band}/{type}/{fileName}
+  // Create asset document and return reference
   const relativePath = join('assets', bandSlug, type === 'image' ? 'images' : 'audio', fileName)
     .replace(/\\/g, '/')
+  const assetId = createAssetDocument(type, relativePath, allAssets)
 
   return {
     _type: 'reference',
-    _ref: relativePath,
+    _ref: assetId,
   }
 }
 
