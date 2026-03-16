@@ -856,6 +856,7 @@ async function migrateBand(
 }
 
 // Copy assets to local directory for sanity import
+// Returns reference using relative path from sanity-import.json
 async function copyAssetToLocal(filePath, bandSlug, type = 'image') {
   const destDir = join(OUTPUT_DIR, 'assets', bandSlug, type === 'image' ? 'images' : 'audio')
   mkdirSync(destDir, { recursive: true })
@@ -865,12 +866,29 @@ async function copyAssetToLocal(filePath, bandSlug, type = 'image') {
 
   copyFileSync(filePath, destPath)
 
-  // Return asset reference for sanity import
-  // Sanity import will auto-detect and upload files from ./assets/ directory
+  // Return relative path from sanity-import.json to the asset file
+  // Sanity will auto-upload and create IDs
+  const relativePath = relative(OUTPUT_DIR, destPath)
   return {
     _type: 'reference',
-    _ref: `image-${fileName.replace(/\.[^/.]+$/, '')}`, // Sanity will generate actual ID
+    _ref: relativePath,
   }
+}
+
+// Simple path.relative implementation for better compatibility
+function relative(from, to) {
+  const fromParts = from.split(/[\\/]/)
+  const toParts = to.split(/[\\/]/)
+  
+  // Remove common prefix
+  while (fromParts.length > 0 && toParts.length > 0 && fromParts[0] === toParts[0]) {
+    fromParts.shift()
+    toParts.shift()
+  }
+  
+  // Add .. for each remaining part in from
+  const result = [...fromParts.map(() => '..'), ...toParts]
+  return result.join('/')
 }
 
 function printBandStats(bandSlug, stats) {
