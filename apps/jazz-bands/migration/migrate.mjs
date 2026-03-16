@@ -6,36 +6,34 @@
  * Migrates data from MongoDB to Sanity with image optimization.
  *
  * Usage:
- *   DRY_RUN=true node migration/migrate.mjs  # Preview only
- *   node migration/migrate.mjs               # Execute migration
+ *   npm run extract                      # Execute extraction
+ *   DRY_RUN=true npm run extract         # Preview only
+ *   npm run import staging               # Import to staging
+ *   npm run import production            # Import to production
  */
 
 import 'dotenv/config'
 import { MongoClient } from 'mongodb'
 import { writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync } from 'fs'
-import { join, dirname } from 'path'
-import { mkdir, stat } from 'fs/promises'
+import { join } from 'path'
+import { stat } from 'fs/promises'
 import id3 from 'id3'
 const { ID3 } = id3
 import {
   classifyImage,
   optimizeImage,
-  batchOptimize,
   formatBytes,
   isImageFile,
   isAudioFile,
   estimateOutputSize,
 } from './optimize.js'
 import {
-  scanMongoAssets,
   estimateOptimizationSavings,
 } from './asset-scanner.js'
 import {
   normalizeMusicianName,
-  findDuplicateMusicians,
   mergeMusicianData,
   createBandOverride,
-  htmlToSanityBlock,
   generateMusicianSlug,
 } from './deduplication.js'
 
@@ -350,16 +348,16 @@ async function createSanityMusicianFromMongo(
             false,
           )
 
-if (optimized.success && optimized.optimizedFiles.length > 0) {
-             // Copy optimized image to local assets directory for sanity import
-             for (const file of optimized.optimizedFiles) {
-               const assetRef = await copyAssetToLocal(file.path, bandSlug, 'image')
-               sanityMusician.images.push({
-                 _type: 'image',
-                 asset: assetRef,
-               })
-             }
-           }
+          if (optimized.success && optimized.optimizedFiles.length > 0) {
+            // Copy optimized image to local assets directory for sanity import
+            for (const file of optimized.optimizedFiles) {
+              const assetRef = await copyAssetToLocal(file.path, bandSlug, 'image')
+              sanityMusician.images.push({
+                _type: 'image',
+                asset: assetRef,
+              })
+            }
+          }
         }
       }
     }
@@ -639,8 +637,8 @@ async function migrate() {
       console.log(`📁 Output: ${OUTPUT_DIR}/sanity-import.json`)
       console.log(`📝 Total documents: ${allDocuments.length}`)
       console.log(`\nNext step: Import into Sanity`)
-      console.log(`   npm run import:staging    # Import to staging dataset`)
-      console.log(`   npm run import:production # Import to production dataset`)
+      console.log(`   npm run import staging     # Import to staging dataset`)
+      console.log(`   npm run import production  # Import to production dataset`)
     }
   } finally {
     await client.close()
@@ -870,12 +868,12 @@ async function migrateBand(
 async function copyAssetToLocal(filePath, bandSlug, type = 'image') {
   const destDir = join(OUTPUT_DIR, 'assets', bandSlug, type === 'image' ? 'images' : 'audio')
   mkdirSync(destDir, { recursive: true })
-  
+
   const fileName = filePath.split('/').pop()
   const destPath = join(destDir, fileName)
-  
+
   copyFileSync(filePath, destPath)
-  
+
   // Return asset reference for sanity import
   // Sanity import will auto-detect and upload files from ./assets/ directory
   return {
