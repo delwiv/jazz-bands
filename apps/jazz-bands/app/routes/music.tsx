@@ -10,16 +10,12 @@ import { Layout } from '~/components/shared/Layout'
 import { PageTransition } from '~/components/shared/PageTransition'
 import { AudioProvider, useAudio } from '~/contexts/AudioContext'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
-import { getAudioCdnUrl } from '~/lib/sanity.settings'
+import { getAudioCdnUrl } from '~/lib/sanity.client'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
-import { contentService } from '~/lib/content.service'
+import { getBandBySlug } from '~/lib/queries'
+import { sanityClient } from '~/lib/sanity.settings'
 import type { Recording } from '~/lib/types'
 import { buildBandMeta } from '~/utils/seo'
-
-interface LoaderData {
-  band: any
-  request: Request
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const bandSlug = process.env.BAND_SLUG
@@ -28,13 +24,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Error('BAND_SLUG environment variable is required')
   }
 
-  const band = await contentService.getBandBySlug(bandSlug)
+  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
 
   if (!band) {
     throw new Response('Band not found', { status: 404 })
   }
 
-  return { band, request }
+  // Extract baseUrl as serializable string (Request object not JSON-serializable)
+  const url = new URL(request.url)
+  const baseUrl = `${url.protocol}//${url.host}`
+
+  return { band, baseUrl }
 }
 
 export function meta({
@@ -43,7 +43,7 @@ export function meta({
   loaderData: Awaited<ReturnType<typeof loader>> | null
 }) {
   if (!loaderData?.band) return []
-  return buildBandMeta(loaderData.band, loaderData.request, 'music')
+  return buildBandMeta(loaderData.band, loaderData.baseUrl, 'music')
 }
 
 function formatTime(seconds: number): string {
@@ -63,7 +63,10 @@ function getAudioUrl(recording: Recording): string | undefined {
 }
 
 function MusicContent() {
-  const { band, request } = useLoaderData() as LoaderData
+  const { band, baseUrl } = useLoaderData() as {
+    band: any
+    baseUrl: string
+  }
   const { currentTrack, playTrack, addToQueue } = useAudio()
   const _reducedMotion = useReducedMotion()
 
@@ -72,13 +75,13 @@ function MusicContent() {
 
   return (
     <>
-      <BandStructuredData band={band} request={request} />
+      <BandStructuredData band={band} baseUrl={baseUrl} />
       {recordings.map((recording, idx) => (
         <AlbumStructuredData
           key={idx}
           album={recording}
           band={band}
-          request={request}
+          baseUrl={baseUrl}
         />
       ))}
       {recordings.map((recording, idx) => (
@@ -93,7 +96,7 @@ function MusicContent() {
           }}
           album={recording.album ? { title: recording.album } : undefined}
           band={band}
-          request={request}
+          baseUrl={baseUrl}
         />
       ))}
       <Layout band={band}>

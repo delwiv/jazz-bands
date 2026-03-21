@@ -9,12 +9,9 @@ import { Layout } from '~/components/shared/Layout'
 import { PageTransition } from '~/components/shared/PageTransition'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
-import { contentService } from '~/lib/content.service'
+import { getBandBySlug } from '~/lib/queries'
+import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
-
-interface LoaderData {
-  band: any
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const bandSlug = process.env.BAND_SLUG
@@ -23,13 +20,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Error('BAND_SLUG environment variable is required')
   }
 
-  const band = await contentService.getBandBySlug(bandSlug)
+  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
 
   if (!band) {
     throw new Response('Band not found', { status: 404 })
   }
 
-  return { band, request }
+  // Extract baseUrl as serializable string (Request object not JSON-serializable)
+  const url = new URL(request.url)
+  const baseUrl = `${url.protocol}//${url.host}`
+
+  return { band, baseUrl }
 }
 
 export function meta({
@@ -38,11 +39,11 @@ export function meta({
   loaderData: Awaited<ReturnType<typeof loader>> | null
 }) {
   if (!loaderData?.band) return []
-  return buildBandMeta(loaderData.band, loaderData.request, 'tour')
+  return buildBandMeta(loaderData.band, loaderData.baseUrl, 'tour')
 }
 
 export default function TourPage() {
-  const { band, request } = useLoaderData() as any
+  const { band, baseUrl } = useLoaderData() as any
   const [filterRegion, setFilterRegion] = useState<string>('')
   const _reducedMotion = useReducedMotion()
 
@@ -63,13 +64,13 @@ export default function TourPage() {
 
   return (
     <>
-      <BandStructuredData band={band} request={request} />
+      <BandStructuredData band={band} baseUrl={baseUrl} />
       {upcomingDates.map((date: any, idx: number) => (
         <EventStructuredData
           key={idx}
           event={date}
           band={band}
-          request={request}
+          baseUrl={baseUrl}
         />
       ))}
       <Layout band={band}>

@@ -10,8 +10,8 @@ import { PageTransition } from '~/components/shared/PageTransition'
 import { Skeleton } from '~/components/shared/Skeleton'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
-import { contentService } from '~/lib/content.service'
-import { imageurl } from '~/lib/sanity.client'
+import { getBandBySlug } from '~/lib/queries'
+import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -21,13 +21,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Error('BAND_SLUG environment variable is required')
   }
 
-  const band = await contentService.getBandBySlug(bandSlug)
+  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
 
   if (!band) {
     throw new Response(`Band "${bandSlug}" not found`, { status: 404 })
   }
 
-  return { band, request }
+  // Extract baseUrl as serializable string (Request object not JSON-serializable)
+  const url = new URL(request.url)
+  const baseUrl = `${url.protocol}//${url.host}`
+
+  return { band, baseUrl }
 }
 
 export function meta({
@@ -37,19 +41,15 @@ export function meta({
 }) {
   if (!loaderData?.band) return []
 
-  const meta = buildBandMeta(loaderData.band, loaderData.request, 'home')
+  const meta = buildBandMeta(loaderData.band, loaderData.baseUrl, 'home')
 
   // Preload hero image for LCP optimization
   if (loaderData.band.heroImage) {
-    const heroUrl = imageurl(loaderData.band.heroImage)
-      .width(1920)
-      .height(1080)
-      .url()
     meta.push({
       rel: 'preload',
       as: 'image',
-      href: heroUrl,
-      imagesrcset: heroUrl,
+      href: loaderData.band.heroImage,
+      imagesrcset: loaderData.band.heroImage,
     })
   }
 
@@ -57,7 +57,10 @@ export function meta({
 }
 
 export default function BandHome() {
-  const { band, request } = useLoaderData()
+  const { band, baseUrl } = useLoaderData() as {
+    band: any
+    baseUrl: string
+  }
   const navigation = useNavigation()
   const isLoading = navigation.state === 'loading'
   const reducedMotion = useReducedMotion()
@@ -125,10 +128,10 @@ export default function BandHome() {
     )
   }
 
-  return (
-    <>
-      <BandStructuredData band={band} request={request} />
-      <Layout band={band}>
+return (
+     <>
+       <BandStructuredData band={band} baseUrl={baseUrl} />
+       <Layout band={band}>
         <PageTransition>
           {/* Hero Section with Parallax */}
           <section
@@ -140,7 +143,7 @@ export default function BandHome() {
               <motion.div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
-                  backgroundImage: `url(${imageurl(band.heroImage).width(1920).height(1080).url()})`,
+                  backgroundImage: `url(${band.heroImage})`,
                   backgroundPositionY: reducedMotion ? '0%' : bgY,
                 }}
                 animate={!reducedMotion ? { scale: heroScale } : {}}
@@ -153,21 +156,50 @@ export default function BandHome() {
               className="absolute inset-0 bg-gray-200 dark:bg-gray-700"
               aria-hidden="true"
             />
-            <motion.div
-              className="relative z-10 text-center text-white px-6"
-              style={{ opacity: reducedMotion ? 1 : heroOpacity }}
-              initial={{ y: 20 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-            >
-              <h1 id="hero-title" className="text-5xl font-bold mb-4">
-                {band.name}
-              </h1>
-              <p className="text-xl max-w-2xl mx-auto">
-                {band.description?.[0]?.children?.[0]?.text}
-              </p>
-            </motion.div>
-          </section>
+<motion.div
+               className="relative z-10 text-center text-white px-6"
+               style={{ opacity: reducedMotion ? 1 : heroOpacity }}
+               initial={{ y: 20 }}
+               animate={{ y: 0 }}
+               transition={{ duration: 0.5, ease: 'easeOut' }}
+             >
+               <h1 id="hero-title" className="text-5xl font-bold mb-4">
+                 {band.name}
+               </h1>
+               <div className="text-xl max-w-2xl mx-auto space-y-4 mb-8">
+                 {band.description?.map((block, idx) => (
+                   <p key={block._key || idx}>{block.children?.[0]?.text}</p>
+                 ))}
+               </div>
+               
+               {/* Main Content Images Gallery */}
+               {band.mainImages && band.mainImages.length > 0 && (
+                 <motion.div
+                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto"
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ duration: 0.5, delay: 0.2 }}
+                 >
+                   {band.mainImages.map((img, idx) => (
+                     <motion.div
+                       key={img._key || idx}
+                       className="rounded-lg overflow-hidden shadow-lg"
+                       whileHover={{ scale: 1.05 }}
+                       transition={{ duration: 0.3 }}
+                     >
+                       <img
+                         src={img.url}
+                         alt={`${band.name} main image ${idx + 1}`}
+                         loading="lazy"
+                         decoding="async"
+                         className="w-full h-64 object-cover"
+                       />
+                     </motion.div>
+                   ))}
+                 </motion.div>
+               )}
+             </motion.div>
+           </section>
 
           <div className="sr-only">
             <p>Hero section with band name: {band.name}</p>
@@ -207,11 +239,7 @@ export default function BandHome() {
                   >
                     {musician.photo && (
                       <img
-                        src={imageurl(musician.photo)
-                          .width(300)
-                          .height(300)
-                          .fit('crop')
-                          .url()}
+                        src={musician.photo}
                         alt={musician.name}
                         loading="lazy"
                         decoding="async"

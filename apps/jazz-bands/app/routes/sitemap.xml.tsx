@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from 'react-router'
-import { contentService } from '~/lib/content.service'
+import { getBandBySlug } from '~/lib/queries'
+import { sanityClient } from '~/lib/sanity.settings'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const bandSlug = process.env.BAND_SLUG
@@ -8,7 +9,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Error('BAND_SLUG environment variable is required')
   }
 
-  const band = await contentService.getBandBySlug(bandSlug)
+  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
 
   if (!band) {
     throw new Response('Band not found', { status: 404 })

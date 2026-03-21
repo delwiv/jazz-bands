@@ -12,6 +12,7 @@ import type { MetaFunction } from 'react-router'
  */
 export function getBaseUrl(request: Request): string {
   const url = new URL(request.url)
+
   return `${url.protocol}//${url.host}`
 }
 
@@ -103,17 +104,17 @@ export function mergeMeta(
     return `other:${JSON.stringify(meta)}`
   }
 
-  // Start with parent meta
-  ;(parentMeta || []).forEach((meta) => {
-    const key = getMetaKey(meta)
-    metaMap.set(key, meta)
-  })
+    // Start with parent meta
+    ; (parentMeta || []).forEach((meta) => {
+      const key = getMetaKey(meta)
+      metaMap.set(key, meta)
+    })
 
-  // Override with child meta
-  ;(childMeta || []).forEach((meta) => {
-    const key = getMetaKey(meta)
-    metaMap.set(key, meta)
-  })
+    // Override with child meta
+    ; (childMeta || []).forEach((meta) => {
+      const key = getMetaKey(meta)
+      metaMap.set(key, meta)
+    })
 
   return Array.from(metaMap.values())
 }
@@ -147,21 +148,20 @@ export function buildBandMeta(
       creator?: string
     }
   },
-  request: Request,
+  baseUrl: string,
   page: 'home' | 'musicians' | 'tour' | 'music' | 'contact' = 'home',
   pageDescription?: string,
 ): ReturnType<MetaFunction> {
-  const baseUrl = getBaseUrl(request)
   const canonicalUrl = baseUrl
 
   // Generate descriptions from Sanity blocks if needed
   const descriptionText = Array.isArray(band.description)
     ? band.description
-        .map(
-          (block: any) =>
-            block.children?.map((t: any) => t.text).join('') || '',
-        )
-        .join(' ')
+      .map(
+        (block: any) =>
+          block.children?.map((t: any) => t.text).join('') || '',
+      )
+      .join(' ')
     : ''
 
   // Meta Title
