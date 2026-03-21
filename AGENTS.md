@@ -8,6 +8,8 @@
 
 **Jazz Bands** is a modern SSR application that serves **6 jazz band websites** (boheme, canto, jazzola, swing-family, trio-rsh, west-side-trio) from a single codebase via subdomain routing.
 
+**Project Goal**: Migrate 6 legacy Angular band websites (`/apps/boheme`, `/apps/canto`, `/apps/jazzola`, `/apps/swing-family`, `/apps/trio-rsh`, `/apps/west-side-trio`) to a unified modern platform at `/apps/jazz-bands`.
+
 **Tech Stack**: React Router v7 SSR, Sanity CMS, Docker, Traefik, TypeScript, Tailwind CSS
 
 **Key Architecture**:
@@ -17,6 +19,89 @@
 - **Docker Per Band**: Isolation, independent scaling, memory limits for Raspberry Pi 4
 - **Traefik for SSL**: Automatic Let's Encrypt certificates via TLS-ALPN-01 challenge
 - **Sanity CDN**: Edge caching for better performance, reduced server load
+
+---
+
+## 📊 Migration Status
+
+### Migration Overview
+
+All 6 legacy Angular apps are being ported from `/apps/<bandname>/` to the unified `/apps/jazz-bands/` platform.
+
+**Status by Band**:
+| Band | Source | Target | Data Status |
+|------|--------|--------|-------------|
+| boheme | `/apps/boheme` | `/apps/jazz-bands` (subdomain: boheme) | ✅ Migrated |
+| canto | `/apps/canto` | `/apps/jazz-bands` (subdomain: canto) | ✅ Migrated |
+| jazzola | `/apps/jazzola` | `/apps/jazz-bands` (subdomain: jazzola) | ✅ Migrated |
+| swing-family | `/apps/swing-family` | `/apps/jazz-bands` (subdomain: swing-family) | ✅ Migrated |
+| trio-rsh | `/apps/trio-rsh` | `/apps/jazz-bands` (subdomain: trio-rsh) | ✅ Migrated |
+| west-side-trio | `/apps/west-side-trio` | `/apps/jazz-bands` (subdomain: west-side-trio) | ✅ Migrated |
+
+### What Has Been Migrates
+
+✅ **Completed**:
+
+1. **Band Documents**: All 6 bands migrated to Sanity CMS as single documents
+2. **Musicians**: 10 unique musicians deduplicated and shared across bands
+3. **Tour Dates**: All historical tour dates migrated (~288 total across all bands)
+4. **Recordings**: 37 audio files migrated with proper metadata
+5. **Main Content Images**: Legacy hardcoded images (e.g., boheme's `remy.png`) detected and migrated
+6. **Musician Photos**: All musician portraits optimized and imported
+7. **Assets**: 41 total assets uploaded to Sanity (optimized JPEGs, MP3s)
+
+📋 **Migration Features**:
+
+- **Smart Deduplication**: Musicians appearing in multiple bands are shared, not duplicated
+- **Band-Specific Overrides**: Musician bios/photos can be overridden per band
+- **Asset Optimization**: Images converted to JPEG, resized, quality reduced for Sanity
+- **Legacy Image Detection**: Scans old HTML templates for hardcoded images not in MongoDB
+- **Clean Naming**: Files like `{band}-{type}-{name}.ext` (e.g., `boheme-nova-dream.mp3`)
+
+📊 **Content Statistics**:
+
+| Band | Tour Dates | Recordings | Members |
+|------|------------|------------|---------|
+| boheme | 125 | 4 | 4 |
+| canto | 52 | 5 | 3 |
+| jazzola | 15 | 6 | 4 |
+| swing-family | 53 | 6 | 4 |
+| trio-rsh | 29 | 5 | 3 |
+| west-side-trio | 12 | 7 | 3 |
+| **Total** | **286** | **33** | **21** |
+
+### How to Run Migration
+
+```bash
+# Extract data from MongoDB and optimize assets
+export MONGODB_ROOT_PASSWORD='<password>'
+cd apps/jazz-bands
+npm run extract
+
+# Import to Sanity staging
+npm run import staging
+
+# Import to Sanity production
+npm run import production
+```
+
+### Asset File Naming Convention
+
+All imported assets use clean, searchable naming:
+```
+{band}-{type}-{name}.{ext}
+```
+
+**Examples**:
+- `boheme-nova-dream.mp3` (no track number, band context from document)
+- `boheme-main-remy.jpg` (main content image)
+- `boheme-musician-guillaume-souriau.jpg` (musician photo)
+
+**Why This Naming?**
+- Easy to identify assets in Sanity Studio
+- Band name in filename helps operators verify correct band association
+- No redundant info (track numbers, composers removed)
+- Original data preserved in document fields
 
 ---
 
@@ -540,7 +625,8 @@ SANITY_IMPORT_TOKEN=your-token-here
 
 ### Development Environment
 
-- **Dev server**: Launched by the user, **do not kill it**. The user manages the development server lifecycle.
+- **Dev server**: Launched by the user, **do not restart or kill it**. The user manages the development server lifecycle.
+- **Hot Reloading**: Vite/React Router provides automatic hot module replacement (HMR) on file system changes. **Files are automatically reloaded when edited** — no manual restart needed.
 - **Logs**: Monitor logs in `/tmp/opencode` folder when debugging issues.
 - **Single developer**: You are the only developer on this project. No team coordination needed.
 
