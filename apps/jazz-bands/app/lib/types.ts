@@ -128,6 +128,12 @@ export interface Band {
   description: PortableTextBlock[]
   logo?: SanityImage
   heroImage?: SanityImage
+  mainImages?: Array<{
+    _key?: string
+    _type?: "image"
+    url: string
+    metadata?: any
+  }>
   members?: Array<{
     _type: "reference"
     _ref: string
@@ -172,11 +178,14 @@ export interface Band {
     image?: SanityImage
     creator?: string
   }
-  structuredData?: {
-    _type: "structuredData"
-    genre?: string[]
-    formedYear?: number
+   structuredData?: {
+      _type: "structuredData"
+      genre?: string[]
+      formedYear?: number
+    }
   }
+}
+
 }
 
 export interface ContentService {
