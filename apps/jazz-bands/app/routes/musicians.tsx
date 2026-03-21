@@ -6,14 +6,9 @@ import { Layout } from '~/components/shared/Layout'
 import { PageTransition } from '~/components/shared/PageTransition'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
-import { contentService } from '~/lib/content.service'
-import { imageurl } from '~/lib/sanity.client'
+import { getBandBySlug, getMusiciansByBandId } from '~/lib/queries'
+import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
-
-interface LoaderData {
-  band: any
-  musicians: any[]
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const bandSlug = process.env.BAND_SLUG
@@ -22,15 +17,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Error('BAND_SLUG environment variable is required')
   }
 
-  const band = await contentService.getBandBySlug(bandSlug)
+  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
 
   if (!band) {
     throw new Response('Band not found', { status: 404 })
   }
 
-  const musicians = await contentService.getMusiciansByBandId(band._id)
+  const musicians = await sanityClient.fetch(getMusiciansByBandId, {
+    bandId: band._id,
+  })
 
-  return { band, musicians, request }
+  // Extract baseUrl as serializable string (Request object not JSON-serializable)
+  const url = new URL(request.url)
+  const baseUrl = `${url.protocol}//${url.host}`
+
+  return { band, musicians, baseUrl }
 }
 
 export function meta({
@@ -39,17 +40,17 @@ export function meta({
   loaderData: Awaited<ReturnType<typeof loader>> | null
 }) {
   if (!loaderData?.band) return []
-  return buildBandMeta(loaderData.band, loaderData.request, 'musicians')
+  return buildBandMeta(loaderData.band, loaderData.baseUrl, 'musicians')
 }
 
 export default function MusiciansPage() {
-  const { band, musicians, request } = useLoaderData() as any
+  const { band, musicians, baseUrl } = useLoaderData() as any
   const [expandedMusician, setExpandedMusician] = useState<string | null>(null)
   const _reducedMotion = useReducedMotion()
 
   return (
     <>
-      <BandStructuredData band={band} request={request} />
+      <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
         <PageTransition>
           <div className="py-16 px-6 bg-gray-50">
@@ -80,21 +81,17 @@ export default function MusiciansPage() {
                     }}
                     transition={{ duration: 0.3 }}
                   >
-                    {musician.photo && (
-                      <motion.img
-                        src={imageurl(musician.photo)
-                          .width(400)
-                          .height(400)
-                          .fit('crop')
-                          .url()}
-                        alt={musician.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-64 object-cover"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.4 }}
-                      />
-                    )}
+{musician.photo && (
+                        <motion.img
+                          src={musician.photo}
+                          alt={musician.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-64 object-cover"
+                          whileHover={{ scale: 1.05 }}
+                          transition={{ duration: 0.4 }}
+                        />
+)}
 
                     <div className="p-6">
                       <h2 className="text-2xl font-bold mb-2">
@@ -139,34 +136,30 @@ export default function MusiciansPage() {
                         )}
                       </AnimatePresence>
 
-                      {musician.gallery && musician.gallery.length > 0 && (
-                        <motion.div
-                          className="mt-4 grid grid-cols-3 gap-2"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          {musician.gallery.slice(0, 3).map((img, idx) => (
-                            <motion.img
-                              key={idx}
-                              src={imageurl(img)
-                                .width(150)
-                                .height(150)
-                                .fit('crop')
-                                .url()}
-                              alt={
-                                img.caption ||
-                                `${musician.name} photo ${idx + 1}`
-                              }
-                              loading="lazy"
-                              decoding="async"
-                              className="w-full h-20 object-cover rounded"
-                              whileHover={{ scale: 1.1, rotate: 2 }}
-                              transition={{ duration: 0.2 }}
-                            />
-                          ))}
-                        </motion.div>
-                      )}
+{musician.galleryImages && musician.galleryImages.length > 0 && musician.galleryImages.some(img => img.image).length > 0 && (
+                            <motion.div
+                              className="mt-4 grid grid-cols-3 gap-2"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.2 }}
+                            >
+                              {musician.galleryImages.slice(0, 3).filter(img => img.image).map((img, idx) => (
+                               <motion.img
+                                 key={idx}
+                                 src={img.image}
+                                 alt={
+                                   img.caption ||
+                                   `${musician.name} photo ${idx + 1}`
+                                 }
+                                 loading="lazy"
+                                 decoding="async"
+                                 className="w-full h-20 object-cover rounded"
+                                 whileHover={{ scale: 1.1, rotate: 2 }}
+transition={{ duration: 0.2 }}
+                                />
+                               ))}
+                             </motion.div>
+                           )}
                     </div>
                   </motion.div>
                 ))}

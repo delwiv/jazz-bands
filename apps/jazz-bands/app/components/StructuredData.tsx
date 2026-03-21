@@ -28,11 +28,10 @@ interface BandStructuredDataProps {
       url: string
     }>
   }
-  request?: Request
+  baseUrl?: string
 }
 
-export function BandStructuredData({ band, request }: BandStructuredDataProps) {
-  const baseUrl = request ? getBaseUrl(request) : 'https://jazzbands.com'
+export function BandStructuredData({ band, baseUrl = 'https://jazzbands.com' }: BandStructuredDataProps) {
   const bandUrl = `${baseUrl}/${band.slug.current}`
 
   const imageUrl = band.logo?.asset?.url?.({ width: 800, height: 800 })
@@ -84,15 +83,14 @@ interface EventStructuredDataProps {
     name: string
     slug: { current: string }
   }
-  request?: Request
+  baseUrl?: string
 }
 
 export function EventStructuredData({
   event,
   band,
-  request,
+  baseUrl = 'https://jazzbands.com',
 }: EventStructuredDataProps) {
-  const baseUrl = request ? getBaseUrl(request) : 'https://jazzbands.com'
   const bandUrl = `${baseUrl}/${band.slug.current}`
 
   const structuredData: any = {
@@ -162,15 +160,14 @@ interface AlbumStructuredDataProps {
     name: string
     slug: { current: string }
   }
-  request?: Request
+  baseUrl?: string
 }
 
 export function AlbumStructuredData({
   album,
   band,
-  request,
+  baseUrl = 'https://jazzbands.com',
 }: AlbumStructuredDataProps) {
-  const baseUrl = request ? getBaseUrl(request) : 'https://jazzbands.com'
   const bandUrl = `${baseUrl}/${band.slug.current}`
 
   const coverImageUrl = album.coverImage?.asset?.url?.({
@@ -237,16 +234,15 @@ interface TrackStructuredDataProps {
     name: string
     slug: { current: string }
   }
-  request?: Request
+  baseUrl?: string
 }
 
 export function TrackStructuredData({
   track,
   album,
   band,
-  request,
+  baseUrl = 'https://jazzbands.com',
 }: TrackStructuredDataProps) {
-  const baseUrl = request ? getBaseUrl(request) : 'https://jazzbands.com'
   const bandUrl = `${baseUrl}/${band.slug.current}`
 
   const structuredData = {
@@ -284,14 +280,13 @@ interface BreadcrumbStructuredDataProps {
     name: string
     url: string
   }>
-  request?: Request
+  baseUrl?: string
 }
 
 export function BreadcrumbStructuredData({
   breadcrumbs,
-  request,
+  baseUrl = 'https://jazzbands.com',
 }: BreadcrumbStructuredDataProps) {
-  const baseUrl = request ? getBaseUrl(request) : 'https://jazzbands.com'
 
   const structuredData = {
     '@context': 'https://schema.org',
