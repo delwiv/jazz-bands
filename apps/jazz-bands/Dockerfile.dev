@@ -1,0 +1,12 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+# Expose port (Vite dev server runs on 5173 by default)
+EXPOSE 5173
+
+# Start dev server (sources from volume mounts: app/, node_modules/, config files)
+# Note: Sanity Studio runs OUTSIDE Docker via npm run dev:studio
+ENV NODE_ENV=development
+ENV PORT=3000
+CMD ["npm", "run", "dev:app"]

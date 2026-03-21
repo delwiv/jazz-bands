@@ -1,6 +1,6 @@
 # Multi-stage build for minimal image size (RAM optimization)
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Install build dependencies for sharp (image optimization)
 RUN apk add --no-cache python3 make g++
@@ -22,7 +22,7 @@ ENV BAND_SLUG=${BAND_SLUG}
 RUN npm run build
 
 # Stage 2: Production (minimal runtime)
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs

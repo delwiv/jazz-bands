@@ -1,0 +1,28 @@
+services:
+  common:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - jazzbands-net
+    environment:
+      - SANITY_STUDIO_PROJECT_ID
+      - SANITY_STUDIO_DATASET
+      - SANITY_STUDIO_API_READ_TOKEN
+      - SANITY_STUDIO_API_WRITE_TOKEN
+      - NODE_ENV=production
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${BAND_SLUG}.entrypoints=websecure"
+      - "traefik.http.routers.${BAND_SLUG}.tls.certresolver=letsencrypt"
+
+networks:
+  jazzbands-net:
+    driver: bridge
