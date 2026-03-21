@@ -1,10 +1,8 @@
 // Re-export from centralized config
 export {
+  getAudioCdnUrl,
+  imageurl,
   sanityClient,
   sanityClientBrowser,
   urlForImage,
-  imageurl,
-  baseConfig,
 } from './sanity.settings'
-
-export { getAudioCdnUrl } from './sanity.settings'
