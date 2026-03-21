@@ -15,7 +15,7 @@
 import 'dotenv/config'
 import { MongoClient } from 'mongodb'
 import { writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync } from 'fs'
-import { join } from 'path'
+import { join, basename } from 'path'
 import { stat } from 'fs/promises'
 import id3 from 'id3'
 const { ID3 } = id3
@@ -35,6 +35,7 @@ import {
   mergeMusicianData,
   createBandOverride,
   generateMusicianSlug,
+  htmlToSanityBlock,
 } from './deduplication.js'
 
 // Configuration
@@ -356,7 +357,13 @@ async function createSanityMusicianFromMongo(
           if (optimized.success && optimized.optimizedFiles.length > 0) {
             // Copy optimized image to local assets directory for sanity import
             for (const file of optimized.optimizedFiles) {
-              const assetRef = await copyAssetToLocal(file.path, bandSlug, 'image', global.allAssets)
+              const assetRef = await copyAssetToLocal(
+   file.path,
+   bandSlug,
+   'image',
+   global.allAssets,
+   { assetType: 'musicianPhoto', title: file.musicianName }
+ )
               sanityMusician.images.push({
                 _type: 'image',
                 asset: assetRef,
@@ -627,7 +634,7 @@ async function migrate() {
       console.log('\n✅ DRY RUN COMPLETE - No changes made')
       console.log('Run without DRY_RUN=true to execute migration')
     } else {
-      // Add asset documents to import
+       // Add asset documents for upload
       allDocuments.push(...global.allAssets)
 
       // Write NDJSON format (one JSON document per line) as required by Sanity import
@@ -711,6 +718,40 @@ async function migrateBand(
   bandMembers = [],
 ) {
   try {
+
+    // Query Home collection for band description and main images
+    const homeDoc = await db.collection('Home').findOne()
+    const descriptionHTML = homeDoc?.homeMessage || ''
+    const descriptionBlocks = htmlToSanityBlock(descriptionHTML)
+    const homePictures = homeDoc?.homePictures || []
+    
+    // Fallback: Check for hardcoded images in legacy templates
+    const bandBasePath = `/home/leon/dev/jazz-bands/apps/${bandSlug}`
+    const bodyHtmlPath = `${bandBasePath}/client/partials/body.html`
+    let legacyHardcodedImages = []
+    if (existsSync(bodyHtmlPath)) {
+      const { readFileSync } = await import('fs')
+      const bodyHtml = readFileSync(bodyHtmlPath, 'utf-8')
+      // Find img tags with id="homePicture"
+      const imgMatches = bodyHtml.match(/<img[^>]+id=["']homePicture["'][^>]*>/g) || []
+      for (const match of imgMatches) {
+        const srcMatch = match.match(/src=["']([^"']+)["']/)
+        if (srcMatch) {
+          const srcPath = srcMatch[1]
+          // Remove /assets/ prefix if present, the asset is in server/storage
+          const filename = srcPath.replace(/^\/assets\//, '')
+          legacyHardcodedImages.push(filename)
+          console.log(`    📸 Found legacy hardcoded image: ${filename}`)
+        }
+      }
+    }
+    
+    if (legacyHardcodedImages.length > 0) {
+      console.log(`    📸 Using ${legacyHardcodedImages.length} legacy hardcoded images as mainImages`)
+    }
+    
+    // Use legacy hardcoded images if homePictures is empty
+    const allHomePictures = homePictures.length > 0 ? homePictures : legacyHardcodedImages
     const tourDates = []
     const dateJazzDocs = await db.collection('DateJazz').find().toArray()
 
@@ -771,23 +812,97 @@ async function migrateBand(
               )
             }
 
-            const recording = {
-              _key: `recording_${Date.now()}`,
-              _type: 'recording',
-              title: audioFile.replace(/\.[^/.]+$/, '').replace(/^-+\s*/, ''),
-              downloadEnabled: true,
-              duration,
-              album,
-              releaseYear,
-              audio: {
-                _type: 'file',
-                asset: await copyAssetToLocal(audioPath, bandSlug, 'audio', global.allAssets),
-              },
-            }
-            recordings.push(recording)
+// Extract clean song title from filename
+              // Format: "01 - Title (Composer.ext" or "1 - Song Name (Author; .mp3"
+              const cleanTitle = cleanAudioTitle(audioFile)
+              const recordingTitle = cleanTitle || audioFile
+              const recording = {
+                _key: `recording_${Date.now()}`,
+                _type: 'recording',
+                title: recordingTitle,
+                downloadEnabled: true,
+                duration,
+                album,
+                releaseYear,
+                audio: {
+                  _type: 'file',
+                  asset: await copyAssetToLocal(
+                    audioPath,
+                    bandSlug,
+                    'audio',
+                    global.allAssets,
+                    { assetType: 'recording', title: recordingTitle }
+                  ),
+                },
+              }
+              recordings.push(recording)
           }
         }
       }
+    }
+
+    // Migrate homePictures (main content images)
+    // Use legacy hardcoded images if MongoDB homePictures is empty
+    const mainImages = []
+    for (const picturePath of allHomePictures) {
+      if (!picturePath) continue
+      
+      // Try to find the image file in storage directories
+      let fullImagePath = null
+      const storageDirs = ['photos', 'img', 'Medias', 'Musicians']
+      
+      for (const dir of storageDirs) {
+        const checkPath = getStoragePath(bandSlug, join(dir, picturePath))
+        if (existsSync(checkPath)) {
+          fullImagePath = checkPath
+          break
+        }
+      }
+      
+      // Also try as-is if it's a full path
+      if (!fullImagePath && existsSync(picturePath)) {
+        fullImagePath = picturePath
+      }
+      
+      if (fullImagePath) {
+         stats.assets.standard.count++
+         GLOBAL_STATS.byTier.standard.count++
+         
+         if (DRY_RUN) {
+           console.log(`    ⚠️  Main Image: ${picturePath} (DRY_RUN)`)
+         } else {
+           try {
+             const fileStat = await stat(fullImagePath)
+             stats.assets.standard.size += fileStat.size
+             GLOBAL_STATS.byTier.standard.size += fileStat.size
+             
+// Copy file to output directory for CLI import (don't create asset doc - CLI handles it)
+              const destDir = join(OUTPUT_DIR, 'assets', bandSlug, 'images')
+              mkdirSync(destDir, { recursive: true })
+              const ext = basename(fullImagePath).split('.').pop()
+              const nameWithoutExt = basename(fullImagePath).replace(/\.[^/.]+$/, '')
+              const fileName = `${bandSlug}-main-${nameWithoutExt}.${ext}`
+              const outputImagePath = join(destDir, fileName)
+              copyFileSync(fullImagePath, outputImagePath)
+             
+             // Use _sanityAsset syntax for CLI import to auto-upload the asset
+             // Convert to absolute path with forward slashes for Sanity CLI
+             const absoluteImagePath = outputImagePath.startsWith('/') 
+               ? outputImagePath 
+               : join(process.cwd(), outputImagePath).replace(/\\/g, '/')
+             mainImages.push({
+               _type: 'image',
+               _sanityAsset: `image@file://${absoluteImagePath}`
+             })
+             
+             console.log(`    ✓ Main Image: ${picturePath} → ${outputImagePath}`)
+           } catch (err) {
+             console.warn(`    ⚠️  Could not process ${picturePath}: ${err.message}`)
+           }
+         }
+       } else {
+         console.warn(`    ⚠️  Image file not found: ${picturePath}`)
+       }
     }
 
     const bandName = bandSlug
@@ -802,21 +917,25 @@ async function migrateBand(
         _type: 'slug',
         current: bandSlug,
       },
-      description: [
-        {
-          _type: 'block',
-          children: [
-            {
-              _type: 'span',
-              text: `${bandName} - Description to be updated in Sanity CMS`,
-            },
-          ],
-          style: 'normal',
-        },
-      ],
-      // Leave empty for manual CMS entry
+      description:
+        descriptionBlocks.length > 0
+          ? descriptionBlocks
+          : [
+              {
+                _type: 'block',
+                children: [
+                  {
+                    _type: 'span',
+                    text: `${bandName} - Description to be updated in Sanity CMS`,
+                  },
+                ],
+                style: 'normal',
+              },
+            ],
       logo: undefined,
+      // Fallback to placeholder if no description in MongoDB
       heroImage: undefined,
+      mainImages: mainImages.length > 0 ? mainImages : undefined,
       socialMedia: [],
       // Auto-generate SEO from band name
       seo: {
@@ -866,20 +985,27 @@ async function migrateBand(
 }
 
 // Copy assets to local directory for sanity import
-async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets) {
-  // Assets go in: output/assets/{band}/{type}/images or audio
-  const destDir = join(OUTPUT_DIR, 'assets', bandSlug, type === 'image' ? 'images' : 'audio')
+async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets, options = {}) {
+  const { assetType = 'generic', title = null } = options
+  const dirType = type === 'image' ? 'images' : 'audio'
+  
+  // Create destination directory
+  const destDir = join(OUTPUT_DIR, 'assets', bandSlug, dirType)
   mkdirSync(destDir, { recursive: true })
 
-  const fileName = filePath.split('/').pop()
+  const originalFileName = filePath.split('/').pop()
+  const ext = originalFileName.split('.').pop()
+  
+  // Generate descriptive filename based on context
+  const fileName = generateAssetFilename(bandSlug, assetType, title, originalFileName, ext)
   const destPath = join(destDir, fileName)
 
   copyFileSync(filePath, destPath)
 
   // Create asset document and return reference
-  const relativePath = join('assets', bandSlug, type === 'image' ? 'images' : 'audio', fileName)
-    .replace(/\\/g, '/')
-  const assetId = createAssetDocument(type, relativePath, allAssets)
+  const displayName = generateAssetDisplayName(bandSlug, assetType, title, originalFileName)
+  const relativePath = join('assets', bandSlug, dirType, fileName).replace(/\\/g, '/')
+  const assetId = createAssetDocument(type, relativePath, displayName, allAssets)
 
   return {
     _type: 'reference',
@@ -887,19 +1013,77 @@ async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets) {
   }
 }
 
+// Clean audio title from messy old format
+// "01 - Title (Composer.ext" -> "Title"
+// "1 - Song (Author; " -> "Song"
+function cleanAudioTitle(filename) {
+  let title = filename
+  
+  // Remove extension
+  title = title.replace(/\.[^/.]+$/, '')
+  
+  // Remove order prefix (01 - , 1 - , etc.)
+  title = title.replace(/^[\d]+-+\s*/, '')
+  
+  // Remove composer info starting with (
+  title = title.replace(/\s*\([^)]*$/, '')
+  
+  // Trim whitespace
+  title = title.trim()
+  
+  return title || null
+}
+
+// Generate descriptive filename for assets
+function generateAssetFilename(bandSlug, assetType, title, originalFileName, ext) {
+  // Remove existing extension
+  const nameWithoutExt = originalFileName.replace(/\.[^/.]+$/, '')
+  
+  switch (assetType) {
+    case 'mainImage':
+      return `${bandSlug}-main-${nameWithoutExt}.${ext}`
+    case 'recording':
+      // Use clean title without track order
+      return title 
+        ? `${bandSlug}-${title}.${ext}` 
+        : `${bandSlug}-${nameWithoutExt}.${ext}`
+    case 'musicianPhoto':
+      return title 
+        ? `${bandSlug}-musician-${title.replace(/\s+/g, '-').toLowerCase()}.${ext}` 
+        : `${bandSlug}-musician-${nameWithoutExt}.${ext}`
+    case 'background':
+      return `${bandSlug}-bg-${nameWithoutExt}.${ext}`
+    default:
+      return `${bandSlug}-${nameWithoutExt}.${ext}`
+  }
+}
+
+// Generate human-readable display name for Sanity Studio
+function generateAssetDisplayName(bandSlug, assetType, title, originalFileName) {
+  switch (assetType) {
+    case 'mainImage':
+      return 'Main Image'
+    case 'musicianPhoto':
+      return title ? title : 'Musician'
+    case 'recording':
+      return title ? title : originalFileName
+    case 'background':
+      return 'Background'
+    default:
+      return originalFileName
+  }
+}
+
 // Create asset document with proper ID
-function createAssetDocument(fileType, relativePath, allAssets) {
+function createAssetDocument(fileType, relativePath, displayName, allAssets) {
   const assetId = `${fileType}-asset-${String(++assetCounter).padStart(6, '0')}`
   const assetDoc = {
     _id: assetId,
-    _type: `${fileType}Asset`,
-    originalFilename: relativePath.split('/').pop(),
-    sha1hash: 'mock-sha1',
+    _type: fileType === 'image' ? 'sanity.imageAsset' : 'sanity.fileAsset',
+    originalFilename: displayName || relativePath.split('/').pop(),
     extension: relativePath.split('.').pop(),
     mimeType: fileType === 'image' ? 'image/jpeg' : 'audio/mp3',
-    size: 0,
-    universeId: 'migration',
-    uploadId: `migration-${assetId}`,
+    path: relativePath,  // Path for import script to upload
   }
   allAssets.push(assetDoc)
   return assetId
