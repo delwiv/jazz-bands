@@ -1,11 +1,7 @@
-version: '3.8'
-
-networks:
-  jazzbands-net:
-    driver: bridge
+include:
+  - docker-compose.base.yml
 
 services:
-  # Traefik reverse proxy with SSL
   traefik:
     image: traefik:v3.0
     container_name: jazzbands-traefik
@@ -26,198 +22,94 @@ services:
     restart: always
     networks:
       - jazzbands-net
-    # RAM limit for Traefik
     deploy:
       resources:
         limits:
           memory: 128M
 
-  # Band 1: Boheme
   boheme:
+    extends:
+      service: common
+      file: docker-compose.base.yml
     build:
-      context: .
-      dockerfile: Dockerfile
       args:
         BAND_SLUG: boheme
     container_name: boheme-ssr
     environment:
       - PORT=3001
       - BAND_SLUG=boheme
-      - SANITY_PROJECT_ID=${SANITY_PROJECT_ID}
-      - SANITY_DATASET=${SANITY_DATASET:-production}
-      - SANITY_API_READ_TOKEN=${SANITY_API_READ_TOKEN}
-      - SANITY_API_WRITE_TOKEN=${SANITY_API_WRITE_TOKEN}
-      - NODE_ENV=production
     labels:
-      - "traefik.enable=true"
       - "traefik.http.routers.boheme.rule=Host(`boheme.jazzbands.com`)"
-      - "traefik.http.routers.boheme.entrypoints=websecure"
-      - "traefik.http.routers.boheme.tls.certresolver=letsencrypt"
-    restart: always
-    networks:
-      - jazzbands-net
-    # RAM limit per band container (critical for 4GB Pi)
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
-  # Band 2: Canto
   canto:
+    extends:
+      service: common
+      file: docker-compose.base.yml
     build:
-      context: .
-      dockerfile: Dockerfile
       args:
         BAND_SLUG: canto
     container_name: canto-ssr
     environment:
       - PORT=3002
       - BAND_SLUG=canto
-      - SANITY_PROJECT_ID=${SANITY_PROJECT_ID}
-      - SANITY_DATASET=${SANITY_DATASET:-production}
-      - SANITY_API_READ_TOKEN=${SANITY_API_READ_TOKEN}
-      - SANITY_API_WRITE_TOKEN=${SANITY_API_WRITE_TOKEN}
-      - NODE_ENV=production
     labels:
-      - "traefik.enable=true"
       - "traefik.http.routers.canto.rule=Host(`canto.jazzbands.com`)"
-      - "traefik.http.routers.canto.entrypoints=websecure"
-      - "traefik.http.routers.canto.tls.certresolver=letsencrypt"
-    restart: always
-    networks:
-      - jazzbands-net
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
-  # Band 3: Jazzola
   jazzola:
+    extends:
+      service: common
+      file: docker-compose.base.yml
     build:
-      context: .
-      dockerfile: Dockerfile
       args:
         BAND_SLUG: jazzola
     container_name: jazzola-ssr
     environment:
       - PORT=3003
       - BAND_SLUG=jazzola
-      - SANITY_PROJECT_ID=${SANITY_PROJECT_ID}
-      - SANITY_DATASET=${SANITY_DATASET:-production}
-      - SANITY_API_READ_TOKEN=${SANITY_API_READ_TOKEN}
-      - SANITY_API_WRITE_TOKEN=${SANITY_API_WRITE_TOKEN}
-      - NODE_ENV=production
     labels:
-      - "traefik.enable=true"
       - "traefik.http.routers.jazzola.rule=Host(`jazzola.jazzbands.com`)"
-      - "traefik.http.routers.jazzola.entrypoints=websecure"
-      - "traefik.http.routers.jazzola.tls.certresolver=letsencrypt"
-    restart: always
-    networks:
-      - jazzbands-net
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
-  # Band 4: Swing Family
   swing-family:
+    extends:
+      service: common
+      file: docker-compose.base.yml
     build:
-      context: .
-      dockerfile: Dockerfile
       args:
         BAND_SLUG: swing-family
     container_name: swing-family-ssr
     environment:
       - PORT=3004
       - BAND_SLUG=swing-family
-      - SANITY_PROJECT_ID=${SANITY_PROJECT_ID}
-      - SANITY_DATASET=${SANITY_DATASET:-production}
-      - SANITY_API_READ_TOKEN=${SANITY_API_READ_TOKEN}
-      - SANITY_API_WRITE_TOKEN=${SANITY_API_WRITE_TOKEN}
-      - NODE_ENV=production
     labels:
-      - "traefik.enable=true"
       - "traefik.http.routers.swing-family.rule=Host(`swing-family.jazzbands.com`)"
-      - "traefik.http.routers.swing-family.entrypoints=websecure"
-      - "traefik.http.routers.swing-family.tls.certresolver=letsencrypt"
-    restart: always
-    networks:
-      - jazzbands-net
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
-  # Band 5: Trio RSH
   trio-rsh:
+    extends:
+      service: common
+      file: docker-compose.base.yml
     build:
-      context: .
-      dockerfile: Dockerfile
       args:
         BAND_SLUG: trio-rsh
     container_name: trio-rsh-ssr
     environment:
       - PORT=3005
       - BAND_SLUG=trio-rsh
-      - SANITY_PROJECT_ID=${SANITY_PROJECT_ID}
-      - SANITY_DATASET=${SANITY_DATASET:-production}
-      - SANITY_API_READ_TOKEN=${SANITY_API_READ_TOKEN}
-      - SANITY_API_WRITE_TOKEN=${SANITY_API_WRITE_TOKEN}
-      - NODE_ENV=production
     labels:
-      - "traefik.enable=true"
       - "traefik.http.routers.trio-rsh.rule=Host(`trio-rsh.jazzbands.com`)"
-      - "traefik.http.routers.trio-rsh.entrypoints=websecure"
-      - "traefik.http.routers.trio-rsh.tls.certresolver=letsencrypt"
-    restart: always
-    networks:
-      - jazzbands-net
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
-  # Band 6: West Side Trio
   west-side-trio:
+    extends:
+      service: common
+      file: docker-compose.base.yml
     build:
-      context: .
-      dockerfile: Dockerfile
       args:
         BAND_SLUG: west-side-trio
     container_name: west-side-trio-ssr
     environment:
       - PORT=3006
       - BAND_SLUG=west-side-trio
-      - SANITY_PROJECT_ID=${SANITY_PROJECT_ID}
-      - SANITY_DATASET=${SANITY_DATASET:-production}
-      - SANITY_API_READ_TOKEN=${SANITY_API_READ_TOKEN}
-      - SANITY_API_WRITE_TOKEN=${SANITY_API_WRITE_TOKEN}
-      - NODE_ENV=production
     labels:
-      - "traefik.enable=true"
       - "traefik.http.routers.west-side-trio.rule=Host(`west-side-trio.jazzbands.com`)"
-      - "traefik.http.routers.west-side-trio.entrypoints=websecure"
-      - "traefik.http.routers.west-side-trio.tls.certresolver=letsencrypt"
-    restart: always
-    networks:
-      - jazzbands-net
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
 volumes:
   traefik-certs:
