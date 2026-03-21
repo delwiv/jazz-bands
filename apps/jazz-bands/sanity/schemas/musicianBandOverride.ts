@@ -14,28 +14,28 @@ import { defineType, defineField } from "sanity";
  */
 export const musicianBandOverride = defineType({
   name: "musicianBandOverride",
-  title: "Band Override",
+  title: "Substitution de Groupe",
   type: "object",
   fields: [
     defineField({
       name: "band",
-      title: "Band",
+      title: "Groupe",
       type: "reference",
       to: [{ type: "band" }],
       validation: (Rule) => Rule.required(),
-      description: "Select the band this override applies to",
+      description: "Sélectionnez le groupe concerné par cette substitution",
     }),
     defineField({
       name: "bio",
-      title: "Biography Override",
+      title: "Substitution de Biographie",
       type: "array",
       of: [{ type: "block" }],
       description:
-        "Optional: Override your bio for this specific band. Leave empty to use your default bio.",
+        "Facultatif: Substituer votre biographie pour ce groupe spécifique. Laissez vide pour utiliser votre biographie par défaut.",
     }),
     defineField({
       name: "images",
-      title: "Images Override",
+      title: "Substitution d'Images",
       type: "array",
       of: [
         {
@@ -44,21 +44,21 @@ export const musicianBandOverride = defineType({
           fields: [
             defineField({
               name: "caption",
-              title: "Caption",
+              title: "Légende",
               type: "string",
             }),
           ],
         },
       ],
       description:
-        "Optional: Override images for this specific band. First image is the main one. Leave empty to use your default images.",
+        "Facultatif: Substituer les images pour ce groupe spécifique. La première image est principale. Laissez vide pour utiliser vos images par défaut.",
     }),
     defineField({
       name: "instrument",
-      title: "Instrument Override",
+      title: "Substitution d'Instrument",
       type: "string",
       description:
-        "Optional: Override your instrument for this specific band. Leave empty to use your default instrument.",
+        "Facultatif: Substituer votre instrument pour ce groupe spécifique. Laissez vide pour utiliser votre instrument par défaut.",
     }),
   ],
 });

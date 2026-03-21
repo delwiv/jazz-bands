@@ -2,28 +2,28 @@ import { defineType, defineField } from 'sanity'
 
 export const musicianType = defineType({
   name: 'musician',
-  title: 'Musician',
+  title: 'Musicien',
   type: 'document',
   fields: [
     defineField({
       name: 'name',
-      title: 'Name',
+      title: 'Nom',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
-      title: 'Slug',
+      title: 'Identifiant',
       type: 'slug',
       options: {
         source: 'name',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required().unique('Slug must be unique'),
+      validation: (Rule) => Rule.required().unique("L'identifiant doit être unique"),
     }),
     defineField({
       name: 'bio',
-      title: 'Biography',
+      title: 'Biographie',
       type: 'array',
       of: [{ type: 'block' }],
     }),
@@ -43,26 +43,26 @@ export const musicianType = defineType({
           fields: [
             defineField({
               name: 'caption',
-              title: 'Caption',
+              title: 'Légende',
               type: 'string',
             }),
           ],
         },
       ],
-      description: 'Array of images - first image is the main one',
+      description: 'Tableau d\'images - la première est principale',
     }),
     defineField({
       name: 'bands',
-      title: 'Bands',
+      title: 'Groupes',
       type: 'array',
       of: [{ type: 'reference', to: [{ type: 'band' }] }],
     }),
     defineField({
       name: 'bandOverrides',
-      title: 'Band-Specific Overrides',
+      title: 'Substitutions par Groupe',
       type: 'array',
       of: [{ type: 'musicianBandOverride' }],
-      description: 'Override bio, photo, or instrument for specific bands',
+      description: 'Substituer bio, photo ou instrument pour des groupes spécifiques',
     }),
   ],
   preview: {

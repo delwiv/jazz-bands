@@ -2,25 +2,25 @@ import { defineType, defineField } from "sanity";
 
 export const bandMemberOverrideType = defineType({
   name: "bandMemberOverride",
-  title: "Band Member Override",
+  title: "Substitution de Membre",
   type: "object",
   fields: [
     defineField({
       name: "musician",
-      title: "Musician",
+      title: "Musicien",
       type: "reference",
       to: [{ type: "musician" }],
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "bio",
-      title: "Biography Override",
+      title: "Substitution de Biographie",
       type: "array",
       of: [{ type: "block" }],
     }),
     defineField({
       name: "images",
-      title: "Images Override",
+      title: "Substitution d'Images",
       type: "array",
       of: [
         {
@@ -29,22 +29,22 @@ export const bandMemberOverrideType = defineType({
           fields: [
             defineField({
               name: "caption",
-              title: "Caption",
+              title: "Légende",
               type: "string",
             }),
           ],
         },
       ],
-      description: "Override images for this specific band - first image is the main one",
+      description: "Substituer les images pour ce groupe spécifique - la première image est principale",
     }),
     defineField({
       name: "instrument",
-      title: "Instrument Override",
+      title: "Substitution d'Instrument",
       type: "string",
     }),
     defineField({
       name: "sortOrder",
-      title: "Sort Order",
+      title: "Ordre d'Affichage",
       type: "number",
     }),
   ],

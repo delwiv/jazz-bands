@@ -2,17 +2,17 @@ import type { StructureResolver } from 'sanity/structure'
 
 export const structure: StructureResolver = (S) =>
   S.list()
-    .title('Jazz Bands CMS')
+    .title('CMS Jazz Bands')
     .items([
-      S.documentTypeListItem('band').title('Bands'),
-      S.documentTypeListItem('musician').title('Musicians'),
+      S.documentTypeListItem('band').title('Groupes'),
+      S.documentTypeListItem('musician').title('Musiciens'),
       S.divider(),
-      S.documentTypeListItem('recording').title('Recordings'),
-      S.documentTypeListItem('tourDate').title('Tour Dates'),
+      S.documentTypeListItem('recording').title('Enregistrements'),
+      S.documentTypeListItem('tourDate').title('Dates de Concerts'),
       S.divider(),
-      S.documentTypeListItem('bandMember').title('Band Members'),
+      S.documentTypeListItem('bandMember').title('Membres de Groupe'),
       S.documentTypeListItem('musicianBandOverride').title(
-        'Musician Band Overrides',
+        'Substitutions de Musicien',
       ),
     ])
 

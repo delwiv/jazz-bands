@@ -1,5 +1,6 @@
 import { dashboardTool } from '@sanity/dashboard'
 import { visionTool } from '@sanity/vision'
+import { frFRLocale } from '@sanity/locale-fr-fr'
 import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
 import { colorInput } from '@sanity/color-input'
@@ -9,11 +10,12 @@ import { SANITY_PROJECT_ID, SANITY_DATASET } from './lib/sanity-settings'
 
 export default defineConfig({
   name: 'jazz-bands',
-  title: 'Jazz Bands CMS',
+  title: 'CMS Jazz Bands',
   projectId: SANITY_PROJECT_ID,
   dataset: SANITY_DATASET,
 
   plugins: [
+    frFRLocale(),
     visionTool({}),
     dashboardTool({}),
     structureTool({ structure }),

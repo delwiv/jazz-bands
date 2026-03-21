@@ -14,28 +14,28 @@ import { defineType, defineField } from "sanity";
  */
 export const bandMember = defineType({
   name: "bandMember",
-  title: "Band Member",
+  title: "Membre de Groupe",
   type: "object",
   fields: [
     defineField({
       name: "musician",
-      title: "Musician",
+      title: "Musicien",
       type: "reference",
       to: [{ type: "musician" }],
       validation: (Rule) => Rule.required(),
-      description: "Select the musician who is a member of this band",
+      description: "Sélectionnez le musicien membre de ce groupe",
     }),
     defineField({
       name: "bio",
-      title: "Biography Override",
+      title: "Substitution de Biographie",
       type: "array",
       of: [{ type: "block" }],
       description:
-        "Optional: Override the musician's bio for this specific band. Leave empty to use the musician's default bio.",
+        "Facultatif: Substituer la biographie du musicien pour ce groupe spécifique. Laissez vide pour utiliser la biographie par défaut du musicien.",
     }),
     defineField({
       name: "images",
-      title: "Images Override",
+      title: "Substitution d'Images",
       type: "array",
       of: [
         {
@@ -44,28 +44,43 @@ export const bandMember = defineType({
           fields: [
             defineField({
               name: "caption",
-              title: "Caption",
+              title: "Légende",
               type: "string",
             }),
           ],
         },
       ],
       description:
-        "Optional: Override images for this specific band. First image is the main one. Leave empty to use the musician's default images.",
+        "Facultatif: Substituer les images pour ce groupe spécifique. La première image est principale. Laissez vide pour utiliser les images par défaut du musicien.",
     }),
     defineField({
       name: "instrument",
-      title: "Instrument Override",
+      title: "Substitution d'Instrument",
       type: "string",
       description:
-        "Optional: Override the instrument for this specific band. Leave empty to use the musician's default instrument.",
+        "Facultatif: Substituer l'instrument pour ce groupe spécifique. Laissez vide pour utiliser l'instrument par défaut du musicien.",
     }),
     defineField({
       name: "sortOrder",
-      title: "Sort Order",
+      title: "Ordre d'Affichage",
       type: "number",
       description:
-        "Optional: Custom display order. Lower numbers appear first. Leave empty for default ordering.",
+        "Facultatif: Ordre d'affichage personnalisé. Les nombres plus bas apparaissent en premier. Laissez vide pour l'ordonnancement par défaut.",
     }),
   ],
+  preview: {
+    select: {
+      title: "musician.name",
+      subtitle: "musician.instrument",
+      media: "musician.images.0.asset",
+    },
+    prepare(selection) {
+      const { title, subtitle, media } = selection;
+      return {
+        title: title || "Musicien Sans Titre",
+        subtitle: subtitle || "Instrument non spécifié",
+        media,
+      };
+    },
+  },
 });
