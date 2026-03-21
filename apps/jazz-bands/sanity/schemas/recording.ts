@@ -2,18 +2,18 @@ import { defineType, defineField } from 'sanity'
 
 export const recordingType = defineType({
   name: 'recording',
-  title: 'Recording',
+  title: 'Enregistrement',
   type: 'object',
   fields: [
     defineField({
       name: 'title',
-      title: 'Title',
+      title: 'Titre',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'audio',
-      title: 'Audio File',
+      title: 'Fichier Audio',
       type: 'file',
       options: {
         accept: 'audio/*',
@@ -21,7 +21,7 @@ export const recordingType = defineType({
     }),
     defineField({
       name: 'duration',
-      title: 'Duration (seconds)',
+      title: 'Durée (secondes)',
       type: 'number',
     }),
     defineField({
@@ -31,7 +31,7 @@ export const recordingType = defineType({
     }),
     defineField({
       name: 'releaseYear',
-      title: 'Release Year',
+      title: 'Année de Sortie',
       type: 'number',
     }),
     defineField({
@@ -41,7 +41,7 @@ export const recordingType = defineType({
     }),
     defineField({
       name: 'downloadEnabled',
-      title: 'Enable Download',
+      title: 'Activer le Téléchargement',
       type: 'boolean',
       initialValue: true,
     }),

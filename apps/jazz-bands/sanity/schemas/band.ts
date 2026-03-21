@@ -2,7 +2,7 @@ import { defineType, defineField } from 'sanity'
 
 export const bandType = defineType({
   name: 'band',
-  title: 'Band',
+  title: 'Groupe',
   type: 'document',
   groups: [
     {
@@ -13,19 +13,19 @@ export const bandType = defineType({
   fields: [
     defineField({
       name: 'name',
-      title: 'Name',
+      title: 'Nom',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
-      title: 'Slug',
+      title: 'Identifiant',
       type: 'slug',
       options: {
         source: 'name',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required().unique('Slug must be unique'),
+      validation: (Rule) => Rule.required().unique("L'identifiant doit être unique"),
     }),
     defineField({
       name: 'description',
@@ -43,7 +43,7 @@ export const bandType = defineType({
     }),
     defineField({
       name: 'heroImage',
-      title: 'Hero Image',
+      title: 'Image Principale',
       type: 'image',
       options: {
         hotspot: true,
@@ -51,37 +51,37 @@ export const bandType = defineType({
     }),
     defineField({
       name: 'members',
-      title: 'Members (Simple)',
+      title: 'Membres (Simple)',
       type: 'array',
       of: [{ type: 'reference', to: [{ type: 'musician' }] }],
       description:
-        "⚠️ Deprecated: Use 'bandMembers' for new entries to support per-band overrides",
+        "⚠️ Obsolète: Utilisez 'bandMembers' pour les nouvelles entrées afin de prendre en charge les substitutions par groupe",
       hidden: true,
       readOnly: true,
     }),
     defineField({
       name: 'bandMembers',
-      title: 'Members (with Overrides)',
+      title: 'Membres (avec Substitutions)',
       type: 'array',
       of: [{ type: 'bandMember' }],
       description:
-        'Use this to add per-band customizations (bio, photo, order)',
+        "Utilisez ceci pour ajouter des personnalisations par groupe (bio, photo, ordre)",
     }),
     defineField({
       name: 'tourDates',
-      title: 'Tour Dates',
+      title: 'Dates de Concerts',
       type: 'array',
       of: [{ type: 'tourDate' }],
     }),
     defineField({
       name: 'recordings',
-      title: 'Recordings',
+      title: 'Enregistrements',
       type: 'array',
       of: [{ type: 'recording' }],
     }),
     defineField({
       name: 'contact',
-      title: 'Contact Information',
+      title: 'Coordonnées',
       type: 'object',
       fields: [
         defineField({
@@ -91,14 +91,14 @@ export const bandType = defineType({
         }),
         defineField({
           name: 'phone',
-          title: 'Phone',
+          title: 'Téléphone',
           type: 'string',
         }),
       ],
     }),
     defineField({
       name: 'socialMedia',
-      title: 'Social Media',
+      title: 'Réseaux Sociaux',
       type: 'array',
       of: [
         {
@@ -106,7 +106,7 @@ export const bandType = defineType({
           fields: [
             defineField({
               name: 'platform',
-              title: 'Platform',
+              title: 'Plateforme',
               type: 'string',
               options: {
                 list: [
@@ -129,18 +129,18 @@ export const bandType = defineType({
     }),
     defineField({
       name: 'branding',
-      title: 'Branding',
+      title: 'Identité Visuelle',
       type: 'object',
       fields: [
         defineField({
           name: 'primaryColor',
-          title: 'Primary Color',
+          title: 'Couleur Principale',
           type: 'color',
           initialValue: { hue: 231, saturation: 70, lightness: 35, alpha: 1 },
         }),
         defineField({
           name: 'secondaryColor',
-          title: 'Secondary Color',
+          title: 'Couleur Secondaire',
           type: 'color',
           initialValue: { hue: 0, saturation: 88, lightness: 54, alpha: 1 },
         }),
@@ -155,72 +155,72 @@ export const bandType = defineType({
       fields: [
         defineField({
           name: 'metaTitle',
-          title: 'Meta Title',
+          title: 'Titre Meta',
           type: 'string',
           description:
-            'Page title for search engines (max 60 characters). Leave empty to auto-generate from band name.',
+            'Titre de page pour les moteurs de recherche (max 60 caractères). Laissez vide pour générer automatiquement à partir du nom du groupe.',
           validation: (Rule) => Rule.max(60),
         }),
         defineField({
           name: 'metaDescription',
-          title: 'Meta Description',
+          title: 'Description Meta',
           type: 'text',
           rows: 3,
           description:
-            'Page description for search engines (max 160 characters). Leave empty to auto-generate from description.',
+            "Description de page pour les moteurs de recherche (max 160 caractères). Laissez vide pour générer automatiquement à partir de la description.",
           validation: (Rule) => Rule.max(160),
         }),
         defineField({
           name: 'metaKeywords',
-          title: 'Meta Keywords',
+          title: 'Mots-clés Meta',
           type: 'array',
           of: [{ type: 'string' }],
           description:
-            'Comma-separated keywords for search engines (optional, most search engines ignore this).',
+            "Mots-clés séparés par des virgules pour les moteurs de recherche (facultatif, la plupart des moteurs de recherche l'ignorent).",
         }),
       ],
     }),
     defineField({
       name: 'openGraph',
-      title: 'Open Graph (Social Media)',
+      title: 'Open Graph (Réseaux Sociaux)',
       type: 'object',
       group: 'seo',
       description:
-        'Controls how your band appears when shared on Facebook, LinkedIn, and other social platforms.',
+        "Contrôle l'apparence de votre groupe lorsqu'il est partagé sur Facebook, LinkedIn et d'autres plateformes sociales.",
       fields: [
         defineField({
           name: 'title',
-          title: 'OG Title',
+          title: 'Titre OG',
           type: 'string',
           description:
-            'Title shown in social media previews (max 65 characters).',
+            'Titre affiché dans les aperçus des réseaux sociaux (max 65 caractères).',
           validation: (Rule) => Rule.max(65),
         }),
         defineField({
           name: 'description',
-          title: 'OG Description',
+          title: 'Description OG',
           type: 'text',
           rows: 3,
           description:
-            'Description shown in social media previews (max 200 characters).',
+            "Description affichée dans les aperçus des réseaux sociaux (max 200 caractères).",
           validation: (Rule) => Rule.max(200),
         }),
         defineField({
           name: 'image',
-          title: 'OG Image',
+          title: 'Image OG',
           type: 'image',
           options: { hotspot: true },
           description:
-            'Image shown in social media previews (recommended: 1200×630px).',
+            'Image affichée dans les aperçus des réseaux sociaux (recommandé: 1200×630px).',
         }),
         defineField({
           name: 'type',
-          title: 'OG Type',
+          title: 'Type OG',
           type: 'string',
           options: {
             list: [
-              { title: 'Website', value: 'website' },
-              { title: 'Music Band', value: 'music.band' },
+              { title: 'Site Web', value: 'website' },
+              { title: 'Groupe de Musique', value: 'music.band' },
             ],
           },
           initialValue: 'website',
@@ -229,32 +229,32 @@ export const bandType = defineType({
     }),
     defineField({
       name: 'twitterCard',
-      title: 'Twitter Card',
+      title: 'Carte Twitter',
       type: 'object',
       group: 'seo',
-      description: 'Controls how your band appears when shared on Twitter/X.',
+      description: "Contrôle l'apparence de votre groupe lorsqu'il est partagé sur Twitter/X.",
       fields: [
         defineField({
           name: 'card',
-          title: 'Card Type',
+          title: 'Type de Carte',
           type: 'string',
           options: {
             list: [
-              { title: 'Summary', value: 'summary' },
+              { title: 'Résumé', value: 'summary' },
               {
-                title: 'Summary with Large Image (Recommended)',
+                title: 'Résumé avec Grande Image (Recommandé)',
                 value: 'summary_large_image',
               },
-              { title: 'App', value: 'app' },
+              { title: 'Application', value: 'app' },
             ],
           },
           initialValue: 'summary_large_image',
         }),
         defineField({
           name: 'title',
-          title: 'Title',
+          title: 'Titre',
           type: 'string',
-          description: 'Title shown in Twitter cards (max 70 characters).',
+          description: 'Titre affiché dans les cartes Twitter (max 70 caractères).',
           validation: (Rule) => Rule.max(70),
         }),
         defineField({
@@ -263,7 +263,7 @@ export const bandType = defineType({
           type: 'text',
           rows: 3,
           description:
-            'Description shown in Twitter cards (max 200 characters).',
+            "Description affichée dans les cartes Twitter (max 200 caractères).",
           validation: (Rule) => Rule.max(200),
         }),
         defineField({
@@ -272,24 +272,24 @@ export const bandType = defineType({
           type: 'image',
           options: { hotspot: true },
           description:
-            'Image shown in Twitter cards (recommended: 1200×600px or 1200×400px).',
+            'Image affichée dans les cartes Twitter (recommandé: 1200×600px ou 1200×400px).',
         }),
         defineField({
           name: 'creator',
-          title: 'Creator Handle',
+          title: 'Identifiant du Créateur',
           type: 'string',
-          description: 'Twitter handle of the creator (e.g., @boheme_jazz).',
+          description: 'Identifiant Twitter du créateur (par exemple: @boheme_jazz).',
           validation: (Rule) => Rule.regex(/^@?[a-zA-Z0-9_]+$/),
         }),
       ],
     }),
     defineField({
       name: 'structuredData',
-      title: 'Structured Data (Schema.org)',
+      title: 'Données Structurées (Schema.org)',
       type: 'object',
       group: 'seo',
       description:
-        'Additional structured data for search engines. Most fields auto-populate from band data.',
+        "Données structurées supplémentaires pour les moteurs de recherche. La plupart des champs sont automatiquement remplis à partir des données du groupe.",
       fields: [
         defineField({
           name: 'genre',
@@ -297,14 +297,14 @@ export const bandType = defineType({
           type: 'array',
           of: [{ type: 'string' }],
           description:
-            "Music genres (e.g., 'Jazz', 'Bebop', 'Swing'). Used in MusicGroup schema.",
+            "Genres musicaux (par exemple: 'Jazz', 'Bebop', 'Swing'). Utilisé dans le schéma MusicGroup.",
         }),
         defineField({
           name: 'formedYear',
-          title: 'Formed Year',
+          title: 'Année de Formation',
           type: 'number',
           description:
-            'Year the band was formed (e.g., 2010). Used in MusicGroup schema.',
+            'Année de formation du groupe (par exemple: 2010). Utilisé dans le schéma MusicGroup.',
           validation: (Rule) => Rule.min(1900).max(new Date().getFullYear()),
         }),
       ],

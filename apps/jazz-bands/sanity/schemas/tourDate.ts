@@ -2,7 +2,7 @@ import { defineType, defineField } from 'sanity'
 
 export const tourDateType = defineType({
   name: 'tourDate',
-  title: 'Tour Date',
+  title: 'Date de Concert',
   type: 'object',
   fields: [
     defineField({
@@ -13,34 +13,34 @@ export const tourDateType = defineType({
     }),
     defineField({
       name: 'city',
-      title: 'City',
+      title: 'Ville',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'venue',
-      title: 'Venue',
+      title: 'Lieu',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'region',
-      title: 'Region/Department',
+      title: 'Région/Département',
       type: 'string',
     }),
     defineField({
       name: 'details',
-      title: 'Details',
+      title: 'Détails',
       type: 'text',
     }),
     defineField({
       name: 'ticketsUrl',
-      title: 'Tickets URL',
+      title: 'URL des Billets',
       type: 'url',
     }),
     defineField({
       name: 'soldOut',
-      title: 'Sold Out',
+      title: 'Complet',
       type: 'boolean',
       initialValue: false,
     }),
