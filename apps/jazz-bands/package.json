@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "extract": "npx dotenv-cli -e .env -- node migration/migrate.mjs",
     "import": "node scripts/import.js",
+    "clean:sanity": "npx dotenv-cli -e .env -- node scripts/delete-documents.js",
     "lint": "biome check --write",
     "lint:check": "biome check",
     "format": "biome format --write",
@@ -39,13 +40,14 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.13.1",
-    "sanity": "^5.15.0",
+    "sanity": "^5.17.1",
     "styled-components": "^6.3.11"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",
     "@biomejs/cli-linux-x64": "2.4.6",
     "@react-router/dev": "^7.13.1",
+    "@sanity/cli": "^6.2.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",
