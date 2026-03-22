@@ -1264,8 +1264,7 @@ async function migrateBand(
             ],
       logo: undefined,
       // Fallback to placeholder if no description in MongoDB
-      heroImage: undefined,
-      mainImages: mainImages.length > 0 ? mainImages : undefined,
+      heroImage: mainImages.length > 0 ? mainImages[0] : undefined,
       socialMedia: [],
       // Auto-generate SEO from band name
       seo: {

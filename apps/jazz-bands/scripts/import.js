@@ -39,6 +39,46 @@ function ensureKeys(doc) {
   return result
 }
 
+function replaceRefs(doc, assetIdMap) {
+  if (doc === null || typeof doc !== 'object') return doc
+  
+  // Handle root-level _sanityAsset (direct file reference)
+  if (doc._sanityAsset) {
+    const match = doc._sanityAsset.match(/image@file:\/\/(.*$)/)
+    if (match && assetIdMap.has(match[1])) {
+      return {
+        _type: 'image',
+        asset: {
+          _type: 'reference',
+          _ref: assetIdMap.get(match[1])
+        }
+      }
+    }
+  }
+  
+  if (doc._type === 'reference' && doc._ref && assetIdMap.has(doc._ref)) {
+    return { ...doc, _ref: assetIdMap.get(doc._ref) }
+  }
+  if ((doc._type === 'image' || doc._type === 'file') && doc.asset?._ref && assetIdMap.has(doc.asset._ref)) {
+    return { ...doc, asset: { ...doc.asset, _ref: assetIdMap.get(doc.asset._ref) } }
+  }
+  // Handle asset._sanityAsset
+  if ((doc._type === 'image' || doc._type === 'file') && doc.asset?._sanityAsset) {
+    const match = doc.asset._sanityAsset.match(/image@file:\/\/(.*$)/)
+    if (match && assetIdMap.has(match[1])) {
+      return { ...doc, asset: { _type: 'reference', _ref: assetIdMap.get(match[1]) } }
+    }
+  }
+  if (Array.isArray(doc)) {
+    return doc.map(item => replaceRefs(item, assetIdMap))
+  }
+  const updatedDoc = {}
+  for (const [key, value] of Object.entries(doc)) {
+    updatedDoc[key] = replaceRefs(value, assetIdMap)
+  }
+  return updatedDoc
+}
+
 async function main() {
   const content = readFileSync(IMPORT_FILE, 'utf-8')
   const docs = content.trim().split('\n').map(line => JSON.parse(line))
@@ -49,9 +89,10 @@ async function main() {
   
   const assetIdMap = new Map()
   
+  // Upload predefined assets
   if (assetDocs.length > 0) {
     console.log('Uploading', assetDocs.length, 'assets...')
-    for (const [index, doc] of assetDocs.entries()) {
+    for (const doc of assetDocs) {
       try {
         const { createReadStream } = await import('fs')
         const assetPath = join(OUTPUT_DIR, doc.path)
@@ -68,50 +109,66 @@ async function main() {
         console.error('Upload error:', doc._id)
       }
     }
-    console.log('Uploaded', assetIdMap.size, 'assets\n')
+    console.log('Uploaded', assetIdMap.size, 'assets')
   }
   
-  function replaceRefs(doc) {
-    if (!doc || typeof doc !== 'object') return doc
-    if (doc._type === 'reference' && doc._ref && assetIdMap.has(doc._ref)) {
-      return { ...doc, _ref: assetIdMap.get(doc._ref) }
+  // Handle _sanityAsset paths (direct file references)
+  console.log('Processing _sanityAsset references...')
+  const sanityAssetFiles = new Set()
+  for (const doc of regularDocs) {
+    if (doc.heroImage?.asset?._sanityAsset) {
+      const match = doc.heroImage.asset._sanityAsset.match(/image@file:\/\/(.*$)/)
+      if (match) sanityAssetFiles.add(match[1])
+    } else if (doc.heroImage?._sanityAsset) {
+      const match = doc.heroImage._sanityAsset.match(/image@file:\/\/(.*$)/)
+      if (match) sanityAssetFiles.add(match[1])
     }
-    if ((doc._type === 'image' || doc._type === 'file') && doc.asset?._ref && assetIdMap.has(doc.asset._ref)) {
-      return { ...doc, asset: { ...doc.asset, _ref: assetIdMap.get(doc.asset._ref) } }
-    }
-    if (Array.isArray(doc)) return doc.map(replaceRefs)
-    const updatedDoc = {}
-    for (const [key, value] of Object.entries(doc)) {
-      updatedDoc[key] = replaceRefs(value)
-    }
-    return updatedDoc
   }
   
-  const updatedDocs = regularDocs.map(replaceRefs)
+  if (sanityAssetFiles.size > 0) {
+    console.log('Uploading', sanityAssetFiles.size, '_sanityAsset file(s)...')
+    for (const [idx, filePath] of Array.from(sanityAssetFiles).entries()) {
+      try {
+        const { createReadStream } = await import('fs')
+        const ext = filePath.split('.').pop() || 'jpeg'
+        const mimeTypes = { jpeg: 'image/jpeg', jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' }
+        const stream = createReadStream(filePath)
+        const result = await client.assets.upload('image', stream, {
+          filename: filePath.split('/').pop(),
+          contentType: mimeTypes[ext] || 'image/jpeg'
+        })
+        assetIdMap.set(filePath, result._id)
+        console.log('  [' + (idx+1) + '/' + sanityAssetFiles.size + '] Uploaded ' + result._id)
+      } catch (error) {
+        console.error('  Upload error for ' + filePath + ':', error.message)
+      }
+    }
+  }
+  
+  console.log('')
+  
+  const updatedDocs = regularDocs.map(doc => replaceRefs(doc, assetIdMap))
   const bands = updatedDocs.filter(d => d._type === 'band')
   const musicians = updatedDocs.filter(d => d._type === 'musician')
   
   console.log('Phases:')
   console.log('  1. Create bands (without bandMembers)')
   console.log('  2. Create musicians (without bands ref)')
-  console.log('  3. Patch bands.add bandMembers)')
-  console.log('  4. Patch musicians.add bands ref)', '\n')
+  console.log('  3. Patch bands with bandMembers')
+  console.log('  4. Patch musicians with bands ref', '\n')
   
-  // Phase 1: Create bands (without bandMembers)
   for (const band of bands) {
     const { bandMembers, ...bandWithoutMembers } = band
     await client.create(bandWithoutMembers).catch(() => {})
   }
   console.log('✓ Phase 1: Created', bands.length, 'bands')
   
-  // Phase 2: Create musicians (without bands array and bandOverrides)
   for (const musician of musicians) {
     const { bands: _, bandOverrides, ...musicianClean } = musician
     await client.create(musicianClean).catch(() => {})
   }
   console.log('✓ Phase 2: Created', musicians.length, 'musicians')
   
-  // Phase 3: Patch bands with bandMembers
   for (const band of bands) {
     if (band.bandMembers && band.bandMembers.length > 0) {
       await client.patch(band._id).set({ bandMembers: band.bandMembers }).commit()
@@ -119,7 +176,6 @@ async function main() {
   }
   console.log('✓ Phase 3: Patched bandMembers')
   
-  // Phase 4: Patch musicians with bands array
   for (const musician of musicians) {
     if (musician.bands && musician.bands.length > 0) {
       await client.patch(musician._id).set({ bands: musician.bands }).commit()
@@ -127,7 +183,7 @@ async function main() {
   }
   console.log('✓ Phase 4: Patched bands references')
   
-  console.log('\n═══════════════════════════════════')
+  console.log('\n' + '═══════════════════════════════════')
   console.log('✅ Import complete!')
   console.log('   -', bands.length, 'bands')
   console.log('   -', musicians.length, 'musicians')
