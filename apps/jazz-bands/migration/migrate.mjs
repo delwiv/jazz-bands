@@ -76,6 +76,271 @@ global.allAssets = []
 // Global asset document generator
 let assetCounter = 0
 
+// Import fs sync functions for scanning
+import { readdirSync } from 'fs'
+
+// =====================================================
+// Musician Image Matching Functions
+// =====================================================
+
+/**
+ * Maps filename keywords to musician full names
+ * Used to identify musician portraits from filesystem scans
+ */
+const MUSICIAN_NAME_MAPPING = {
+  'fred': 'Fréderic Robert',
+  'frederic': 'Fréderic Robert',
+  'robert': 'Fréderic Robert',
+  'guillaume': 'Guillaume Souriau',
+  'souriau': 'Guillaume Souriau',
+  'daniel': 'Daniel Givone',
+  'givone': 'Daniel Givone',
+  'gwen': 'Gwen Cahue',
+  'cahue': 'Gwen Cahue',
+  'emeric': 'Emeric Chevalier',
+  'chevalier': 'Emeric Chevalier',
+  'jacques': 'Jacques Julienne',
+  'julienne': 'Jacques Julienne',
+  'antoine': 'Antoine Hervier',
+  'hervier': 'Antoine Hervier',
+  'remy': 'Rémy Hervo',
+  'hervo': 'Rémy Hervo',
+  'remi': 'Rémy Hervo',
+  'elora': 'Elora Antolin',
+  'antolin': 'Elora Antolin',
+  'jaypee': 'Jean-Patrick Cosset',
+  'jean-patrick': 'Jean-Patrick Cosset',
+  'jeanpatrick': 'Jean-Patrick Cosset',
+  'cosset': 'Jean-Patrick Cosset',
+  'jp': 'Jean-Patrick Cosset',
+}
+
+/**
+ * Identifies musician name from filename
+ * Strips extension, numeric prefixes, and matches keywords
+ * @param {string} filename - e.g., "13 Daniel .jpeg", "fred-visage.png"
+ * @returns {string|null} Musician full name or null
+ */
+function identifyMusicianFromFilename(filename) {
+  // Remove extension
+  let name = filename.replace(/\.[^/.]+$/, '')
+  
+  // Remove numeric prefixes and common patterns
+  name = name.replace(/^\d+\s*[-_]?/, '') // "13 Daniel" -> "Daniel"
+  name = name.replace(/[-_]\d+$/, '')    // "fred-13" -> "fred"
+  name = name.trim().toLowerCase()
+  
+  // Remove common image keywords that aren't names
+  name = name.replace(/\b(visage|portrait|photo)\b/g, ' ')
+  name = name.trim()
+  
+  // Split into words and find best match
+  const words = name.split(/[\s_-]+/)
+  
+  // Try full match first
+  if (MUSICIAN_NAME_MAPPING[name]) {
+    return MUSICIAN_NAME_MAPPING[name]
+  }
+  
+  // Try individual words
+  for (const word of words) {
+    if (MUSICIAN_NAME_MAPPING[word] && word.length > 2) {
+      return MUSICIAN_NAME_MAPPING[word]
+    }
+  }
+  
+  return null
+}
+
+/**
+ * Get all keywords that match a musician name
+ * Includes full names, first names, last names, and nicknames
+ */
+function getMusicianKeywords(musicianName) {
+  const keywords = new Set()
+  
+  // Add name parts
+  musicianName.toLowerCase().split(' ').forEach(part => {
+    if (part.length > 2) {
+      keywords.add(part)
+      // Remove common French accents for matching
+      keywords.add(part.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
+    }
+  })
+  
+  // Check if this musician is in the mapping
+  for (const [key, value] of Object.entries(MUSICIAN_NAME_MAPPING)) {
+    if (value === musicianName) {
+      keywords.add(key)
+    }
+  }
+  
+  // Add common nickname variations for known musicians
+  const nicknameMap = {
+    'Fréderic Robert': ['fred', 'frederic', 'robert'],
+    'Rémy Hervo': ['remi', 'remy', 'hervo', 'herve'],
+    'Jacques Julienne': ['jacques', 'julienne'],
+    'Guillaume Souriau': ['guillaume', 'souriau'],
+    'Jean-Patrick Cosset': ['jacob', 'jp', 'jaypee'],
+  }
+  
+  const extras = nicknameMap[musicianName]
+  if (extras) {
+    extras.forEach(k => keywords.add(k))
+  }
+  
+  return keywords
+}
+
+/**
+ * Filters musician images - only attach files clearly belonging to the musician
+ * @param {string} musicianName - Full musician name (e.g., "Daniel Givone")
+ * @param {string[]} pictureFiles - Array of filenames from MongoDB pictures array
+ * @returns {string[]} Filtered array of filenames to attach
+ */
+function filterMusicianImages(musicianName, pictureFiles) {
+  if (!pictureFiles || pictureFiles.length === 0) return []
+  
+  const keywords = getMusicianKeywords(musicianName)
+  
+  return pictureFiles.filter(filename => {
+    const lowerName = filename.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    
+    // Priority 1: Filename contains musician's name or nickname
+    const hasMusicianName = Array.from(keywords).some(keyword => 
+      keyword.length > 2 && lowerName.includes(keyword)
+    )
+    
+    // Priority 2: Filename contains portrait keywords (visage, portrait, photo)
+    const hasPortraitKeyword = 
+      lowerName.includes('visage') || 
+      lowerName.includes('portrait') ||
+      lowerName.includes('photo')
+    
+    // Skip instrument-only photos (batterie, guitare, etc.) unless they also have musician name
+    const isInstrumentOnly = [
+      'batterie', 'guitare', 'contrebasse', 'accordéon', 
+      'piano', 'orgue', 'saxophone', 'trompette', 'trombone'
+    ].some(inst => lowerName.includes(inst))
+    
+    if (isInstrumentOnly && !hasMusicianName) {
+      return false
+    }
+    
+    // Keep if has musician name OR portrait keyword
+    return hasMusicianName || hasPortraitKeyword
+  })
+}
+
+/**
+ * Scans ALL band storage directories for images belonging to a specific musician
+ * Used to populate portfolios for musicians with missing images (Daniel, Gwen, Emeric, Guillaume)
+ * @param {string} musicianName - Full musician name
+ * @param {Set} referencedFiles - Files already referenced in MongoDB
+ * @returns {Map} Map of filename → filePath for musician images found
+ */
+function scanOrphanedImagesForMusician(musicianName, referencedFiles = new Set()) {
+  const musicianImages = new Map()
+  const nameParts = musicianName.toLowerCase().split(' ')
+  
+  // Scan ALL band storage directories
+  for (const bandSlug of Object.values(BAND_MAPPING)) {
+    const storageBase = getStoragePath(bandSlug, '')
+    const storageDirs = ['Musicians', 'photos', 'img']
+    
+    for (const dirName of storageDirs) {
+      const dirPath = join(storageBase, dirName)
+      if (!existsSync(dirPath)) continue
+      
+      const files = readdirSync(dirPath)
+      
+      for (const file of files) {
+        if (!isImageFile(file)) continue
+        
+        // Skip if already referenced in MongoDB
+        if (referencedFiles.has(file)) continue
+        
+        const lowerName = file.toLowerCase()
+        
+        // Match musician name in filename
+        const hasMusicianName = nameParts.some(part => 
+          part.length > 2 && lowerName.includes(part)
+        )
+        
+        if (hasMusicianName) {
+          const filePath = join(dirPath, file)
+          musicianImages.set(file, filePath)
+        }
+      }
+    }
+  }
+  
+return musicianImages
+}
+
+/**
+ * Scans storage directories for band images (group shots, posters, event photos, backgrounds)
+ * @param {string} bandSlug - Band identifier
+ * @param {Set} referencedFiles - Files already referenced in MongoDB
+ * @returns {Array} Array of {type, filePath, filename} for band images
+ */
+function scanBandImages(bandSlug, referencedFiles = new Set()) {
+  const bandImages = []
+  const storageBase = getStoragePath(bandSlug, '')
+  const storageDirs = ['Musicians', 'photos', 'img']
+  const bandNameLower = bandSlug.toLowerCase()
+  
+  for (const dirName of storageDirs) {
+    const dirPath = join(storageBase, dirName)
+    if (!existsSync(dirPath)) continue
+    
+    const files = readdirSync(dirPath)
+    
+    for (const file of files) {
+      if (!isImageFile(file)) continue
+      
+      // Skip if already referenced
+      if (referencedFiles.has(file)) continue
+      
+      const lowerName = file.toLowerCase()
+      let imageType = 'generic'
+      
+      // Classify image type
+      if (lowerName.includes('main') || lowerName === 'main.png' || lowerName === 'main.jpg') {
+        imageType = 'hero'
+      } else if (lowerName.includes('affiche') || lowerName.includes('poster') || lowerName.includes('flyer')) {
+        imageType = 'poster'
+      } else if (lowerName.includes('bg') || lowerName.includes('background') || lowerName.includes('fond')) {
+        imageType = 'background'
+      } else if (
+        // Group shots (band name in filename or "groupe")
+        lowerName.includes(bandNameLower) || 
+        lowerName.includes('groupe') || 
+        lowerName.includes('trio') ||
+        lowerName.includes('quartet') ||
+        lowerName.includes('quartet')
+      ) {
+        imageType = 'group'
+      } else if (
+        // Event/concert photos (high sequence numbers or "concert")
+        /^\d{4,}/.test(file.replace(/\.[^/.]+$/, '')) ||
+        lowerName.includes('concert')
+      ) {
+        imageType = 'event'
+      }
+      
+      const filePath = join(dirPath, file)
+      bandImages.push({
+        type: imageType,
+        filePath,
+        filename: file
+      })
+    }
+  }
+  
+  return bandImages
+}
+
 // Helper to construct storage path for legacy apps
 function getStoragePath(bandSlug, relativePath) {
   const storageBase = `/home/leon/dev/jazz-bands/apps/${bandSlug}/server/storage`
@@ -269,6 +534,17 @@ async function deduplicateAndMergeMusicians(allMusicians) {
 }
 
 /**
+ * List of musicians known to need orphaned image scanning
+ * These musicians have limited or no images in MongoDB
+ */
+const MUSICIANS_NEEDING_ORPHANED_SCANS = [
+  'Daniel Givone',
+  'Gwen Cahue', 
+  'Emeric Chevalier',
+  'Guillaume Souriau'
+]
+
+/**
  * Creates a Sanity musician document from MongoDB data
  * @param {Object} mongoMusician - MongoDB musician document
  * @param {Array} sourceBands - Array of band slugs this musician belongs to
@@ -325,15 +601,20 @@ async function createSanityMusicianFromMongo(
     bandOverrides: bandOverrides.length > 0 ? bandOverrides : undefined,
   }
 
-  // Process images - upload all pictures to Sanity
+ // Process images - ONLY attach musician portraits (not band photos)
   if (mongoMusician.pictures && mongoMusician.pictures.length > 0) {
     const storageBase = getStoragePath(bandSlug, '')
     const storageDirs = ['Musicians', 'img', 'photos', '']
-
-    for (const picture of mongoMusician.pictures) {
-      const fileName = extractFileNameFromMongoPath(picture)
-      if (!fileName) continue
-
+    
+    // Extract filenames from MongoDB pictures array
+    const pictureFileNames = mongoMusician.pictures.map(p => 
+      extractFileNameFromMongoPath(p)
+    ).filter(Boolean)
+    
+    // Filter to only include musician-specific images
+    const filteredFileNames = filterMusicianImages(mongoMusician.name, pictureFileNames)
+    
+    for (const fileName of filteredFileNames) {
       // Search in storage directories for the file
       let actualPath = null
       for (const subDir of storageDirs) {
@@ -343,27 +624,26 @@ async function createSanityMusicianFromMongo(
           break
         }
       }
-
+      
       if (actualPath && existsSync(actualPath)) {
         if (!DRY_RUN) {
           // Optimize for Sanity: single high-quality source image
           const optimized = await optimizeImage(
             actualPath,
             join(OUTPUT_DIR, 'assets', bandSlug, 'musicians'),
-            'sanity-source', // Use Sanity-specific preset
+            'sanity-source',
             false,
           )
-
+          
           if (optimized.success && optimized.optimizedFiles.length > 0) {
-            // Copy optimized image to local assets directory for sanity import
             for (const file of optimized.optimizedFiles) {
               const assetRef = await copyAssetToLocal(
-   file.path,
-   bandSlug,
-   'image',
-   global.allAssets,
-   { assetType: 'musicianPhoto', title: file.musicianName }
- )
+                file.path,
+                bandSlug,
+                'image',
+                global.allAssets,
+                { assetType: 'musicianPhoto', title: mongoMusician.name }
+              )
               sanityMusician.images.push({
                 _type: 'image',
                 asset: assetRef,
@@ -374,7 +654,57 @@ async function createSanityMusicianFromMongo(
       }
     }
   }
-
+  
+  // Scan for orphaned images for musicians with missing photos
+  // (Daniel, Gwen, Emeric, Guillaume)
+  if (MUSICIANS_NEEDING_ORPHANED_SCANS.includes(mongoMusician.name)) {
+    const { readdirSync } = import('fs/promises')
+    const referencedFiles = new Set(
+      (mongoMusician.pictures || []).map(p => 
+        extractFileNameFromMongoPath(p)
+      ).filter(Boolean)
+    )
+    
+    const orphanedImages = scanOrphanedImagesForMusician(
+      mongoMusician.name,
+      referencedFiles
+    )
+    
+    if (orphanedImages.size > 0) {
+      console.log(`   → Found ${orphanedImages.size} orphaned image(s) for ${mongoMusician.name}`)
+      
+      // Add only ONE orphaned image (for initial 1-image requirement)
+      if (sanityMusician.images.length === 0 && orphanedImages.size > 0) {
+        const [orphanedFilename, orphanedPath] = Array.from(orphanedImages.entries())[0]
+        
+        if (!DRY_RUN) {
+          const optimized = await optimizeImage(
+            orphanedPath,
+            join(OUTPUT_DIR, 'assets', bandSlug, 'musicians'),
+            'sanity-source',
+            false,
+          )
+          
+          if (optimized.success && optimized.optimizedFiles.length > 0) {
+            for (const file of optimized.optimizedFiles) {
+              const assetRef = await copyAssetToLocal(
+                file.path,
+                bandSlug,
+                'image',
+                global.allAssets,
+                { assetType: 'musicianPhoto', title: mongoMusician.name }
+              )
+              sanityMusician.images.push({
+                _type: 'image',
+                asset: assetRef,
+              })
+            }
+          }
+        }
+      }
+    }
+  }
+  
   return sanityMusician
 }
 
@@ -957,7 +1287,16 @@ async function migrateBand(
       },
       tourDates,
       recordings,
-      bandMembers,
+      
+      // Simplified bandMembers - remove override data (bio, images)
+      // Keep only musician reference and optional instrument
+      bandMembers: bandMembers.map(member => ({
+        _type: 'bandMember',
+        musician: member.musician,
+        instrument: member.instrument || undefined,
+        // Remove bio and images overrides for initial import
+      })),
+      
       contact: {
         email: '',
         phone: '',
@@ -971,7 +1310,7 @@ async function migrateBand(
 
     if (!DRY_RUN) {
       console.log(
-        `  ✓ Band: ${bandSlug} (${tourDates.length} tour dates, ${recordings.length} recordings)`,
+        `  ✓ Band: ${bandSlug} (${tourDates.length} tour dates, ${recordings.length} recordings, ${bandMembers.length} members)`,
       )
     }
 

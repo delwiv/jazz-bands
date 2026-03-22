@@ -61,23 +61,34 @@ export const bandType = defineType({
     }),
     defineField({
       name: 'bandMembers',
-      title: 'Membres (avec Substitutions)',
+      title: 'Membres du Groupe',
       type: 'array',
       of: [{ type: 'bandMember' }],
       description:
-        "Utilisez ceci pour ajouter des personnalisations par groupe (bio, photo, ordre)",
+        'Ajoutez les musiciens ici. Vous pouvez personnaliser bio, photo ou instrument pour ce groupe spécifiquement.',
     }),
     defineField({
       name: 'tourDates',
       title: 'Dates de Concerts',
       type: 'array',
       of: [{ type: 'tourDate' }],
+      description: 'Les concerts les plus récents apparaissent en premier sur le site web.',
+      options: {
+        sortable: false, // trié automatiquement par date à l'affichage
+      },
     }),
     defineField({
       name: 'recordings',
       title: 'Enregistrements',
       type: 'array',
       of: [{ type: 'recording' }],
+    }),
+    defineField({
+      name: 'images',
+      title: 'Images du Groupe',
+      type: 'array',
+      of: [{ type: 'image', options: { hotspot: true } }],
+      description: 'Photos de groupe, affiches, fonds d\'écran, photos de concerts.',
     }),
     defineField({
       name: 'contact',

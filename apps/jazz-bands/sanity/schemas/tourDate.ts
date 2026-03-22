@@ -45,4 +45,26 @@ export const tourDateType = defineType({
       initialValue: false,
     }),
   ],
+  preview: {
+    select: {
+      date: 'date',
+      city: 'city',
+      venue: 'venue',
+      soldOut: 'soldOut',
+    },
+    prepare(selection) {
+      const { date, city, venue, soldOut } = selection
+      const dateStr = date ? new Date(date).toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }) : ''
+      return {
+        title: `${venue} — ${city}`,
+        subtitle: `${dateStr}${soldOut ? ' ❌ Complet' : ''}`,
+      }
+    },
+  },
 })

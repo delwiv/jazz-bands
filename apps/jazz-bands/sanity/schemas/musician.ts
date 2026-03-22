@@ -56,6 +56,9 @@ export const musicianType = defineType({
       title: 'Groupes',
       type: 'array',
       of: [{ type: 'reference', to: [{ type: 'band' }], weak: true }],
+      hidden: true,
+      readOnly: true,
+      description: 'Champ calculé automatiquement depuis la vue Groupe',
     }),
     defineField({
       name: 'bandOverrides',
