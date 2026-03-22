@@ -22,6 +22,7 @@ export const musicianBandOverride = defineType({
       title: "Groupe",
       type: "reference",
       to: [{ type: "band" }],
+      weak: true,
       validation: (Rule) => Rule.required(),
       description: "Sélectionnez le groupe concerné par cette substitution",
     }),

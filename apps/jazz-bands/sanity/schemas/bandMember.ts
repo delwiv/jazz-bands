@@ -22,6 +22,7 @@ export const bandMember = defineType({
       title: "Musicien",
       type: "reference",
       to: [{ type: "musician" }],
+      weak: true,
       validation: (Rule) => Rule.required(),
       description: "Sélectionnez le musicien membre de ce groupe",
     }),

@@ -4,16 +4,18 @@ export const structure: StructureResolver = (S) =>
   S.list()
     .title('CMS Jazz Bands')
     .items([
-      S.documentTypeListItem('band').title('Groupes'),
-      S.documentTypeListItem('musician').title('Musiciens'),
-      S.divider(),
-      S.documentTypeListItem('recording').title('Enregistrements'),
-      S.documentTypeListItem('tourDate').title('Dates de Concerts'),
-      S.divider(),
-      S.documentTypeListItem('bandMember').title('Membres de Groupe'),
-      S.documentTypeListItem('musicianBandOverride').title(
-        'Substitutions de Musicien',
-      ),
+      S.listItem()
+        .title('Groupes')
+        .child(
+          S.documentTypeList('band')
+            .title('Groupes')
+        ),
+      S.listItem()
+        .title('Musiciens')
+        .child(
+          S.documentTypeList('musician')
+            .title('Musiciens')
+        ),
     ])
 
 export default structure
