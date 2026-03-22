@@ -53,7 +53,7 @@ export const bandType = defineType({
       name: 'members',
       title: 'Membres (Simple)',
       type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'musician' }] }],
+      of: [{ type: 'reference', to: [{ type: 'musician' }], weak: true }],
       description:
         "⚠️ Obsolète: Utilisez 'bandMembers' pour les nouvelles entrées afin de prendre en charge les substitutions par groupe",
       hidden: true,

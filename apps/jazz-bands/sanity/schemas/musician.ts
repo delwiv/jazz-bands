@@ -55,7 +55,7 @@ export const musicianType = defineType({
       name: 'bands',
       title: 'Groupes',
       type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'band' }] }],
+      of: [{ type: 'reference', to: [{ type: 'band' }], weak: true }],
     }),
     defineField({
       name: 'bandOverrides',
@@ -68,7 +68,16 @@ export const musicianType = defineType({
   preview: {
     select: {
       title: 'name',
-      media: 'images[0]',
+      subtitle: 'instrument',
+      media: 'images.0.asset',
+    },
+    prepare(selection) {
+      const { title, subtitle, media } = selection;
+      return {
+        title: title || 'Musicien Sans Titre',
+        subtitle: subtitle || 'Instrument non spécifié',
+        media,
+      };
     },
   },
 })
