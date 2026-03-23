@@ -40,6 +40,9 @@ interface AudioProviderProps {
 const STORAGE_KEYS = {
   playlist: 'jazz-bands-playlist',
   queue: 'jazz-bands-queue',
+  currentTrack: 'jazz-bands-current-track',
+  currentTrackTime: 'jazz-bands-current-time',
+  isPlaying: 'jazz-bands-is-playing',
 }
 
 export function AudioProvider({
@@ -61,9 +64,44 @@ export function AudioProvider({
     const stored = localStorage.getItem(STORAGE_KEYS.queue)
     return stored ? JSON.parse(stored) : []
   })
+  
+  // Autoplay effect: resume playback on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    // Try to resume the last track
+    const savedTrack = localStorage.getItem(STORAGE_KEYS.currentTrack)
+    const savedTime = localStorage.getItem(STORAGE_KEYS.currentTrackTime)
+    const savedPlaying = localStorage.getItem(STORAGE_KEYS.isPlaying)
+    
+    if (savedTrack && savedPlaying === 'true') {
+      const track: Recording = JSON.parse(savedTrack)
+      if (track.audioUrl) {
+        // Auto-play the track (browser may block without user interaction)
+        playTrack(track)
+        
+        const time = savedTime ? parseFloat(savedTime) : 0
+        if (time > 0) {
+          setTimeout(() => seek(time), 500) // Small delay to ensure audio is loaded
+        }
+      }
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const howlRef = useRef<Howl | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Save playback time periodically
+  useEffect(() => {
+    if (currentTrack && typeof window !== 'undefined') {
+      const interval = setInterval(() => {
+        localStorage.setItem(STORAGE_KEYS.currentTrackTime, currentTime.toString())
+        localStorage.setItem(STORAGE_KEYS.currentTrack, JSON.stringify(currentTrack))
+      }, 1000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [currentTrack, currentTime]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const initHowl = useCallback(
     (url: string) => {
@@ -105,6 +143,11 @@ export function AudioProvider({
       setCurrentTrack(track)
       setIsPlaying(true)
       setCurrentTime(0)
+      
+      // Save to localStorage for persistence
+      localStorage.setItem(STORAGE_KEYS.currentTrack, JSON.stringify(track))
+      localStorage.setItem(STORAGE_KEYS.isPlaying, 'true')
+      localStorage.setItem(STORAGE_KEYS.currentTrackTime, '0')
 
       initHowl(audioUrl)
       howlRef.current?.play()
@@ -130,7 +173,11 @@ export function AudioProvider({
     } else {
       howlRef.current.play()
     }
-    setIsPlaying((prev) => !prev)
+    setIsPlaying((prev) => {
+        const next = !prev
+        localStorage.setItem(STORAGE_KEYS.isPlaying, next ? 'true' : 'false')
+        return next
+      })
   }, [isPlaying, currentTrack])
 
   const next = useCallback(() => {
