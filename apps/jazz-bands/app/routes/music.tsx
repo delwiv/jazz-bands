@@ -267,7 +267,6 @@ function MusicContent() {
             </div>
           </div>
         </PageTransition>
-        <StickyPlayer />
       </Layout>
     </>
   )
