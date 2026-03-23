@@ -65,28 +65,43 @@ export function AudioProvider({
     return stored ? JSON.parse(stored) : []
   })
   
-  // Autoplay effect: resume playback or auto-queue initial playlist on mount
+  // Autoplay effect: resume playback or auto-queue initial playlist on first load only
   useEffect(() => {
     if (typeof window === 'undefined') return
     
-    console.log('[AudioContext] Autoplay effect running, initialPlaylist:', initialPlaylist.length, 'tracks')
+    console.log('[AudioContext] Autoplay effect running')
     
-    // Clear old queue to ensure fresh start with initialPlaylist
-    localStorage.removeItem(STORAGE_KEYS.queue)
-    localStorage.removeItem(STORAGE_KEYS.currentTrack)
-    localStorage.removeItem(STORAGE_KEYS.isPlaying)
-    localStorage.removeItem(STORAGE_KEYS.currentTrackTime)
+    const savedQueue = localStorage.getItem(STORAGE_KEYS.queue)
+    const hasSavedQueue = savedQueue && JSON.parse(savedQueue).length > 0
     
-    if (initialPlaylist.length > 0) {
-      // Auto-queue all initial tracks and play first one
+    if (hasSavedQueue) {
+      // Resume playback if there's a saved queue
+      const savedTrack = localStorage.getItem(STORAGE_KEYS.currentTrack)
+      const savedTime = localStorage.getItem(STORAGE_KEYS.currentTrackTime)
+      const savedPlaying = localStorage.getItem(STORAGE_KEYS.isPlaying)
+      
+      console.log('[AudioContext] Resuming playback from saved state')
+      
+      if (savedTrack && savedPlaying === 'true') {
+        const track: Recording = JSON.parse(savedTrack)
+        if (track.audioUrl) {
+          playTrack(track)
+          
+          const time = savedTime ? parseFloat(savedTime) : 0
+          if (time > 0) {
+            setTimeout(() => seek(time), 500)
+          }
+        }
+      }
+    } else if (initialPlaylist.length > 0) {
+      // No saved queue - only use initialPlaylist on first load
       const tracksWithAudio = initialPlaylist.filter((r: Recording) => r.audioUrl)
-      console.log('[AudioContext] Tracks with audioUrl:', tracksWithAudio.length)
+      console.log('[AudioContext] First load, auto-queuing', tracksWithAudio.length, 'tracks')
       
       if (tracksWithAudio.length > 0) {
         // Add all to queue
         tracksWithAudio.forEach((track: Recording) => {
           if (track.audioUrl) {
-            // Inline the addToQueue logic to avoid dependency issues
             setQueue((prev) => {
               const exists = prev.some((t) => t.title === track.title)
               if (!exists) {
@@ -103,12 +118,11 @@ export function AudioProvider({
         // Auto-play first track
         const firstTrack = tracksWithAudio[0]
         if (firstTrack.audioUrl) {
-          // Small delay to ensure state is updated
           setTimeout(() => playTrack(firstTrack), 200)
         }
       }
     }
-  }, [initialPlaylist]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // Run ONCE on mount only, NOT on every initialPlaylist change
 
   const howlRef = useRef<Howl | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
