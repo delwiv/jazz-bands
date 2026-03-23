@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { getAudioCdnUrl } from '~/lib/sanity.client'
+import { getAudioCdnUrl } from '~/lib/audio'
 import type { Recording } from '~/lib/types'
 
 interface AudioContextType {
