@@ -65,24 +65,58 @@ export function AudioProvider({
     return stored ? JSON.parse(stored) : []
   })
   
-  // Autoplay effect: resume playback on mount
+  // Autoplay effect: resume playback or auto-queue initial playlist on mount
   useEffect(() => {
     if (typeof window === 'undefined') return
     
-    // Try to resume the last track
-    const savedTrack = localStorage.getItem(STORAGE_KEYS.currentTrack)
-    const savedTime = localStorage.getItem(STORAGE_KEYS.currentTrackTime)
-    const savedPlaying = localStorage.getItem(STORAGE_KEYS.isPlaying)
+    // Check if queue is empty
+    const currentQueue = localStorage.getItem(STORAGE_KEYS.queue)
+    const hasQueue = currentQueue && JSON.parse(currentQueue).length > 0
     
-    if (savedTrack && savedPlaying === 'true') {
-      const track: Recording = JSON.parse(savedTrack)
-      if (track.audioUrl) {
-        // Auto-play the track (browser may block without user interaction)
-        playTrack(track)
+    if (hasQueue) {
+      // Try to resume the last track
+      const savedTrack = localStorage.getItem(STORAGE_KEYS.currentTrack)
+      const savedTime = localStorage.getItem(STORAGE_KEYS.currentTrackTime)
+      const savedPlaying = localStorage.getItem(STORAGE_KEYS.isPlaying)
+      
+      if (savedTrack && savedPlaying === 'true') {
+        const track: Recording = JSON.parse(savedTrack)
+        if (track.audioUrl) {
+          // Auto-play the track (browser may block without user interaction)
+          playTrack(track)
+          
+          const time = savedTime ? parseFloat(savedTime) : 0
+          if (time > 0) {
+            setTimeout(() => seek(time), 500)
+          }
+        }
+      }
+    } else if (initialPlaylist.length > 0) {
+      // No existing queue - auto-queue all initial tracks and play first one
+      const tracksWithAudio = initialPlaylist.filter((r: Recording) => r.audioUrl)
+      
+      if (tracksWithAudio.length > 0) {
+        // Add all to queue
+        tracksWithAudio.forEach((track: Recording) => {
+          if (track.audioUrl) {
+            // Inline the addToQueue logic to avoid dependency issues
+            setQueue((prev) => {
+              const exists = prev.some((t) => t.title === track.title)
+              if (!exists) {
+                const updated = [...prev, track]
+                localStorage.setItem(STORAGE_KEYS.queue, JSON.stringify(updated))
+                return updated
+              }
+              return prev
+            })
+          }
+        })
         
-        const time = savedTime ? parseFloat(savedTime) : 0
-        if (time > 0) {
-          setTimeout(() => seek(time), 500) // Small delay to ensure audio is loaded
+        // Auto-play first track
+        const firstTrack = tracksWithAudio[0]
+        if (firstTrack.audioUrl) {
+          // Small delay to ensure state is updated
+          setTimeout(() => playTrack(firstTrack), 100)
         }
       }
     }

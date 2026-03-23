@@ -28,7 +28,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>${protocol}://${hostname}/music</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
