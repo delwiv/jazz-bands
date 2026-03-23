@@ -24,21 +24,21 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const origin = new URL(request.url).origin
 
-  console.log('[Root Loader] BAND_SLUG:', bandSlug)
+  // console.log('[Root Loader] BAND_SLUG:', bandSlug)
 
   // Fetch band data for auto-queue functionality
   let recordings = []
   if (bandSlug) {
     try {
-      console.log('[Root Loader] Fetching band with slug:', bandSlug)
+      // console.log('[Root Loader] Fetching band with slug:', bandSlug)
       const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
-      console.log('[Root Loader] Band fetched:', band?.name)
+      // console.log('[Root Loader] Band fetched:', band?.name)
       if (band?.recordings) {
         recordings = band.recordings.filter((r: any) => r.audioUrl)
-        console.log(
-          '[Root Loader] Recordings with audioUrl:',
-          recordings.length,
-        )
+        // console.log(
+        //   '[Root Loader] Recordings with audioUrl:',
+        //   recordings.length,
+        // )
       }
     } catch (error) {
       console.error('Failed to fetch band recordings:', error)
@@ -62,10 +62,10 @@ export function meta({ data }: Route.MetaArgs) {
 export default function App() {
   const { bandSlug, recordings } = useLoaderData()
 
-  console.log('[App] Received from loader:', {
-    bandSlug,
-    recordingsCount: recordings?.length || 0,
-  })
+  // console.log('[App] Received from loader:', {
+  //   bandSlug,
+  //   recordingsCount: recordings?.length || 0,
+  // })
 
   return (
     <html lang="en">
