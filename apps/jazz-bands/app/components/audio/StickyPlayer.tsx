@@ -384,7 +384,7 @@ export function StickyPlayer() {
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex flex-col md:flex-row items-center gap-4">
           {/* Track Info */}
-          <div className="flex-1 min-w-0 w-full">
+          <div className="flex-1 min-w-0 md:w-auto">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center shrink-0">
                 <Music className="w-6 h-6 text-white" />
@@ -401,11 +401,11 @@ export function StickyPlayer() {
           </div>
 
           {/* Controls */}
-          <div className="flex flex-col items-center gap-2 flex-1 w-full">
+          <div className="flex flex-col items-center min-w-0 mx-auto flex-1">
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={prev}
-                className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 shrink-0"
                 aria-label="Previous track"
               >
                 <SkipBack className="w-5 h-5 text-gray-300" />
@@ -413,7 +413,7 @@ export function StickyPlayer() {
 
               <button
                 onClick={togglePlay}
-                className="p-3 bg-white hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="p-3 bg-white hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 shrink-0"
                 aria-label={isPlaying ? 'Pause' : 'Play'}
               >
                 {isPlaying ? (
@@ -425,7 +425,7 @@ export function StickyPlayer() {
 
               <button
                 onClick={next}
-                className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 shrink-0"
                 aria-label={isOnLastTrack ? 'Loop back to first track' : 'Next track'}
               >
                 {isOnLastTrack ? (
@@ -437,8 +437,8 @@ export function StickyPlayer() {
             </div>
 
             {/* Seek Bar */}
-            <div className="flex items-center gap-2 w-full max-w-md">
-              <span className="text-xs text-gray-400 w-10 text-right">
+            <div className="flex items-center gap-2 max-w-md w-full">
+              <span className="text-xs text-gray-400 w-10 text-right shrink-0">
                 {formatTime(currentTime)}
               </span>
               <input
@@ -453,14 +453,14 @@ export function StickyPlayer() {
                 aria-valuemin={0}
                 aria-valuemax={duration}
               />
-              <span className="text-xs text-gray-400 w-10">
+              <span className="text-xs text-gray-400 w-10 shrink-0">
                 {formatTime(duration)}
               </span>
             </div>
           </div>
 
           {/* Volume & Queue */}
-          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+          <div className="flex items-center gap-3 flex-1 md:w-auto justify-end">
             <div className="flex items-center gap-2">
               {volume === 0 ? (
                 <VolumeX className="w-5 h-5 text-gray-400" />
