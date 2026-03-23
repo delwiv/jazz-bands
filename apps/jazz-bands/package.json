@@ -30,6 +30,8 @@
     "@sanity/image-url": "^1.1.0",
     "@sanity/locale-fr-fr": "^1.2.29",
     "@sanity/vision": "^5.15.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "tailwindcss": "^4.2.2",
     "@types/howler": "^2.2.12",
     "dotenv": "^17.3.1",
     "express": "^4.21.0",
@@ -50,14 +52,11 @@
     "@sanity/cli": "^6.2.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "autoprefixer": "^10.4.20",
     "concurrently": "^9.2.1",
     "dotenv-cli": "^11.0.0",
     "id3": "^0.0.3",
-    "postcss": "^8.4.47",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.33.5",
-    "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3",
     "vite": "^7.0.0"
   }
