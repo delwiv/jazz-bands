@@ -25,9 +25,7 @@ interface AudioContextType {
   seek: (time: number) => void
   setVolume: (value: number) => void
   addToQueue: (track: Recording) => void
-  removeFromQueue: (trackId: string) => void
   reorderQueue: (oldIndex: number, newIndex: number) => void
-  clearQueue: () => void
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined)
@@ -53,7 +51,7 @@ export function AudioProvider({
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [volume, setVolumeState] = useState(1)
+ const [volume, setVolumeState] = useState(1)
   const [playlist, setPlaylist] = useState<Recording[]>(() => {
     if (typeof window === 'undefined') return []
     const stored = localStorage.getItem(STORAGE_KEYS.playlist)
@@ -64,77 +62,24 @@ export function AudioProvider({
     const stored = localStorage.getItem(STORAGE_KEYS.queue)
     return stored ? JSON.parse(stored) : []
   })
-  
-  // Autoplay effect: resume playback or auto-queue initial playlist on first load only
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    
-    console.log('[AudioContext] Autoplay effect running')
-    
-    const savedQueue = localStorage.getItem(STORAGE_KEYS.queue)
-    const hasSavedQueue = savedQueue && JSON.parse(savedQueue).length > 0
-    
-    if (hasSavedQueue) {
-      // Resume playback if there's a saved queue
-      const savedTrack = localStorage.getItem(STORAGE_KEYS.currentTrack)
-      const savedTime = localStorage.getItem(STORAGE_KEYS.currentTrackTime)
-      const savedPlaying = localStorage.getItem(STORAGE_KEYS.isPlaying)
-      
-      console.log('[AudioContext] Resuming playback from saved state')
-      
-      if (savedTrack && savedPlaying === 'true') {
-        const track: Recording = JSON.parse(savedTrack)
-        if (track.audioUrl) {
-          playTrack(track)
-          
-          const time = savedTime ? parseFloat(savedTime) : 0
-          if (time > 0) {
-            setTimeout(() => seek(time), 500)
-          }
-        }
-      }
-    } else if (initialPlaylist.length > 0) {
-      // No saved queue - only use initialPlaylist on first load
-      const tracksWithAudio = initialPlaylist.filter((r: Recording) => r.audioUrl)
-      console.log('[AudioContext] First load, auto-queuing', tracksWithAudio.length, 'tracks')
-      
-      if (tracksWithAudio.length > 0) {
-        // Add all to queue
-        tracksWithAudio.forEach((track: Recording) => {
-          if (track.audioUrl) {
-            setQueue((prev) => {
-              const exists = prev.some((t) => t.title === track.title)
-              if (!exists) {
-                const updated = [...prev, track]
-                localStorage.setItem(STORAGE_KEYS.queue, JSON.stringify(updated))
-                return updated
-              }
-              return prev
-            })
-          }
-        })
-        
-        console.log('[AudioContext] Auto-playing first track:', tracksWithAudio[0].title)
-        // Auto-play first track
-        const firstTrack = tracksWithAudio[0]
-        if (firstTrack.audioUrl) {
-          setTimeout(() => playTrack(firstTrack), 200)
-        }
-      }
-    }
-  }, []) // Run ONCE on mount only, NOT on every initialPlaylist change
 
   const howlRef = useRef<Howl | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  
+
   // Save playback time periodically
   useEffect(() => {
     if (currentTrack && typeof window !== 'undefined') {
       const interval = setInterval(() => {
-        localStorage.setItem(STORAGE_KEYS.currentTrackTime, currentTime.toString())
-        localStorage.setItem(STORAGE_KEYS.currentTrack, JSON.stringify(currentTrack))
+        localStorage.setItem(
+          STORAGE_KEYS.currentTrackTime,
+          currentTime.toString(),
+        )
+        localStorage.setItem(
+          STORAGE_KEYS.currentTrack,
+          JSON.stringify(currentTrack),
+        )
       }, 1000)
-      
+
       return () => clearInterval(interval)
     }
   }, [currentTrack, currentTime]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -179,7 +124,7 @@ export function AudioProvider({
       setCurrentTrack(track)
       setIsPlaying(true)
       setCurrentTime(0)
-      
+
       // Save to localStorage for persistence
       localStorage.setItem(STORAGE_KEYS.currentTrack, JSON.stringify(track))
       localStorage.setItem(STORAGE_KEYS.isPlaying, 'true')
@@ -210,23 +155,28 @@ export function AudioProvider({
       howlRef.current.play()
     }
     setIsPlaying((prev) => {
-        const next = !prev
-        localStorage.setItem(STORAGE_KEYS.isPlaying, next ? 'true' : 'false')
-        return next
-      })
+      const next = !prev
+      localStorage.setItem(STORAGE_KEYS.isPlaying, next ? 'true' : 'false')
+      return next
+    })
   }, [isPlaying, currentTrack])
 
   const next = useCallback(() => {
     if (queue.length > 0) {
+      // Queue mode: play from queue with circular behavior
       const [nextTrack, ...remainingQueue] = queue
-      setQueue(remainingQueue)
-      localStorage.setItem(STORAGE_KEYS.queue, JSON.stringify(remainingQueue))
+      setQueue((prevQueue) => {
+        const newQueue = remainingQueue.length > 0 ? remainingQueue : prevQueue
+        localStorage.setItem(STORAGE_KEYS.queue, JSON.stringify(newQueue))
+        return newQueue
+      })
       playTrack(nextTrack)
       return
     }
 
     if (!currentTrack) return
 
+    // Playlist mode: circular play through playlist
     const currentIndex = playlist.findIndex(
       (t) => t.title === currentTrack?.title,
     )
@@ -268,14 +218,6 @@ export function AudioProvider({
     })
   }, [])
 
-  const removeFromQueue = useCallback((trackId: string) => {
-    setQueue((prev) => {
-      const updated = prev.filter((t) => t._id !== trackId)
-      localStorage.setItem(STORAGE_KEYS.queue, JSON.stringify(updated))
-      return updated
-    })
-  }, [])
-
   const reorderQueue = useCallback((oldIndex: number, newIndex: number) => {
     setQueue((prev) => {
       const updated = [...prev]
@@ -286,16 +228,67 @@ export function AudioProvider({
     })
   }, [])
 
-  const clearQueue = useCallback(() => {
-    setQueue([])
-    localStorage.removeItem(STORAGE_KEYS.queue)
-  }, [])
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.playlist, JSON.stringify(playlist))
     }
   }, [playlist])
+
+  // Initialize queue and autoplay on first load
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    console.log('[AudioContext] Init effect: initialPlaylist count:', initialPlaylist.length)
+
+    // Only auto-queue if no saved queue exists
+    const savedQueue = localStorage.getItem(STORAGE_KEYS.queue)
+    const hasSavedQueue = savedQueue && JSON.parse(savedQueue).length > 0
+
+    if (!hasSavedQueue && initialPlaylist.length > 0) {
+      const tracksWithAudio = initialPlaylist.filter((r: Recording) => r.audioUrl)
+      console.log('[AudioContext] Auto-queuing', tracksWithAudio.length, 'tracks')
+
+      if (tracksWithAudio.length > 0) {
+        // Add all to queue
+        tracksWithAudio.forEach((track: Recording) => {
+          if (track.audioUrl) {
+            setQueue((prev) => {
+              const exists = prev.some((t) => t.title === track.title)
+              if (!exists) {
+                const updated = [...prev, track]
+                localStorage.setItem(STORAGE_KEYS.queue, JSON.stringify(updated))
+                return updated
+              }
+              return prev
+            })
+          }
+        })
+
+        // Auto-play first track
+        const firstTrack = tracksWithAudio[0]
+        if (firstTrack.audioUrl) {
+          setTimeout(() => {
+            console.log('[AudioContext] Auto-playing first track:', firstTrack.title)
+            playTrack(firstTrack)
+          }, 500)
+        }
+      }
+    } else if (hasSavedQueue) {
+      // Resume from saved queue
+      const savedTrack = localStorage.getItem(STORAGE_KEYS.currentTrack)
+      const savedPlaying = localStorage.getItem(STORAGE_KEYS.isPlaying)
+
+      if (savedTrack && savedPlaying === 'true') {
+        const track: Recording = JSON.parse(savedTrack)
+        if (track.audioUrl) {
+          setTimeout(() => {
+            console.log('[AudioContext] Resuming saved track:', track.title)
+            playTrack(track)
+          }, 500)
+        }
+      }
+    }
+  }, [initialPlaylist, playTrack]) // Run ONCE on mount
 
   useEffect(() => {
     if (isPlaying && howlRef.current) {
@@ -369,9 +362,7 @@ export function AudioProvider({
     seek,
     setVolume,
     addToQueue,
-    removeFromQueue,
     reorderQueue,
-    clearQueue,
   }
 
   return <AudioContext.Provider value={value}>{children}</AudioContext.Provider>
