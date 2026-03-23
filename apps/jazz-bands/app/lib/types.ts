@@ -50,6 +50,7 @@ export interface Recording {
   album?: string
   releaseYear?: number
   description?: string
+  audioUrl?: string  // Direct CDN URL from GROQ
   downloadEnabled?: boolean
 }
 
@@ -184,8 +185,6 @@ export interface Band {
       formedYear?: number
     }
   }
-}
-
 }
 
 export interface ContentService {

@@ -10,7 +10,6 @@ import { Layout } from '~/components/shared/Layout'
 import { PageTransition } from '~/components/shared/PageTransition'
 import { AudioProvider, useAudio } from '~/contexts/AudioContext'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
-import { getAudioCdnUrl } from '~/lib/audio'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
 import { getBandBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
@@ -53,13 +52,11 @@ function formatTime(seconds: number): string {
 }
 
 function hasAudio(recording: Recording): boolean {
-  return recording.audio?.asset?._ref != null
+  return recording.audioUrl != null
 }
 
 function getAudioUrl(recording: Recording): string | undefined {
-  const audioRef = recording.audio?.asset?._ref
-  if (!audioRef) return undefined
-  return getAudioCdnUrl(audioRef)
+  return recording.audioUrl
 }
 
 function MusicContent() {
@@ -127,9 +124,7 @@ function MusicContent() {
                     const isPlaying =
                       currentTrack?.title === recording.title &&
                       currentTrack?.album === recording.album
-                    const audioRef = recording.audio?.asset?._ref
-                    const hasAudio = audioRef != null
-                    const audioUrl = hasAudio ? getAudioCdnUrl(audioRef) : null
+                    const audioUrl = recording.audioUrl ?? null
 
                     return (
                       <motion.div

@@ -50,7 +50,17 @@ export const getBandBySlug = `
       }
     },
     tourDates,
-    recordings,
+    "recordings": recordings[] {
+      _key,
+      _type,
+      title,
+      duration,
+      album,
+      releaseYear,
+      description,
+      downloadEnabled,
+      "audioUrl": audio.asset->url
+    },
     contact,
     "socialMedia": socialMedia,
     branding

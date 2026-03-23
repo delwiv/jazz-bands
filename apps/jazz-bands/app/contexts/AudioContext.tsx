@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { getAudioCdnUrl } from '~/lib/audio'
 import type { Recording } from '~/lib/types'
 
 interface AudioContextType {
@@ -96,12 +95,12 @@ export function AudioProvider({
 
   const playTrack = useCallback(
     (track: Recording) => {
-      if (!track.audio?.asset?._ref) {
-        console.warn('Track has no audio asset')
+      if (!track.audioUrl) {
+        console.warn('Track has no audio URL')
         return
       }
 
-      const audioUrl = getAudioCdnUrl(track.audio.asset._ref)
+      const audioUrl = track.audioUrl
 
       setCurrentTrack(track)
       setIsPlaying(true)
