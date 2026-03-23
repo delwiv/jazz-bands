@@ -49,7 +49,7 @@ export function meta({
       rel: 'preload',
       as: 'image',
       href: loaderData.band.heroImage,
-      imagesrcset: loaderData.band.heroImage,
+      imageSrcSet: loaderData.band.heroImage,
     })
   }
 
@@ -128,18 +128,18 @@ export default function BandHome() {
     )
   }
 
-return (
-     <>
-       <BandStructuredData band={band} baseUrl={baseUrl} />
-       <Layout band={band}>
+  return (
+    <>
+      <BandStructuredData band={band} baseUrl={baseUrl} />
+      <Layout band={band}>
         <PageTransition>
           {/* Hero Section with Parallax */}
           <section
-            className="relative flex items-center justify-center overflow-hidden"
+            className="relative flex items-center justify-center overflow-hidden w-full"
             aria-labelledby="hero-title"
             style={{ contain: 'layout', aspectRatio: '16/9' }}
           >
-            {band.heroImage && (
+            {band.heroImage ? (
               <motion.div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
@@ -151,55 +151,56 @@ return (
               >
                 <div className="absolute inset-0 bg-black/50" />
               </motion.div>
+            ) : (
+              <div
+                className="absolute inset-0 bg-gray-200 dark:bg-gray-700"
+                aria-hidden="true"
+              />
             )}
-            <div
-              className="absolute inset-0 bg-gray-200 dark:bg-gray-700"
-              aria-hidden="true"
-            />
-<motion.div
-               className="relative z-10 text-center text-white px-6"
-               style={{ opacity: reducedMotion ? 1 : heroOpacity }}
-               initial={{ y: 20 }}
-               animate={{ y: 0 }}
-               transition={{ duration: 0.5, ease: 'easeOut' }}
-             >
-               <h1 id="hero-title" className="text-5xl font-bold mb-4">
-                 {band.name}
-               </h1>
-               <div className="text-xl max-w-2xl mx-auto space-y-4 mb-8">
-                 {band.description?.map((block, idx) => (
-                   <p key={block._key || idx}>{block.children?.[0]?.text}</p>
-                 ))}
-               </div>
-               
-               {/* Main Content Images Gallery */}
-               {band.mainImages && band.mainImages.length > 0 && (
-                 <motion.div
-                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto"
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{ duration: 0.5, delay: 0.2 }}
-                 >
-                   {band.mainImages.map((img, idx) => (
-                     <motion.div
-                       key={img._key || idx}
-                       className="rounded-lg overflow-hidden shadow-lg"
-                       whileHover={{ scale: 1.05 }}
-                       transition={{ duration: 0.3 }}
-                     >
-                       <img
-                         src={img.url}
-                         alt={`${band.name} main image ${idx + 1}`}
-                         loading="lazy"
-                         decoding="async"
-                         className="w-full h-64 object-cover"
-                       />
-                     </motion.div>
-                   ))}
-                 </motion.div>
-               )}
-             </motion.div>
-           </section>
+            <motion.div
+              className="relative z-10 text-center text-white px-6"
+              style={{ opacity: reducedMotion ? 1 : heroOpacity }}
+              initial={{ y: 20 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
+              <h1 id="hero-title" className="text-5xl font-bold mb-4">
+                {band.name}
+              </h1>
+              <div className="text-xl max-w-2xl mx-auto space-y-4 mb-8">
+                {band.description?.map((block, idx) => (
+                  <p key={block._key || idx}>{block.children?.[0]?.text}</p>
+                ))}
+              </div>
+
+              {/* Main Content Images Gallery */}
+              {band.mainImages && band.mainImages.length > 0 && (
+                <motion.div
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  {band.mainImages.map((img, idx) => (
+                    <motion.div
+                      key={img._key || idx}
+                      className="rounded-lg overflow-hidden shadow-lg"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <img
+                        src={img.url}
+                        alt={`${band.name} main image ${idx + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-64 object-cover"
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          </section>
 
           <div className="sr-only">
             <p>Hero section with band name: {band.name}</p>
