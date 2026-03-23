@@ -5,8 +5,6 @@
  * to improve search engine understanding of band content.
  */
 
-import { getBaseUrl } from '~/utils/seo'
-
 /**
  * MusicGroup Schema for band homepage
  * https://schema.org/MusicGroup
@@ -31,7 +29,10 @@ interface BandStructuredDataProps {
   baseUrl?: string
 }
 
-export function BandStructuredData({ band, baseUrl = 'https://jazzbands.com' }: BandStructuredDataProps) {
+export function BandStructuredData({
+  band,
+  baseUrl = 'https://jazzbands.com',
+}: BandStructuredDataProps) {
   const bandUrl = `${baseUrl}/${band.slug.current}`
 
   const imageUrl = band.logo?.asset?.url?.({ width: 800, height: 800 })
@@ -287,7 +288,6 @@ export function BreadcrumbStructuredData({
   breadcrumbs,
   baseUrl = 'https://jazzbands.com',
 }: BreadcrumbStructuredDataProps) {
-
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

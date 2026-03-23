@@ -104,17 +104,17 @@ export function mergeMeta(
     return `other:${JSON.stringify(meta)}`
   }
 
-    // Start with parent meta
-    ; (parentMeta || []).forEach((meta) => {
-      const key = getMetaKey(meta)
-      metaMap.set(key, meta)
-    })
+  // Start with parent meta
+  ;(parentMeta || []).forEach((meta) => {
+    const key = getMetaKey(meta)
+    metaMap.set(key, meta)
+  })
 
-    // Override with child meta
-    ; (childMeta || []).forEach((meta) => {
-      const key = getMetaKey(meta)
-      metaMap.set(key, meta)
-    })
+  // Override with child meta
+  ;(childMeta || []).forEach((meta) => {
+    const key = getMetaKey(meta)
+    metaMap.set(key, meta)
+  })
 
   return Array.from(metaMap.values())
 }
@@ -157,11 +157,11 @@ export function buildBandMeta(
   // Generate descriptions from Sanity blocks if needed
   const descriptionText = Array.isArray(band.description)
     ? band.description
-      .map(
-        (block: any) =>
-          block.children?.map((t: any) => t.text).join('') || '',
-      )
-      .join(' ')
+        .map(
+          (block: any) =>
+            block.children?.map((t: any) => t.text).join('') || '',
+        )
+        .join(' ')
     : ''
 
   // Meta Title

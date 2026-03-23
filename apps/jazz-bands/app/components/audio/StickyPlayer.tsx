@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAudio } from '~/contexts/AudioContext'
 import type { Recording } from '~/lib/types'
 
@@ -89,17 +89,10 @@ interface QueuePanelProps {
   queue: Recording[]
   isOpen: boolean
   onClose: () => void
-  onRemove: (trackTitle: string) => void
   onReorder: (oldIndex: number, newIndex: number) => void
 }
 
-function QueuePanel({
-  queue,
-  isOpen,
-  onClose,
-  onRemove,
-  onReorder,
-}: QueuePanelProps) {
+function QueuePanel({ queue, isOpen, onClose, onReorder }: QueuePanelProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -181,28 +174,7 @@ function QueuePanel({
                 <SortableContext items={queue.map((t) => t.title)}>
                   <div className="space-y-2">
                     {queue.map((track) => (
-                      <div key={track.title} className="relative">
-                        <SortableTrack track={track} />
-                        <button
-                          onClick={() => onRemove(track.title)}
-                          className="absolute -right-2 -top-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg"
-                          aria-label={`Remove ${track.title} from queue`}
-                        >
-                          <svg
-                            className="w-4 h-4 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
+                      <SortableTrack key={track.title} track={track} />
                     ))}
                   </div>
                 </SortableContext>
@@ -228,12 +200,32 @@ export function StickyPlayer() {
     prev,
     seek,
     setVolume: setVolumeHandler,
-    removeFromQueue,
     reorderQueue,
-    clearQueue,
   } = useAudio()
 
   const [isQueueOpen, setIsQueueOpen] = useState(false)
+
+  // Calculate current song position in queue
+  const currentSongIndex = queue.findIndex(
+    (track) => track.title === currentTrack?.title,
+  )
+  const songCount = queue.length
+  const currentSongNumber = currentSongIndex >= 0 ? currentSongIndex + 1 : 1
+
+  // Compact mode state with localStorage persistence
+  const [isCompact, setIsCompact] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const stored = localStorage.getItem('jazz-bands-player-compact')
+    return stored === 'true'
+  })
+
+  useEffect(() => {
+    localStorage.setItem('jazz-bands-player-compact', isCompact.toString())
+  }, [isCompact])
+
+  const toggleCompact = useCallback(() => {
+    setIsCompact((prev) => !prev)
+  }, [])
 
   const handleSeek = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -253,132 +245,136 @@ export function StickyPlayer() {
     return null
   }
 
-  return (
-    <>
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl z-50"
-        role="region"
-        aria-label="Audio player"
-      >
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex flex-col md:flex-row items-center gap-4">
-            <div className="flex-1 min-w-0 w-full">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center shrink-0">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                    />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <h4 className="font-semibold text-white truncate">
-                    {currentTrack.title}
-                  </h4>
-                  <p className="text-sm text-gray-400 truncate">
-                    {currentTrack.album || 'Single'}
-                  </p>
-                </div>
-              </div>
-            </div>
+  const CompactBar = () => (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl z-50"
+      role="region"
+      aria-label="Audio player"
+    >
+      {/* Main row with controls, title, expand */}
+      <div className="flex items-center justify-between px-3 py-2 max-w-7xl mx-auto">
+        {/* Left: prev/play/next buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={prev}
+            className="p-1.5 hover:bg-gray-700 rounded transition-colors"
+            aria-label="Previous track"
+          >
+            <svg
+              className="w-4 h-4 text-gray-300"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+            </svg>
+          </button>
+          <button
+            onClick={togglePlay}
+            className="p-1.5 bg-white hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? (
+              <svg
+                className="w-4 h-4 text-gray-900"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
+              </svg>
+            ) : (
+              <svg
+                className="w-4 h-4 text-gray-900 ml-0.5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+          <button
+            onClick={next}
+            className="p-1.5 hover:bg-gray-700 rounded transition-colors"
+            aria-label="Next track"
+          >
+            <svg
+              className="w-4 h-4 text-gray-300"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+            </svg>
+          </button>
+        </div>
 
-            <div className="flex flex-col items-center gap-2 flex-1 w-full">
-              <div className="flex items-center gap-4">
-                <motion.button
-                  onClick={prev}
-                  className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  aria-label="Previous track"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <svg
-                    className="w-5 h-5 text-gray-300"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-                  </svg>
-                </motion.button>
+        {/* Center: title with times below */}
+        <div className="flex flex-col items-center min-w-0 flex-1 max-w-xs px-2">
+          <p className="text-sm font-medium text-white truncate text-center">
+            {currentTrack.title} ({currentSongNumber}/{songCount})
+          </p>
+          <div className="flex items-center gap-1 text-[10px] text-gray-400">
+            <span>{formatTime(currentTime)}</span>
+            <span>/</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+        </div>
 
-                <motion.button
-                  onClick={togglePlay}
-                  className="p-3 bg-white hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  aria-label={isPlaying ? 'Pause' : 'Play'}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {isPlaying ? (
-                    <svg
-                      className="w-6 h-6 text-gray-900"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-6 h-6 text-gray-900 ml-1"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  )}
-                </motion.button>
+        {/* Right: expand button */}
+        <button
+          onClick={toggleCompact}
+          className="p-1.5 hover:bg-gray-700 rounded transition-colors"
+          aria-label="Expand player"
+        >
+          <svg
+            className="w-4 h-4 text-gray-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+            />
+          </svg>
+        </button>
+      </div>
 
-                <motion.button
-                  onClick={next}
-                  className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  aria-label="Next track"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <svg
-                    className="w-5 h-5 text-gray-300"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-                  </svg>
-                </motion.button>
-              </div>
+      {/* Progress bar at bottom, full width, no padding */}
+      <input
+        type="range"
+        min={0}
+        max={duration || 0}
+        value={currentTime}
+        onChange={handleSeek}
+        className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
+        aria-label="Seek"
+      />
+    </motion.div>
+  )
 
-              <div className="flex items-center gap-2 w-full max-w-md">
-                <span className="text-xs text-gray-400 w-10 text-right">
-                  {formatTime(currentTime)}
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={duration || 0}
-                  value={currentTime}
-                  onChange={handleSeek}
-                  className="flex-1 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                  aria-label="Seek"
-                  aria-valuenow={currentTime}
-                  aria-valuemin={0}
-                  aria-valuemax={duration}
-                />
-                <span className="text-xs text-gray-400 w-10">
-                  {formatTime(duration)}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-              <div className="flex items-center gap-2">
+  const ExpandedPlayer = () => (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl z-50"
+      role="region"
+      aria-label="Audio player"
+    >
+      <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          {/* Track Info */}
+          <div className="flex-1 min-w-0 w-full">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center shrink-0">
                 <svg
-                  className="w-5 h-5 text-gray-400"
+                  className="w-6 h-6 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -387,81 +383,196 @@ export function StickyPlayer() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
                   />
                 </svg>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                  aria-label="Volume"
-                  aria-valuenow={volume}
-                  aria-valuemin={0}
-                  aria-valuemax={1}
-                />
               </div>
+              <div className="min-w-0">
+                <h4 className="font-semibold text-white truncate">
+                  {currentTrack.title}
+                </h4>
+                <p className="text-sm text-gray-400 truncate">
+                  {currentTrack.album || 'Single'}
+                </p>
+              </div>
+            </div>
+          </div>
 
+          {/* Controls */}
+          <div className="flex flex-col items-center gap-2 flex-1 w-full">
+            <div className="flex items-center gap-4">
               <button
-                onClick={() => setIsQueueOpen(!isQueueOpen)}
-                className={`p-2 rounded-lg transition-colors ${
-                  isQueueOpen
-                    ? 'bg-amber-500 text-white'
-                    : 'hover:bg-gray-700 text-gray-300'
-                }`}
-                aria-label="Toggle queue"
-                aria-expanded={isQueueOpen}
+                onClick={prev}
+                className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                aria-label="Previous track"
               >
                 <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
+                  className="w-5 h-5 text-gray-300"
+                  fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
+                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
                 </svg>
               </button>
 
-              {queue.length > 0 && (
-                <button
-                  onClick={clearQueue}
-                  className="p-2 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-lg transition-colors"
-                  aria-label="Clear queue"
-                  title="Clear queue"
-                >
+              <button
+                onClick={togglePlay}
+                className="p-3 bg-white hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+              >
+                {isPlaying ? (
                   <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
+                    className="w-6 h-6 text-gray-900"
+                    fill="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
+                    <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
                   </svg>
-                </button>
-              )}
+                ) : (
+                  <svg
+                    className="w-6 h-6 text-gray-900 ml-1"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </button>
+
+              <button
+                onClick={next}
+                className="p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+                aria-label="Next track"
+              >
+                <svg
+                  className="w-5 h-5 text-gray-300"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Seek Bar */}
+            <div className="flex items-center gap-2 w-full max-w-md">
+              <span className="text-xs text-gray-400 w-10 text-right">
+                {formatTime(currentTime)}
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={duration || 0}
+                value={currentTime}
+                onChange={handleSeek}
+                className="flex-1 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                aria-label="Seek"
+                aria-valuenow={currentTime}
+                aria-valuemin={0}
+                aria-valuemax={duration}
+              />
+              <span className="text-xs text-gray-400 w-10">
+                {formatTime(duration)}
+              </span>
             </div>
           </div>
+
+          {/* Volume & Queue */}
+          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+            <div className="flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                />
+              </svg>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={volume}
+                onChange={handleVolumeChange}
+                className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                aria-label="Volume"
+                aria-valuenow={volume}
+                aria-valuemin={0}
+                aria-valuemax={1}
+              />
+            </div>
+
+            {/* Compact Toggle Button */}
+            <button
+              onClick={toggleCompact}
+              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Collapse player to compact mode"
+            >
+              <svg
+                className="w-5 h-5 text-gray-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 12H4"
+                />
+              </svg>
+            </button>
+
+            {/* Queue Button */}
+            <button
+              onClick={() => setIsQueueOpen(!isQueueOpen)}
+              className={`p-2 rounded-lg transition-colors ${isQueueOpen
+                  ? 'bg-amber-500 text-white'
+                  : 'hover:bg-gray-700 text-gray-300'
+                }`}
+              aria-label="Toggle queue"
+              aria-expanded={isQueueOpen}
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
-      </motion.div>
+      </div>
+    </motion.div>
+  )
+
+  return (
+    <>
+      <AnimatePresence mode="wait">
+        {isCompact ? (
+          <CompactBar key="compact" />
+        ) : (
+          <ExpandedPlayer key="expanded" />
+        )}
+      </AnimatePresence>
 
       <QueuePanel
         queue={queue}
         isOpen={isQueueOpen}
         onClose={() => setIsQueueOpen(false)}
-        onRemove={removeFromQueue}
         onReorder={reorderQueue}
       />
     </>

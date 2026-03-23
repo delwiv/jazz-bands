@@ -2,11 +2,11 @@
  * PortableText block structure
  */
 export interface PortableTextBlock {
-  _type: "block"
+  _type: 'block'
   _key?: string
-  style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote"
+  style?: 'normal' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'blockquote'
   children: Array<{
-    _type: "span"
+    _type: 'span'
     text: string
     marks?: string[]
   }>
@@ -16,10 +16,10 @@ export interface PortableTextBlock {
  * Sanity image reference
  */
 export interface SanityImage {
-  _type: "image"
+  _type: 'image'
   _key?: string
   asset?: {
-    _type: "reference"
+    _type: 'reference'
     _ref: string
   }
   caption?: string
@@ -29,10 +29,10 @@ export interface SanityImage {
  * Sanity file reference
  */
 export interface SanityFile {
-  _type: "file"
+  _type: 'file'
   _key?: string
   asset?: {
-    _type: "reference"
+    _type: 'reference'
     _ref: string
   }
 }
@@ -41,16 +41,16 @@ export interface SanityFile {
  * Recording object (embedded in band.document)
  */
 export interface Recording {
-  _id?: string  // Sanity auto-generates _id for array items
+  _id?: string // Sanity auto-generates _id for array items
   _key: string
-  _type: "recording"
+  _type: 'recording'
   title: string
   audio?: SanityFile
   duration?: number
   album?: string
   releaseYear?: number
   description?: string
-  audioUrl?: string  // Direct CDN URL from GROQ
+  audioUrl?: string // Direct CDN URL from GROQ
   downloadEnabled?: boolean
 }
 
@@ -60,24 +60,24 @@ export interface Recording {
  */
 export interface Musician {
   _id: string
-  _type: "musician"
+  _type: 'musician'
   name: string
   slug: {
-    _type: "slug"
+    _type: 'slug'
     current: string
   }
   bio: PortableTextBlock[]
   instrument?: string
   images?: SanityImage[]
   bands?: Array<{
-    _type: "reference"
+    _type: 'reference'
     _ref: string
   }>
   bandOverrides?: Array<{
     _key: string
-    _type: "musicianBandOverride"
+    _type: 'musicianBandOverride'
     band: {
-      _type: "reference"
+      _type: 'reference'
       _ref: string
     }
     bio?: PortableTextBlock[]
@@ -103,9 +103,9 @@ export interface TourDate {
  */
 export interface BandMember {
   _key: string
-  _type: "bandMember"
+  _type: 'bandMember'
   musician: {
-    _type: "reference"
+    _type: 'reference'
     _ref: string
   }
   bio?: PortableTextBlock[]
@@ -120,10 +120,10 @@ export interface BandMember {
  */
 export interface Band {
   _id: string
-  _type: "band"
+  _type: 'band'
   name: string
   slug: {
-    _type: "slug"
+    _type: 'slug'
     current: string
   }
   description: PortableTextBlock[]
@@ -131,59 +131,58 @@ export interface Band {
   heroImage?: SanityImage
   mainImages?: Array<{
     _key?: string
-    _type?: "image"
+    _type?: 'image'
     url: string
     metadata?: any
   }>
   members?: Array<{
-    _type: "reference"
+    _type: 'reference'
     _ref: string
   }>
   bandMembers?: BandMember[]
   tourDates: TourDate[]
   recordings: Recording[]
   contact?: {
-    _type: "contact"
+    _type: 'contact'
     email?: string
     phone?: string
   }
   socialMedia?: Array<{
     _key?: string
-    _type: "object"
+    _type: 'object'
     platform: string
     url: string
   }>
   branding?: {
-    _type: "branding"
+    _type: 'branding'
     primaryColor?: string
     secondaryColor?: string
   }
   seo?: {
-    _type: "seo"
+    _type: 'seo'
     metaTitle?: string
     metaDescription?: string
     metaKeywords?: string[]
   }
   openGraph?: {
-    _type: "openGraph"
+    _type: 'openGraph'
     title?: string
     description?: string
     image?: SanityImage
     type?: string
   }
   twitterCard?: {
-    _type: "twitterCard"
+    _type: 'twitterCard'
     card?: string
     title?: string
     description?: string
     image?: SanityImage
     creator?: string
   }
-   structuredData?: {
-      _type: "structuredData"
-      genre?: string[]
-      formedYear?: number
-    }
+  structuredData?: {
+    _type: 'structuredData'
+    genre?: string[]
+    formedYear?: number
   }
 }
 
