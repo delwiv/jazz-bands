@@ -69,31 +69,18 @@ export function AudioProvider({
   useEffect(() => {
     if (typeof window === 'undefined') return
     
-    // Check if queue is empty
-    const currentQueue = localStorage.getItem(STORAGE_KEYS.queue)
-    const hasQueue = currentQueue && JSON.parse(currentQueue).length > 0
+    console.log('[AudioContext] Autoplay effect running, initialPlaylist:', initialPlaylist.length, 'tracks')
     
-    if (hasQueue) {
-      // Try to resume the last track
-      const savedTrack = localStorage.getItem(STORAGE_KEYS.currentTrack)
-      const savedTime = localStorage.getItem(STORAGE_KEYS.currentTrackTime)
-      const savedPlaying = localStorage.getItem(STORAGE_KEYS.isPlaying)
-      
-      if (savedTrack && savedPlaying === 'true') {
-        const track: Recording = JSON.parse(savedTrack)
-        if (track.audioUrl) {
-          // Auto-play the track (browser may block without user interaction)
-          playTrack(track)
-          
-          const time = savedTime ? parseFloat(savedTime) : 0
-          if (time > 0) {
-            setTimeout(() => seek(time), 500)
-          }
-        }
-      }
-    } else if (initialPlaylist.length > 0) {
-      // No existing queue - auto-queue all initial tracks and play first one
+    // Clear old queue to ensure fresh start with initialPlaylist
+    localStorage.removeItem(STORAGE_KEYS.queue)
+    localStorage.removeItem(STORAGE_KEYS.currentTrack)
+    localStorage.removeItem(STORAGE_KEYS.isPlaying)
+    localStorage.removeItem(STORAGE_KEYS.currentTrackTime)
+    
+    if (initialPlaylist.length > 0) {
+      // Auto-queue all initial tracks and play first one
       const tracksWithAudio = initialPlaylist.filter((r: Recording) => r.audioUrl)
+      console.log('[AudioContext] Tracks with audioUrl:', tracksWithAudio.length)
       
       if (tracksWithAudio.length > 0) {
         // Add all to queue
@@ -112,15 +99,16 @@ export function AudioProvider({
           }
         })
         
+        console.log('[AudioContext] Auto-playing first track:', tracksWithAudio[0].title)
         // Auto-play first track
         const firstTrack = tracksWithAudio[0]
         if (firstTrack.audioUrl) {
           // Small delay to ensure state is updated
-          setTimeout(() => playTrack(firstTrack), 100)
+          setTimeout(() => playTrack(firstTrack), 200)
         }
       }
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialPlaylist]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const howlRef = useRef<Howl | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
