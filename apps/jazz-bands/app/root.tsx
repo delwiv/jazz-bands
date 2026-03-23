@@ -11,6 +11,8 @@ import type { Route } from './+types/root'
 import { AudioProvider } from './contexts/AudioContext'
 import { StickyPlayer } from './components/audio/StickyPlayer'
 import './tailwind.css'
+import { getBandBySlug } from './lib/queries'
+import { sanityClient } from './lib/sanity.settings'
 
 export async function loader({ request }: Route.LoaderArgs) {
   const bandSlug = process.env.BAND_SLUG
@@ -19,9 +21,25 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw new Error('BAND_SLUG environment variable is required in production')
   }
 
+  const origin = new URL(request.url).origin
+  
+  // Fetch band data for auto-queue functionality
+  let recordings = []
+  if (bandSlug) {
+    try {
+      const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
+      if (band?.recordings) {
+        recordings = band.recordings.filter((r: any) => r.audioUrl)
+      }
+    } catch (error) {
+      console.error('Failed to fetch band recordings:', error)
+    }
+  }
+
   return {
     bandSlug,
-    origin: new URL(request.url).origin,
+    origin,
+    recordings,
   }
 }
 
@@ -35,6 +53,8 @@ export function meta({ data }: Route.MetaArgs) {
 export default function App() {
   const { bandSlug } = useLoaderData()
 
+  const { bandSlug, recordings } = useLoaderData()
+
   return (
     <html lang="en">
       <head>
@@ -42,7 +62,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <AudioProvider>
+        <AudioProvider initialPlaylist={recordings || []}>
           <Outlet />
           <StickyPlayer />
         </AudioProvider>

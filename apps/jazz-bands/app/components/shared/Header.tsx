@@ -50,7 +50,6 @@ export function Header({ band }: HeaderProps) {
           <NavLink to="/">Home</NavLink>
           <NavLink to="/musicians">Musicians</NavLink>
           <NavLink to="/tour">Tour</NavLink>
-          <NavLink to="/music">Music</NavLink>
           <NavLink to="/contact">Contact</NavLink>
         </div>
       </nav>
