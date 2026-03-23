@@ -112,11 +112,3 @@ export function imageurl(source: ImageMetadata) {
   return urlForImage.image(source)
 }
 
-/**
- * Build CDN URL for audio files
- * @param audioRef - Sanity audio asset reference ID
- * @returns CDN URL for the audio file with .mp3 extension
- */
-export function getAudioCdnUrl(audioRef: string): string {
-  return `https://cdn.sanity.io/${projectId || ''}/${dataset || ''}/${audioRef}.mp3`
-}
