@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
-import { StickyPlayer } from '~/components/audio/StickyPlayer'
+import React from 'react'
 import {
   AlbumStructuredData,
   BandStructuredData,
@@ -8,7 +8,7 @@ import {
 } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { PageTransition } from '~/components/shared/PageTransition'
-import { AudioProvider, useAudio } from '~/contexts/AudioContext'
+import { useAudio } from '~/contexts/AudioContext'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
 import { getBandBySlug } from '~/lib/queries'
@@ -275,10 +275,18 @@ function MusicContent() {
 
 export default function MusicPage() {
   const { band } = useLoaderData() as LoaderData
+  const { addToQueue } = useAudio()
+  
+  // Auto-add all recordings to queue on mount
+  React.useEffect(() => {
+    if (band.recordings && band.recordings.length > 0) {
+      band.recordings.forEach(rec => {
+        if (rec.audioUrl) {
+          addToQueue(rec)
+        }
+      })
+    }
+  }, [band.recordings, addToQueue])
 
-  return (
-    <AudioProvider initialPlaylist={band.recordings || []}>
-      <MusicContent />
-    </AudioProvider>
-  )
+  return <MusicContent />
 }

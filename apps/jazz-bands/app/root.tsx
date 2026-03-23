@@ -8,6 +8,8 @@ import {
   useRouteError,
 } from 'react-router'
 import type { Route } from './+types/root'
+import { AudioProvider } from './contexts/AudioContext'
+import { StickyPlayer } from './components/audio/StickyPlayer'
 import './tailwind.css'
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -40,7 +42,10 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet />
+        <AudioProvider>
+          <Outlet />
+          <StickyPlayer />
+        </AudioProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
