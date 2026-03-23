@@ -51,7 +51,6 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export default function App() {
-  const { bandSlug } = useLoaderData()
 
   const { bandSlug, recordings } = useLoaderData()
 
