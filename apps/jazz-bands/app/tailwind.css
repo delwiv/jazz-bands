@@ -8,3 +8,12 @@
 body {
   @apply min-h-screen bg-white text-gray-900;
 }
+
+/* Hidden scrollbar */
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
