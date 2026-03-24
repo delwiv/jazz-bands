@@ -33,6 +33,13 @@ const AudioContext = createContext<AudioContextType | undefined>(undefined)
 interface AudioProviderProps {
   children: ReactNode
   initialPlaylist?: Recording[]
+  initialPlayerState?: {
+    currentTrack: Recording | null
+    queue: Recording[]
+    isPlaying: boolean
+    currentTime: number
+    duration: number
+  }
 }
 
 const STORAGE_KEYS = {
@@ -46,18 +53,32 @@ const STORAGE_KEYS = {
 export function AudioProvider({
   children,
   initialPlaylist = [],
+  initialPlayerState,
 }: AudioProviderProps) {
-  const [currentTrack, setCurrentTrack] = useState<Recording | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
- const [volume, setVolumeState] = useState(1)
+  const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
+    if (initialPlayerState?.currentTrack) return initialPlayerState.currentTrack
+    if (typeof window === 'undefined') return null
+    const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
+    return stored ? JSON.parse(stored) : null
+  })
+  const [isPlaying, setIsPlaying] = useState(
+    () => initialPlayerState?.isPlaying ?? false,
+  )
+  const [currentTime, setCurrentTime] = useState(
+    () => initialPlayerState?.currentTime ?? 0,
+  )
+  const [duration, setDuration] = useState(
+    () => initialPlayerState?.duration ?? 0,
+  )
+  const [volume, setVolumeState] = useState(1)
   const [playlist, setPlaylist] = useState<Recording[]>(() => {
     if (typeof window === 'undefined') return []
     const stored = localStorage.getItem(STORAGE_KEYS.playlist)
     return stored ? JSON.parse(stored) : []
   })
-  const [queue, setQueue] = useState<Recording[]>([])
+  const [queue, setQueue] = useState<Recording[]>(
+    () => initialPlayerState?.queue ?? [],
+  )
 
   const howlRef = useRef<Howl | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -160,7 +181,7 @@ export function AudioProvider({
 
     // Find current track index in queue
     const currentIndex = queue.findIndex((t) => t.title === currentTrack?.title)
-    
+
     if (currentIndex === -1) {
       // Current track not in queue, play first
       playTrack(queue[0])
@@ -218,27 +239,43 @@ export function AudioProvider({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.playlist, JSON.stringify(playlist))
-      console.log('[AudioContext] Playlist updated:', playlist.map(t => t.title))
+      console.log(
+        '[AudioContext] Playlist updated:',
+        playlist.map((t) => t.title),
+      )
     }
   }, [playlist])
 
-// Initialize queue from Sanity CMS (single source of truth)
+  // Initialize queue from Sanity CMS (single source of truth)
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    console.log('[AudioContext] Init effect: initialPlaylist count:', initialPlaylist.length)
+    console.log(
+      '[AudioContext] Init effect: initialPlaylist count:',
+      initialPlaylist.length,
+    )
 
     if (initialPlaylist.length > 0) {
-      const tracksWithAudio = initialPlaylist.filter((r: Recording) => r.audioUrl)
-      console.log('[AudioContext] Setting queue from Sanity with', tracksWithAudio.length, 'tracks:', tracksWithAudio.map(t => t.title))
-      
+      const tracksWithAudio = initialPlaylist.filter(
+        (r: Recording) => r.audioUrl,
+      )
+      console.log(
+        '[AudioContext] Setting queue from Sanity with',
+        tracksWithAudio.length,
+        'tracks:',
+        tracksWithAudio.map((t) => t.title),
+      )
+
       // Always use Sanity order - never mix with localStorage
       setQueue(tracksWithAudio)
 
       // Auto-play first track if no current track
       if (!currentTrack && tracksWithAudio.length > 0) {
         setTimeout(() => {
-          console.log('[AudioContext] Auto-playing first track:', tracksWithAudio[0].title)
+          console.log(
+            '[AudioContext] Auto-playing first track:',
+            tracksWithAudio[0].title,
+          )
           playTrack(tracksWithAudio[0])
         }, 500)
       }

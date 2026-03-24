@@ -91,12 +91,15 @@ export default function MusiciansPage() {
                     />
                   )}
 
-              <div className="p-6">
-                     <h2 className="text-2xl font-bold mb-2">
-                       <Link to={`/musicians/${musician.slug}`} className="hover:text-amber-600 transition-colors">
-                         {musician.name}
-                       </Link>
-                     </h2>
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold mb-2">
+                      <Link
+                        to={`/musicians/${musician.slug}`}
+                        className="hover:text-amber-600 transition-colors"
+                      >
+                        {musician.name}
+                      </Link>
+                    </h2>
                     {musician.instrument && (
                       <p className="text-blue-600 font-semibold mb-4">
                         {musician.instrument}

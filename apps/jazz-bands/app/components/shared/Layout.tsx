@@ -20,7 +20,7 @@ export function Layout({ band, children }: LayoutProps) {
   // If reduced motion is enabled, render children without animation wrapper
   if (reducedMotion) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col pb-[70px] md:pb-[82px]">
         <a
           href="#main-content"
           className="skip-to-content absolute top-0 left-0 z-50 -translate-y-full bg-blue-600 text-white px-4 py-2 transition-transform focus:translate-y-0"
@@ -28,7 +28,7 @@ export function Layout({ band, children }: LayoutProps) {
           Skip to main content
         </a>
         <Header band={band} />
-        <main id="main-content" className="flex flex-col flex-1 pb-24">
+        <main id="main-content" className="flex flex-col flex-1">
           {childrenArray}
         </main>
         <Footer band={band} />
@@ -38,7 +38,7 @@ export function Layout({ band, children }: LayoutProps) {
 
   // Render with animations
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-[70px] md:pb-[82px]">
       <a
         href="#main-content"
         className="skip-to-content absolute top-0 left-0 z-50 -translate-y-full bg-blue-600 text-white px-4 py-2 transition-transform focus:translate-y-0"
@@ -46,7 +46,7 @@ export function Layout({ band, children }: LayoutProps) {
         Skip to main content
       </a>
       <Header band={band} />
-      <main id="main-content" className="flex flex-col flex-1 pb-24">
+      <main id="main-content" className="flex flex-col flex-1">
         <AnimatePresence mode="wait">
           {childrenArray.map((child, index) => (
             <motion.div
