@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
-import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
+import { MusiciansLoaderData } from '~/lib/routes.types'
 import { getBandBySlug, getMusiciansByBandId } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
@@ -43,9 +43,8 @@ export function meta({
 }
 
 export default function MusiciansPage() {
-  const { band, musicians, baseUrl } = useLoaderData() as any
+  const { band, musicians, baseUrl } = useLoaderData<MusiciansLoaderData>()
   const [expandedMusician, setExpandedMusician] = useState<string | null>(null)
-  const _reducedMotion = useReducedMotion()
 
   return (
     <>
@@ -53,14 +52,9 @@ export default function MusiciansPage() {
       <Layout band={band}>
         <div className="py-16 px-6 bg-gray-50">
           <div className="max-w-7xl mx-auto">
-            <motion.h1
-              className="text-4xl font-bold text-center mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
+            <h1 className="text-4xl font-bold text-center mb-12">
               Our Musicians
-            </motion.h1>
+            </h1>
 
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"

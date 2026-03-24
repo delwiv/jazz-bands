@@ -6,9 +6,10 @@ import {
   EventStructuredData,
 } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
-import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
+import { TourLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
+import { TourDate } from '~/lib/types'
 import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
@@ -41,22 +42,21 @@ export function meta({
 }
 
 export default function TourPage() {
-  const { band, baseUrl } = useLoaderData() as any
+  const { band, baseUrl } = useLoaderData<TourLoaderData>()
   const [filterRegion, setFilterRegion] = useState<string>('')
-  const _reducedMotion = useReducedMotion()
 
   const regions = Array.from(
-    new Set(band.tourDates?.map((d: any) => d.region).filter(Boolean)),
+    new Set(band.tourDates?.map((d: TourDate) => d.region).filter(Boolean)),
   )
 
   const filteredDates = filterRegion
-    ? band.tourDates?.filter((d: any) => d.region === filterRegion) || []
+    ? band.tourDates?.filter((d: TourDate) => d.region === filterRegion) || []
     : band.tourDates || []
 
   const upcomingDates = filteredDates
-    .filter((d: any) => new Date(d.date) > new Date())
+    .filter((d: TourDate) => new Date(d.date) > new Date())
     .sort(
-      (a: any, b: any) =>
+      (a: TourDate, b: TourDate) =>
         new Date(a.date).getTime() - new Date(b.date).getTime(),
     )
 
@@ -74,14 +74,7 @@ export default function TourPage() {
       <Layout band={band}>
         <div className="py-16 px-6 bg-gray-50">
           <div className="max-w-7xl mx-auto">
-            <motion.h1
-              className="text-4xl font-bold text-center mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Tour Dates
-            </motion.h1>
+            <h1 className="text-4xl font-bold text-center mb-12">Tour Dates</h1>
 
             {regions.length > 0 && (
               <div className="mb-8 text-center">
@@ -112,7 +105,7 @@ export default function TourPage() {
                 initial="hidden"
                 animate="visible"
               >
-                {upcomingDates.map((date: any, idx: number) => (
+                {upcomingDates.map((date: TourDate, idx: number) => (
                   <Link key={idx} to={`/tour/${date.slug}`} className="block">
                     <motion.div
                       variants={itemVariants}
