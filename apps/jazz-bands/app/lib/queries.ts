@@ -67,7 +67,7 @@ export const getBandBySlug = `
   }
 `
 
-/** Fetch a single musician by slug */
+/** Fetch a single musician by slug with band-specific overrides */
 export const getMusicianBySlug = `
   *[_type == "musician" && slug.current == $slug][0] {
     _id,
@@ -79,7 +79,19 @@ export const getMusicianBySlug = `
     "gallery": images[] { "url": asset->url },
     "bands": bands[]-> {
       name,
-      "slug": slug.current
+      "slug": slug.current,
+      _id
+    },
+    "bandOverrides": bandOverrides[] {
+      _key,
+      bio,
+      instrument,
+      "image": image.asset->url,
+      "band": band-> {
+        name,
+        "slug": slug.current,
+        _id
+      }
     }
   }
 `
@@ -99,4 +111,38 @@ export const getMusiciansByBandId = `
     "photo": coalesce(images[0].asset->url, musician->images[0].asset->url),
     "galleryImages": coalesce(images, musician->images)[] { "image": asset->url }
   } | order(sortOrder asc)
+`
+
+/** Get band with tour dates for filtering */
+export const getBandWithTourDates = `
+  *[_type == "band" && slug.current == $bandSlug][0] {
+    _id,
+    name,
+    "slug": slug.current,
+    "tourDates": tourDates[] {
+      _key,
+      date,
+      city,
+      venue,
+      region,
+      details,
+      ticketsUrl,
+      soldOut,
+      "slug": slug({date, city, venue})
+    }
+  }
+`
+
+/** Get all tour dates for SEO sitemap */
+export const getAllTourDates = `
+  *[_type == "band" && slug.current == $bandSlug][0] {
+    name,
+    "tourDates": tourDates[] {
+      _key,
+      date,
+      city,
+      venue,
+      region
+    }
+  }
 `
