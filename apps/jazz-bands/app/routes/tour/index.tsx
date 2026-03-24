@@ -113,11 +113,7 @@ export default function TourPage() {
                 animate="visible"
               >
                 {upcomingDates.map((date: any, idx: number) => (
-                  <Link
-                    key={idx}
-                    to={`/tour/${date.slug}`}
-                    className="block"
-                  >
+                  <Link key={idx} to={`/tour/${date.slug}`} className="block">
                     <motion.div
                       variants={itemVariants}
                       className="bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-lg transition-shadow"
@@ -131,7 +127,9 @@ export default function TourPage() {
                             year: 'numeric',
                           })}
                         </p>
-                        <p className="text-xl font-semibold mt-2">{date.venue}</p>
+                        <p className="text-xl font-semibold mt-2">
+                          {date.venue}
+                        </p>
                         <p className="text-gray-600">
                           {date.city}, {date.region || ''}
                         </p>

@@ -1,11 +1,30 @@
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
-import { ArrowLeft, MapPin, Calendar, ExternalLink, Ticket, AlertCircle } from 'lucide-react'
+import {
+  ArrowLeft,
+  MapPin,
+  Calendar,
+  ExternalLink,
+  Ticket,
+  AlertCircle,
+} from 'lucide-react'
 import { getBandWithTourDates } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
 import type { TourDate } from '~/lib/types'
 
-function TourDateStructuredData({ tourDate, band, bandSlug, origin }: { tourDate: TourDate; band: string; bandSlug: string; origin: string }) {
-  const eventDate = tourDate.date.startsWith('T') ? tourDate.date : `${tourDate.date}T19:00:00`
+function TourDateStructuredData({
+  tourDate,
+  band,
+  bandSlug,
+  origin,
+}: {
+  tourDate: TourDate
+  band: string
+  bandSlug: string
+  origin: string
+}) {
+  const eventDate = tourDate.date.startsWith('T')
+    ? tourDate.date
+    : `${tourDate.date}T19:00:00`
 
   const data: Record<string, any> = {
     '@type': 'MusicEvent',
@@ -42,7 +61,9 @@ function TourDateStructuredData({ tourDate, band, bandSlug, origin }: { tourDate
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', ...data }) }}
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({ '@context': 'https://schema.org', ...data }),
+      }}
     />
   )
 }
@@ -60,7 +81,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const band = await sanityClient.fetch(
     getBandWithTourDates,
     { bandSlug },
-    'includeUnknownTypes'
+    'includeUnknownTypes',
   )
 
   if (!band || !band.tourDates) {
@@ -68,7 +89,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   const tourDate = band.tourDates.find(
-    (date: TourDate) => date.slug === tourDateSlug
+    (date: TourDate) => date.slug === tourDateSlug,
   ) as TourDate | undefined
 
   if (!tourDate) {
@@ -90,7 +111,9 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
   const title = `${band} - ${tourDate.venue}, ${tourDate.city} - ${tourDate.date}`
   const description = `Catch ${band} live at ${tourDate.venue} in ${tourDate.city} on ${tourDate.date}${tourDate.region ? `, ${tourDate.region}` : ''}.`
 
-  const eventDate = tourDate.date.startsWith('T') ? tourDate.date : `${tourDate.date}T19:00:00`
+  const eventDate = tourDate.date.startsWith('T')
+    ? tourDate.date
+    : `${tourDate.date}T19:00:00`
 
   return [
     { title },
@@ -131,7 +154,12 @@ export default function TourDateDetail() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <TourDateStructuredData tourDate={tourDate} band={band} bandSlug={bandSlug} origin={origin} />
+      <TourDateStructuredData
+        tourDate={tourDate}
+        band={band}
+        bandSlug={bandSlug}
+        origin={origin}
+      />
 
       <div className="relative bg-gradient-to-br from-amber-600 to-orange-700 text-white">
         <div className="max-w-4xl mx-auto px-4 py-16">
@@ -150,18 +178,15 @@ export default function TourDateDetail() {
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            {band}
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{band}</h1>
 
           <div className="flex items-center gap-2 text-xl mb-6">
             <MapPin className="w-6 h-6" />
-            {tourDate.venue}, {tourDate.city}{tourDate.region ? `, ${tourDate.region}` : ''}
+            {tourDate.venue}, {tourDate.city}
+            {tourDate.region ? `, ${tourDate.region}` : ''}
           </div>
 
-          <p className="text-2xl font-medium">
-            {formatDate(tourDate.date)}
-          </p>
+          <p className="text-2xl font-medium">{formatDate(tourDate.date)}</p>
 
           {tourDate.soldOut && (
             <div className="mt-6 flex items-center gap-2 bg-red-600/80 px-4 py-2 rounded-lg">
@@ -172,8 +197,15 @@ export default function TourDateDetail() {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#111827" />
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="#111827"
+            />
           </svg>
         </div>
       </div>
@@ -182,14 +214,18 @@ export default function TourDateDetail() {
         <div className="bg-gray-800 rounded-lg p-8 shadow-2xl">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h2 className="text-xl font-semibold text-white mb-4">Event Details</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">
+                Event Details
+              </h2>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <Calendar className="w-5 h-5 text-amber-500 mt-1" />
                   <div>
                     <p className="text-gray-400 text-sm">Date & Time</p>
-                    <p className="text-white font-medium">{formatDate(tourDate.date)}</p>
+                    <p className="text-white font-medium">
+                      {formatDate(tourDate.date)}
+                    </p>
                   </div>
                 </div>
 
@@ -198,7 +234,10 @@ export default function TourDateDetail() {
                   <div>
                     <p className="text-gray-400 text-sm">Venue</p>
                     <p className="text-white font-medium">{tourDate.venue}</p>
-                    <p className="text-gray-400">{tourDate.city}{tourDate.region ? `, ${tourDate.region}` : ''}</p>
+                    <p className="text-gray-400">
+                      {tourDate.city}
+                      {tourDate.region ? `, ${tourDate.region}` : ''}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -215,7 +254,9 @@ export default function TourDateDetail() {
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold text-white mb-4">Tickets & Info</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">
+                Tickets & Info
+              </h2>
 
               <div className="space-y-4">
                 {tourDate.ticketsUrl && !tourDate.soldOut && (
@@ -232,7 +273,9 @@ export default function TourDateDetail() {
 
                 {tourDate.details && (
                   <div className="bg-gray-700/50 rounded-lg p-4">
-                    <p className="text-gray-300 whitespace-pre-line">{tourDate.details}</p>
+                    <p className="text-gray-300 whitespace-pre-line">
+                      {tourDate.details}
+                    </p>
                   </div>
                 )}
               </div>
@@ -240,7 +283,9 @@ export default function TourDateDetail() {
           </div>
 
           <div className="mt-8 pt-8 border-t border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">Share this event</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Share this event
+            </h3>
 
             <div className="flex flex-wrap gap-4">
               <ShareButton

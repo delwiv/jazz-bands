@@ -24,31 +24,32 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const origin = new URL(request.url).origin
 
-  // console.log('[Root Loader] BAND_SLUG:', bandSlug)
-
   // Fetch band data for auto-queue functionality
   let recordings = []
   if (bandSlug) {
     try {
-      // console.log('[Root Loader] Fetching band with slug:', bandSlug)
       const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
-      // console.log('[Root Loader] Band fetched:', band?.name)
       if (band?.recordings) {
         recordings = band.recordings.filter((r: any) => r.audioUrl)
-        // console.log(
-        //   '[Root Loader] Recordings with audioUrl:',
-        //   recordings.length,
-        // )
       }
     } catch (error) {
       console.error('Failed to fetch band recordings:', error)
     }
   }
 
+  const initialTrack = recordings.length > 0 ? recordings[0] : null
+
   return {
     bandSlug,
     origin,
     recordings,
+    initialPlayerState: {
+      currentTrack: initialTrack,
+      queue: recordings,
+      isPlaying: false,
+      currentTime: 0,
+      duration: initialTrack?.duration || 0,
+    },
   }
 }
 
@@ -60,12 +61,7 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export default function App() {
-  const { bandSlug, recordings } = useLoaderData()
-
-  // console.log('[App] Received from loader:', {
-  //   bandSlug,
-  //   recordingsCount: recordings?.length || 0,
-  // })
+  const { bandSlug, recordings, initialPlayerState } = useLoaderData()
 
   return (
     <html lang="en">
@@ -73,10 +69,16 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="pb-4">
-        <AudioProvider initialPlaylist={recordings || []}>
+      <body>
+        <AudioProvider
+          initialPlaylist={recordings || []}
+          initialPlayerState={initialPlayerState}
+        >
           <Outlet />
-          <StickyPlayer />
+          <StickyPlayer
+            initialTrack={initialPlayerState.currentTrack}
+            initialQueue={initialPlayerState.queue}
+          />
         </AudioProvider>
         <ScrollRestoration />
         <Scripts />

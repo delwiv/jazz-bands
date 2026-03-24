@@ -8,10 +8,7 @@ export function Footer({ band }: FooterProps) {
   const secondaryColor = band.branding?.secondaryColor || '#dc2626'
 
   return (
-    <footer
-      style={{ backgroundColor: secondaryColor }}
-      className="py-8 px-6 mt-16"
-    >
+    <footer style={{ backgroundColor: secondaryColor }} className="py-8 px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h3 className="text-white font-bold text-lg mb-4">{band.name}</h3>

@@ -16,7 +16,6 @@ import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   ListMusic,
-  Maximize2,
   Minimize2,
   MoveHorizontal,
   Music,
@@ -30,27 +29,15 @@ import {
   VolumeX,
   X,
 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useAudio } from '~/contexts/AudioContext'
+import { useIsHydrated } from '~/hooks/useIsHydrated'
 import type { Recording } from '~/lib/types'
+import { StaticPlayer } from './StaticPlayer'
 
-// Responsive hook to detect desktop
-function useIsDesktop(): boolean {
-  const [isDesktop, setIsDesktop] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.innerWidth >= 768
-  })
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 768)
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  return isDesktop
+interface StickyPlayerProps {
+  initialTrack: Recording | null
+  initialQueue: Recording[]
 }
 
 function formatTime(seconds: number): string {
@@ -65,7 +52,11 @@ interface SortableTrackProps {
   onClick?: (track: Recording) => void
 }
 
-function SortableTrack({ track, isCurrent = false, onClick }: SortableTrackProps) {
+function SortableTrack({
+  track,
+  isCurrent = false,
+  onClick,
+}: SortableTrackProps) {
   const {
     attributes,
     listeners,
@@ -103,7 +94,9 @@ function SortableTrack({ track, isCurrent = false, onClick }: SortableTrackProps
           <MoveHorizontal className="w-5 h-5" />
         </div>
         <div className="min-w-0">
-          <p className={`font-medium truncate ${isCurrent ? 'text-amber-200' : 'text-white'}`}>
+          <p
+            className={`font-medium truncate ${isCurrent ? 'text-amber-200' : 'text-white'}`}
+          >
             {track.title}
           </p>
           {track.album && (
@@ -111,7 +104,9 @@ function SortableTrack({ track, isCurrent = false, onClick }: SortableTrackProps
           )}
         </div>
       </div>
-      <span className={`text-sm ml-2 shrink-0 ${isCurrent ? 'text-amber-200' : 'text-gray-500'}`}>
+      <span
+        className={`text-sm ml-2 shrink-0 ${isCurrent ? 'text-amber-200' : 'text-gray-500'}`}
+      >
         {track.duration ? formatTime(track.duration) : '--:--'}
       </span>
     </div>
@@ -120,14 +115,19 @@ function SortableTrack({ track, isCurrent = false, onClick }: SortableTrackProps
 
 interface IntegrationQueueProps {
   queue: Recording[]
-  isCompact: boolean
   isCurrentTrack: (title: string) => boolean
   onClose: () => void
   onReorder: (oldIndex: number, newIndex: number) => void
   playTrack: (track: Recording) => void
 }
 
-function IntegrationQueue({ queue, isCompact, isCurrentTrack, onClose, onReorder, playTrack }: IntegrationQueueProps) {
+function IntegrationQueue({
+  queue,
+  isCurrentTrack,
+  onClose,
+  onReorder,
+  playTrack,
+}: IntegrationQueueProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -155,8 +155,8 @@ function IntegrationQueue({ queue, isCompact, isCurrentTrack, onClose, onReorder
     [queue, onReorder],
   )
 
-  const containerPadding = isCompact ? 'p-3' : 'p-4'
-  const headerHeight = isCompact ? 40 : 50
+  const containerPadding = 'p-4'
+  const headerHeight = 50
 
   return (
     <motion.div
@@ -169,7 +169,10 @@ function IntegrationQueue({ queue, isCompact, isCurrentTrack, onClose, onReorder
       aria-label="Playlist queue"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700" style={{ minHeight: `${headerHeight}px` }}>
+        <div
+          className="flex items-center justify-between px-3 py-2 border-b border-gray-700"
+          style={{ minHeight: `${headerHeight}px` }}
+        >
           <div className="flex items-center gap-2">
             <ListMusic className="w-4 h-4 text-white" />
             <h3 className="text-sm font-semibold text-white">Queue</h3>
@@ -187,7 +190,10 @@ function IntegrationQueue({ queue, isCompact, isCurrentTrack, onClose, onReorder
         </div>
 
         {/* Hidden scrollbar via class */}
-        <div className={`overflow-y-auto scrollbar-hidden`} style={{ maxHeight: '200px' }}>
+        <div
+          className={`overflow-y-auto scrollbar-hidden`}
+          style={{ maxHeight: '200px' }}
+        >
           {queue.length === 0 ? (
             <p className="text-center text-gray-500 py-4 text-sm">
               No tracks in queue
@@ -218,7 +224,11 @@ function IntegrationQueue({ queue, isCompact, isCurrentTrack, onClose, onReorder
   )
 }
 
-export function StickyPlayer() {
+export function StickyPlayer({
+  initialTrack,
+  initialQueue,
+}: StickyPlayerProps) {
+  const isHydrated = useIsHydrated()
   const {
     currentTrack,
     isPlaying,
@@ -235,20 +245,11 @@ export function StickyPlayer() {
     reorderQueue,
   } = useAudio()
 
-  const isDesktop = useIsDesktop()
   const [isQueueOpen, setIsQueueOpen] = useState(false)
-  const [isCompact, setIsCompact] = useState(() => {
-    // Default to compact on mobile, expanded on desktop
-    if (typeof window === 'undefined') return !isDesktop
-    const stored = localStorage.getItem('jazz-bands-player-compact')
-    return stored !== null ? stored === 'true' : !isDesktop
-  })
 
-  useEffect(() => {
-    localStorage.setItem('jazz-bands-player-compact', isCompact.toString())
-  }, [isCompact])
-
-  const toggleCompact = () => setIsCompact(prev => !prev)
+  const toggleCompact = () => {
+    // Compact mode removed - expanded view is now default
+  }
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     seek(Number(e.target.value))
@@ -257,11 +258,6 @@ export function StickyPlayer() {
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setVolumeHandler(Number(e.target.value))
   }
-
-  // Click outside to close queue
-  const handleBackdropClick = useCallback(() => {
-    setIsQueueOpen(false)
-  }, [])
 
   // Play track from queue
   const handlePlayTrack = useCallback(
@@ -273,107 +269,23 @@ export function StickyPlayer() {
 
   // Queue retains Sanity CMS order (no re-sorting)
   const queueInOrder = queue
+  // SSR mode: render static player before hydration
+  if (!isHydrated) {
+    return <StaticPlayer currentTrack={initialTrack} queue={initialQueue} />
+  }
 
-  // Calculate current song position in queue
-  const currentSongIndex = queue.findIndex(
-    (track) => track.title === currentTrack?.title,
-  )
-  const songCount = queue.length
-  const currentSongNumber = currentSongIndex >= 0 ? currentSongIndex + 1 : 1
-  const isOnLastTrack = currentSongIndex >= 0 && currentSongIndex === songCount - 1 && songCount > 1
-
+  // Client mode: need current track from AudioProvider
   if (!currentTrack) {
     return null
   }
 
-  const CompactBar = () => (
-    <motion.div
-      className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl"
-      role="region"
-      aria-label="Audio player"
-    >
-      {/* Main row with controls, title, expand */}
-      <div className="flex items-center justify-between px-3 py-2 max-w-7xl mx-auto">
-        {/* Left: prev/play/next buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={prev}
-            className="p-1.5 hover:bg-gray-700 rounded transition-colors"
-            aria-label="Previous track"
-          >
-            <SkipBack className="w-4 h-4 text-gray-300" />
-          </button>
-          <button
-            onClick={togglePlay}
-            className="p-1.5 bg-white hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
-            aria-label={isPlaying ? 'Pause' : 'Play'}
-          >
-            {isPlaying ? (
-              <Pause className="w-4 h-4 text-gray-900" />
-            ) : (
-              <Play className="w-4 h-4 text-gray-900" />
-            )}
-          </button>
-          <button
-            onClick={next}
-            className="p-1.5 hover:bg-gray-700 rounded transition-colors"
-            aria-label={isOnLastTrack ? 'Loop back to first track' : 'Next track'}
-          >
-            {isOnLastTrack ? (
-              <RotateCw className="w-4 h-4 text-amber-400" />
-            ) : (
-              <SkipForward className="w-4 h-4 text-gray-300" />
-            )}
-          </button>
-        </div>
-
-        {/* Center: title with times below */}
-        <div className="flex flex-col items-center min-w-0 flex-1 max-w-xs px-2">
-          <p className="text-sm font-medium text-white truncate text-center">
-            {currentTrack.title} ({currentSongNumber}/{songCount})
-          </p>
-          <div className="flex items-center gap-1 text-[10px] text-gray-400">
-            <span>{formatTime(currentTime)}</span>
-            <span>/</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-        </div>
-
-        {/* Right: queue, expand buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsQueueOpen(!isQueueOpen)}
-            className={`p-1.5 rounded transition-colors ${isQueueOpen
-                ? 'bg-amber-500 text-white'
-                : 'hover:bg-gray-700 text-gray-300'
-              }`}
-            aria-label="Toggle queue"
-            aria-expanded={isQueueOpen}
-          >
-            <ListMusic className="w-4 h-4" />
-          </button>
-          <button
-            onClick={toggleCompact}
-            className="p-1.5 hover:bg-gray-700 rounded transition-colors"
-            aria-label="Expand player"
-          >
-            <Maximize2 className="w-4 h-4 text-gray-300" />
-          </button>
-        </div>
-      </div>
-
-      {/* Progress bar at bottom, full width, no padding */}
-      <input
-        type="range"
-        min={0}
-        max={duration || 0}
-        value={currentTime}
-        onChange={handleSeek}
-        className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
-        aria-label="Seek"
-      />
-    </motion.div>
+  // Calculate current song position in queue
+  const currentSongIndex = queue.findIndex(
+    (track) => track.title === currentTrack.title,
   )
+  const songCount = queue.length
+  const isOnLastTrack =
+    currentSongIndex >= 0 && currentSongIndex === songCount - 1 && songCount > 1
 
   const ExpandedPlayer = () => (
     <div
@@ -382,7 +294,7 @@ export function StickyPlayer() {
       aria-label="Audio player"
     >
       <div className="max-w-7xl mx-auto px-3 py-2 md:px-4 md:py-3">
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-4 overflow-x-hidden">
           {/* Track Info */}
           <div className="flex flex-col min-w-0 md:w-auto">
             <div className="flex items-center gap-2 md:gap-3">
@@ -447,7 +359,9 @@ export function StickyPlayer() {
             <button
               onClick={next}
               className="p-1.5 md:p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 shrink-0"
-              aria-label={isOnLastTrack ? 'Loop back to first track' : 'Next track'}
+              aria-label={
+                isOnLastTrack ? 'Loop back to first track' : 'Next track'
+              }
             >
               {isOnLastTrack ? (
                 <RotateCw className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
@@ -486,10 +400,11 @@ export function StickyPlayer() {
             {/* Queue Button */}
             <button
               onClick={() => setIsQueueOpen(!isQueueOpen)}
-              className={`p-1.5 md:p-2 rounded-lg transition-colors flex-shrink-0 ${isQueueOpen
+              className={`p-1.5 md:p-2 rounded-lg transition-colors flex-shrink-0 ${
+                isQueueOpen
                   ? 'bg-amber-500 text-white'
                   : 'hover:bg-gray-700 text-gray-300'
-                }`}
+              }`}
               aria-label="Toggle queue"
               aria-expanded={isQueueOpen}
             >
@@ -511,13 +426,12 @@ export function StickyPlayer() {
   )
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col">
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col overflow-hidden">
       <AnimatePresence>
         {isQueueOpen && (
           <IntegrationQueue
             key="queue"
             queue={queueInOrder}
-            isCompact={isCompact}
             isCurrentTrack={(title: string) => title === currentTrack?.title}
             onClose={() => setIsQueueOpen(false)}
             onReorder={reorderQueue}
@@ -526,13 +440,7 @@ export function StickyPlayer() {
         )}
       </AnimatePresence>
 
-      <div>
-        {isCompact ? (
-          <CompactBar key="compact" />
-        ) : (
-          <ExpandedPlayer key="expanded" />
-        )}
-      </div>
+      <ExpandedPlayer key="expanded" />
     </div>
   )
 }
