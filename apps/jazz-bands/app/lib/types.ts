@@ -95,6 +95,7 @@ export interface TourDate {
   details?: string
   ticketsUrl?: string
   soldOut?: boolean
+  slug?: string // GENERATED slug (e.g., "2024-03-15-paris-le-baiser-sale")
 }
 
 /**
@@ -191,4 +192,11 @@ export interface ContentService {
   getMusiciansByBandId(bandId: string): Promise<Musician[]>
   getMusicianBySlug(slug: string): Promise<Musician | null>
   getAllBands(): Promise<Band[]>
+}
+
+/**
+ * Photo gallery item
+ */
+export interface Photo {
+  url: string
 }

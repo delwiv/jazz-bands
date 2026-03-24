@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import {
   BandStructuredData,
   EventStructuredData,
@@ -25,7 +25,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Response('Band not found', { status: 404 })
   }
 
-  // Extract baseUrl as serializable string (Request object not JSON-serializable)
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
@@ -114,57 +113,58 @@ export default function TourPage() {
                 animate="visible"
               >
                 {upcomingDates.map((date: any, idx: number) => (
-                  <motion.div
+                  <Link
                     key={idx}
-                    variants={itemVariants}
-                    className="bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-                    whileHover={{
-                      y: -4,
-                      boxShadow: '0 12px 24px -8px rgba(0, 0, 0, 0.15)',
-                    }}
-                    transition={{ duration: 0.3 }}
+                    to={`/tour/${date.slug}`}
+                    className="block"
                   >
-                    <div>
-                      <p className="text-2xl font-bold text-blue-600">
-                        {new Date(date.date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </p>
-                      <p className="text-xl font-semibold mt-2">{date.venue}</p>
-                      <p className="text-gray-600">
-                        {date.city}, {date.region || ''}
-                      </p>
-                      {date.details && (
-                        <p className="mt-2 text-gray-700">{date.details}</p>
-                      )}
-                    </div>
+                    <motion.div
+                      variants={itemVariants}
+                      className="bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-lg transition-shadow"
+                    >
+                      <div>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {new Date(date.date).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </p>
+                        <p className="text-xl font-semibold mt-2">{date.venue}</p>
+                        <p className="text-gray-600">
+                          {date.city}, {date.region || ''}
+                        </p>
+                        {date.details && (
+                          <p className="mt-2 text-gray-700">{date.details}</p>
+                        )}
+                      </div>
 
-                    <div className="flex gap-4">
-                      {date.soldOut ? (
-                        <span className="bg-red-700 text-white px-6 py-2 rounded-lg font-semibold">
-                          Sold Out
-                        </span>
-                      ) : date.ticketsUrl ? (
-                        <motion.a
-                          href={date.ticketsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          Get Tickets
-                        </motion.a>
-                      ) : (
-                        <span className="bg-gray-400 text-white px-6 py-2 rounded-lg">
-                          Tickets TBA
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
+                      <div className="flex gap-4">
+                        {date.soldOut ? (
+                          <span className="bg-red-700 text-white px-6 py-2 rounded-lg font-semibold">
+                            Sold Out
+                          </span>
+                        ) : date.ticketsUrl ? (
+                          <motion.a
+                            href={date.ticketsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Get Tickets
+                          </motion.a>
+                        ) : (
+                          <span className="bg-gray-400 text-white px-6 py-2 rounded-lg">
+                            Tickets TBA
+                          </span>
+                        )}
+                      </div>
+                    </motion.div>
+                  </Link>
                 ))}
               </motion.div>
             )}

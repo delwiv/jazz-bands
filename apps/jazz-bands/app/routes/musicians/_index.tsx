@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
-import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
@@ -91,8 +91,12 @@ export default function MusiciansPage() {
                     />
                   )}
 
-                  <div className="p-6">
-                    <h2 className="text-2xl font-bold mb-2">{musician.name}</h2>
+              <div className="p-6">
+                     <h2 className="text-2xl font-bold mb-2">
+                       <Link to={`/musicians/${musician.slug}`} className="hover:text-amber-600 transition-colors">
+                         {musician.name}
+                       </Link>
+                     </h2>
                     {musician.instrument && (
                       <p className="text-blue-600 font-semibold mb-4">
                         {musician.instrument}
