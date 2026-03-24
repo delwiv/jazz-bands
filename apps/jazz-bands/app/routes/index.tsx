@@ -10,6 +10,7 @@ import { Layout } from '~/components/shared/Layout'
 import { Skeleton } from '~/components/shared/Skeleton'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
+import { BandHomeLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
@@ -57,10 +58,7 @@ export function meta({
 }
 
 export default function BandHome() {
-  const { band, baseUrl } = useLoaderData() as {
-    band: any
-    baseUrl: string
-  }
+  const { band, baseUrl } = useLoaderData<BandHomeLoaderData>()
   const navigation = useNavigation()
   const isLoading = navigation.state === 'loading'
   const reducedMotion = useReducedMotion()
@@ -151,12 +149,9 @@ export default function BandHome() {
               aria-hidden="true"
             />
           )}
-          <motion.div
+          <div
             className="relative z-10 text-center text-white px-6"
             style={{ opacity: reducedMotion ? 1 : heroOpacity }}
-            initial={{ y: 20 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <h1 id="hero-title" className="text-5xl font-bold mb-4">
               {band.name}
@@ -169,12 +164,7 @@ export default function BandHome() {
 
             {/* Main Content Images Gallery */}
             {band.mainImages && band.mainImages.length > 0 && (
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
                 {band.mainImages.map((img, idx) => (
                   <motion.div
                     key={img._key || idx}
@@ -191,9 +181,9 @@ export default function BandHome() {
                     />
                   </motion.div>
                 ))}
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
         </section>
 
         <div className="sr-only">

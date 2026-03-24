@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { motion } from 'framer-motion'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
-import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { ContactLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
@@ -37,8 +37,7 @@ export function meta({
 }
 
 export default function ContactPage() {
-  const { band, baseUrl } = useLoaderData() as any
-  const _reducedMotion = useReducedMotion()
+  const { band, baseUrl } = useLoaderData<ContactLoaderData>()
 
   return (
     <>
@@ -46,21 +45,9 @@ export default function ContactPage() {
       <Layout band={band}>
         <div className="py-16 px-6 bg-gray-50">
           <div className="max-w-3xl mx-auto">
-            <motion.h1
-              className="text-4xl font-bold text-center mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Contact
-            </motion.h1>
+            <h1 className="text-4xl font-bold text-center mb-12">Contact</h1>
 
-            <motion.div
-              className="bg-white rounded-lg shadow-md p-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
+            <div className="bg-white rounded-lg shadow-md p-8">
               <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
 
               {band.contact?.email && (
@@ -115,7 +102,7 @@ export default function ContactPage() {
                   We typically respond within 48 hours.
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </Layout>
