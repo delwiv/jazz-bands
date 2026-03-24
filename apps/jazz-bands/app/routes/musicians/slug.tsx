@@ -1,13 +1,18 @@
-import {
-  type LoaderFunctionArgs,
-  useLoaderData,
-} from 'react-router'
 import { ArrowLeft } from 'lucide-react'
-import { getMusicianBySlug, getBandBySlug } from '~/lib/queries'
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
-import type { Musician, Photo } from '~/lib/types'
+import type { Photo } from '~/lib/types'
 
-function MusicianStructuredData({ musician, band, origin }: { musician: any; band?: string; origin: string }) {
+function MusicianStructuredData({
+  musician,
+  band,
+  origin,
+}: {
+  musician: any
+  band?: string
+  origin: string
+}) {
   const data: Record<string, any> = {
     '@type': 'MusicPerson',
     name: musician.name,
@@ -24,7 +29,9 @@ function MusicianStructuredData({ musician, band, origin }: { musician: any; ban
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', ...data }) }}
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({ '@context': 'https://schema.org', ...data }),
+      }}
     />
   )
 }
@@ -58,21 +65,18 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const origin = new URL(request.url).origin
 
   // Fetch musician detail
-  const musician = await sanityClient.fetch(
+  const musician = (await sanityClient.fetch(
     getMusicianBySlug,
     { slug: artistSlug },
-    'includeUnknownTypes'
-  ) as MusicianDetailResponse | null
+    // 'includeUnknownTypes',
+  )) as MusicianDetailResponse | null
 
   if (!musician) {
     throw new Response('Musician not found', { status: 404 })
   }
 
   // Fetch current band for context
-  const band = await sanityClient.fetch(
-    getBandBySlug,
-    { slug: bandSlug }
-  )
+  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
 
   // Apply band-specific overrides if this band has them
   let displayName = musician.name
@@ -82,7 +86,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let gallery = musician.gallery
 
   const override = musician.bandOverrides?.find(
-    (o: any) => o.band.slug === bandSlug
+    (o: any) => o.band.slug === bandSlug,
   )
 
   if (override) {
@@ -108,7 +112,9 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
 
   const musician = data.musician as MusicianDetailResponse
   const title = `${musician.name} - ${musician.instrument || 'Musician'}${data.band ? ` | ${data.band}` : ''}`
-  const description = musician.bio?.[0]?.children?.[0]?.text || `${musician.name}, ${musician.instrument || 'Musician'}`
+  const description =
+    musician.bio?.[0]?.children?.[0]?.text ||
+    `${musician.name}, ${musician.instrument || 'Musician'}`
 
   return [
     { title },
@@ -128,13 +134,12 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
 }
 
 export default function MusicianDetail() {
+  console.log('Musician detail')
   const { musician, band, origin } = useLoaderData<typeof loader>()
+  const bio = musician.bio
 
   // Photo gallery (include main photo + gallery images)
-  const gallery: Photo[] = [
-    { url: musician.photo },
-    ...musician.gallery,
-  ]
+  const gallery: Photo[] = [{ url: musician.photo }, ...musician.gallery]
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -171,7 +176,9 @@ export default function MusicianDetail() {
                 {musician.name}
               </h1>
               {musician.instrument && (
-                <p className="text-amber-400 text-lg mb-4">{musician.instrument}</p>
+                <p className="text-amber-400 text-lg mb-4">
+                  {musician.instrument}
+                </p>
               )}
               {band && (
                 <p className="text-gray-400 text-sm">
@@ -186,7 +193,10 @@ export default function MusicianDetail() {
             <h2 className="text-xl font-semibold text-white mb-4">Biography</h2>
             <div className="prose prose-invert max-w-none">
               {bio && bio.length > 0 ? (
-                <p className="text-gray-300">{bio[0]?.children?.map((child: any) => child.text).join('') || ''}</p>
+                <p className="text-gray-300">
+                  {bio[0]?.children?.map((child: any) => child.text).join('') ||
+                    ''}
+                </p>
               ) : (
                 <p className="text-gray-400">No biography available.</p>
               )}
@@ -199,7 +209,10 @@ export default function MusicianDetail() {
               <h2 className="text-xl font-semibold text-white mb-4">Gallery</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {gallery.slice(1).map((photo, idx) => (
-                  <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
+                  <div
+                    key={idx}
+                    className="relative aspect-square rounded-lg overflow-hidden bg-gray-800"
+                  >
                     <img
                       src={photo.url}
                       alt={`${musician.name} - Photo ${idx + 1}`}
@@ -214,7 +227,9 @@ export default function MusicianDetail() {
           {/* Band memberships */}
           {musician.bands && musician.bands.length > 0 && (
             <div className="mt-8">
-              <h2 className="text-xl font-semibold text-white mb-4">Band Memberships</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">
+                Band Memberships
+              </h2>
               <div className="flex flex-wrap gap-2">
                 {musician.bands.map((bandItem) => (
                   <span
@@ -232,4 +247,3 @@ export default function MusicianDetail() {
     </div>
   )
 }
-
