@@ -155,9 +155,9 @@ export default function MusicianDetail() {
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
         <button
           onClick={() => window.history.back()}
-          className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
+          className="focus-ring absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="icon-md" />
           Back to musicians
         </button>
       </div>
@@ -181,7 +181,7 @@ export default function MusicianDetail() {
                 </p>
               )}
               {band && (
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-300 text-sm">
                   Member of <span className="text-white">{band}</span>
                 </p>
               )}
@@ -198,7 +198,7 @@ export default function MusicianDetail() {
                     ''}
                 </p>
               ) : (
-                <p className="text-gray-400">No biography available.</p>
+                <p className="text-gray-300">No biography available.</p>
               )}
             </div>
           </div>

@@ -1,16 +1,93 @@
 @import "tailwindcss";
 
 @theme {
+  /* Semantic color tokens - can be overridden per band via CSS custom properties */
   --color-primary: #1e3a8a;
   --color-secondary: #dc2626;
+
+  /* Dark theme surfaces */
+  --color-surface-base: #0f172a;
+  --color-surface-raised: #1e293b;
+
+  /* Typography colors optimized for dark backgrounds */
+  --color-text-primary: #E9ECF1;
+  --color-text-secondary: #B0B8C4;
+  --color-text-muted: #8A94A6;
+
+  /* Focus ring for accessibility */
+  --color-focus: #3b82f6;
 }
 
 body {
-  @apply min-h-screen bg-white text-gray-900;
+  @apply min-h-screen font-sans antialiased;
+  background: linear-gradient(to bottom, #020617, #0f172a, #020617);
+  color: #E9ECF1;
+}
+
+/* Glass card utilities for components */
+@utility glass-card {
+  @apply bg-white/[0.06] backdrop-blur-xl border border-white/[0.1] rounded-2xl shadow-lg;
+}
+
+@utility glass-card-hover {
+  @apply glass-card transition-colors duration-300 hover:bg-white/[0.08];
+}
+
+/* Ambient orb utilities for atmospheric depth */
+@utility orb-purple {
+  @apply absolute w-[500px] h-[500px] bg-purple-900/20 blur-[160px] rounded-full pointer-events-none;
+}
+
+@utility orb-indigo {
+  @apply absolute w-[500px] h-[500px] bg-indigo-900/15 blur-[160px] rounded-full pointer-events-none;
+}
+
+@utility orb-blue {
+  @apply absolute w-[500px] h-[500px] bg-blue-900/10 blur-[160px] rounded-full pointer-events-none;
+}
+
+/* Focus utilities for accessibility */
+@utility focus-ring {
+  @apply outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900;
+}
+
+@utility focus-ring-primary {
+  @apply outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900;
+}
+
+/* Common layout utilities */
+@utility container-max {
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+@utility section-base {
+  @apply relative py-16 md:py-24 overflow-hidden;
+}
+
+/* Icon size utilities */
+@utility icon-sm {
+  @apply w-4 h-4;
+}
+
+@utility icon-md {
+  @apply w-5 h-5;
+}
+
+/* Form input utilities */
+@utility dropdown-input {
+  @apply bg-white/[0.06] border border-white/[0.1] rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20;
+}
+
+@utility prose-card {
+  @apply bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] rounded-lg p-4 text-gray-300;
+}
+
+@utility glass-badge {
+  @apply bg-white/[0.08] border border-white/[0.1] rounded-full px-3 py-1 text-xs;
 }
 
 /* Hidden scrollbar */
-.scrollbar-hidden {
+@utility scrollbar-hidden {
   scrollbar-width: none;
 }
 

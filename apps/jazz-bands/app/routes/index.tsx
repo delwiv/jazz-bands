@@ -1,15 +1,21 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import {
   type LoaderFunctionArgs,
-  Link as RouterLink,
   useLoaderData,
   useNavigation,
 } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { Skeleton } from '~/components/shared/Skeleton'
+import { GlassCard } from '~/components/shared/GlassCard'
+import { PrimaryButton } from '~/components/shared/PrimaryButton'
+import { SectionWrapper } from '~/components/shared/SectionWrapper'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
-import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
+import {
+  itemVariants,
+  staggerContainerVariants,
+  cardHoverVariants,
+} from '~/lib/animationVariants'
 import { BandHomeLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
@@ -73,24 +79,25 @@ export default function BandHome() {
     return (
       <Layout band={band}>
         {/* Hero Section Skeleton */}
-        <section className="relative h-96 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+        <section className="relative h-96 flex items-center justify-center bg-slate-900">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950" />
           <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
-            <Skeleton variant="text" className="h-10 w-64 mx-auto mb-4" />
-            <Skeleton variant="text" className="mx-auto mb-2" />
-            <Skeleton variant="text" className="mx-auto w-3/4" />
+            <Skeleton variant="text" className="h-10 w-64 mx-auto mb-4 bg-slate-800/50" />
+            <Skeleton variant="text" className="mx-auto mb-2 bg-slate-800/50" />
+            <Skeleton variant="text" className="mx-auto w-3/4 bg-slate-800/50" />
           </div>
         </section>
 
         {/* Musicians Section Skeleton */}
-        <section className="py-16 px-6 bg-gray-50 dark:bg-gray-800">
-          <div className="max-w-7xl mx-auto">
-            <Skeleton variant="text" className="h-8 w-48 mx-auto mb-12" />
+        <section className="py-16 px-6 bg-slate-950">
+          <div className="container-max">
+            <Skeleton variant="text" className="h-8 w-48 mx-auto mb-12 bg-slate-800/50" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="text-center">
-                  <Skeleton variant="circle" className="mx-auto mb-4" />
-                  <Skeleton variant="text" className="h-5 w-32 mx-auto mb-2" />
-                  <Skeleton variant="text" className="h-4 w-24 mx-auto" />
+                  <Skeleton variant="circle" className="mx-auto mb-4 bg-slate-800/50" />
+                  <Skeleton variant="text" className="h-5 w-32 mx-auto mb-2 bg-slate-800/50" />
+                  <Skeleton variant="text" className="h-4 w-24 mx-auto bg-slate-800/50" />
                 </div>
               ))}
             </div>
@@ -98,20 +105,23 @@ export default function BandHome() {
         </section>
 
         {/* Tour Dates Section Skeleton */}
-        <section className="py-16 px-6">
-          <div className="max-w-7xl mx-auto">
-            <Skeleton variant="text" className="h-8 w-56 mx-auto mb-12" />
+        <section className="py-16 px-6 bg-slate-950">
+          <div className="container-max">
+            <Skeleton variant="text" className="h-8 w-56 mx-auto mb-12 bg-slate-800/50" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[0, 1].map((i) => (
-                <div key={i} className="border rounded-lg p-6">
+                <div
+                  key={i}
+                  className="rounded-xl p-6 backdrop-blur-xl border border-white/[0.1] bg-white/[0.06]"
+                >
                   <div className="flex justify-between items-start">
                     <div className="space-y-3">
-                      <Skeleton variant="text" className="h-6 w-48" />
-                      <Skeleton variant="text" className="h-5 w-40" />
-                      <Skeleton variant="text" className="h-4 w-32" />
+                      <Skeleton variant="text" className="h-6 w-48 bg-slate-800/50" />
+                      <Skeleton variant="text" className="h-5 w-40 bg-slate-800/50" />
+                      <Skeleton variant="text" className="h-4 w-32 bg-slate-800/50" />
                     </div>
                   </div>
-                  <Skeleton variant="text" className="h-9 w-28 mt-4" />
+                  <Skeleton variant="text" className="h-9 w-28 mt-4 bg-slate-800/50" />
                 </div>
               ))}
             </div>
@@ -141,7 +151,7 @@ export default function BandHome() {
               animate={!reducedMotion ? { scale: heroScale } : {}}
               transition={{ type: 'tween', ease: 'linear' }}
             >
-              <div className="absolute inset-0 bg-black/50" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950" />
             </motion.div>
           ) : (
             <div
@@ -191,154 +201,119 @@ export default function BandHome() {
         </div>
 
         {/* Musicians Section with Stagger Animation */}
-        <section
-          className="py-16 px-6 bg-gray-50"
-          aria-labelledby="musicians-title"
-        >
-          <div className="max-w-7xl mx-auto">
-            <motion.h2
-              id="musicians-title"
-              className="text-3xl font-bold text-center mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              Our Musicians
-            </motion.h2>
-
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
-              variants={staggerContainerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-100px' }}
-            >
-              {band.members?.slice(0, 3).map((musician) => (
-                <motion.div
-                  key={musician._id}
-                  variants={itemVariants}
-                  className="text-center group"
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.3 }}
-                >
+        <SectionWrapper title="Our Musicians">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            variants={staggerContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+          >
+            {band.members?.slice(0, 3).map((musician) => (
+              <motion.div
+                key={musician._id}
+                variants={itemVariants}
+                className="text-center"
+              >
+                <GlassCard className="p-8">
                   {musician.photo && (
                     <img
                       src={musician.photo}
                       alt={musician.name}
                       loading="lazy"
                       decoding="async"
-                      className="w-48 h-48 mx-auto rounded-full object-cover mb-4 shadow-lg group-hover:shadow-xl transition-shadow"
+                      className="w-48 h-48 mx-auto rounded-full object-cover mb-4 shadow-lg hover:shadow-xl transition-shadow ring-2 ring-white/[0.1]"
                     />
                   )}
-                  <h3 className="text-xl font-bold">{musician.name}</h3>
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    {musician.name}
+                  </h3>
                   {musician.instrument && (
-                    <p className="text-gray-600">{musician.instrument}</p>
+                    <p className="text-gray-300">{musician.instrument}</p>
                   )}
-                </motion.div>
-              ))}
-            </motion.div>
-
-            <div className="text-center mt-8">
-              <motion.div
-                className="inline-block"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <RouterLink
-                  to="/musicians"
-                  className="text-blue-600 hover:underline"
-                >
-                  View All Musicians →
-                </RouterLink>
+                </GlassCard>
               </motion.div>
-            </div>
+            ))}
+          </motion.div>
+
+          <div className="text-center mt-8">
+            <PrimaryButton href="/musicians">View All Musicians →</PrimaryButton>
           </div>
-        </section>
+        </SectionWrapper>
 
         {/* Tour Dates Section with Scroll Animations */}
-        <section className="py-16 px-6" aria-labelledby="tour-dates-title">
-          <div className="max-w-7xl mx-auto">
-            <motion.h2
-              id="tour-dates-title"
-              className="text-3xl font-bold text-center mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              Upcoming Shows
-            </motion.h2>
+        <SectionWrapper title="Upcoming Shows">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            variants={staggerContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {band.tourDates?.slice(0, 4).map((date, idx) => {
+              const currentDate = new Date()
+              currentDate.setHours(0, 0, 0, 0)
+              const eventDate = new Date(date.date)
+              const isUpcoming = eventDate >= currentDate
 
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
-              variants={staggerContainerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {band.tourDates?.slice(0, 4).map((date, idx) => (
+              return (
                 <motion.div
                   key={idx}
                   variants={itemVariants}
-                  className="border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow"
-                  whileHover={{ y: -4 }}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-2xl font-bold">
-                        {new Date(date.date).toLocaleDateString('en-US', {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </p>
-                      <p className="text-xl font-semibold">{date.venue}</p>
-                      <p className="text-gray-600">
-                        {date.city}
-                        {date.region && `, ${date.region}`}
-                      </p>
+                  <GlassCard className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-2xl font-bold text-white">
+                          {new Date(date.date).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </p>
+                        <p className="text-xl font-semibold text-gray-200">
+                          {date.venue}
+                        </p>
+                        <p className="text-gray-300">
+                          {date.city}
+                          {date.region && `, ${date.region}`}
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {date.soldOut && (
+                          <span className="bg-red-900/50 text-red-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-red-500/[0.3]">
+                            Sold Out
+                          </span>
+                        )}
+                        {isUpcoming && (
+                          <span className="bg-green-900/50 text-green-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-green-500/[0.3]">
+                            Upcoming
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {date.soldOut && (
-                      <span className="bg-red-700 text-white px-3 py-1 rounded-full">
-                        Sold Out
-                      </span>
+                    {date.ticketsUrl && (
+                      <PrimaryButton
+                        href={date.ticketsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4"
+                      >
+                        Get Tickets
+                      </PrimaryButton>
                     )}
-                  </div>
-                  {date.ticketsUrl && (
-                    <motion.a
-                      href={date.ticketsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      Get Tickets
-                    </motion.a>
-                  )}
+                  </GlassCard>
                 </motion.div>
-              ))}
-            </motion.div>
+              )
+            })}
+          </motion.div>
 
-            {band.tourDates?.length && (
-              <div className="text-center mt-8">
-                <motion.div
-                  className="inline-block"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <RouterLink
-                    to="/tour"
-                    className="text-blue-600 hover:underline"
-                  >
-                    View All Shows →
-                  </RouterLink>
-                </motion.div>
-              </div>
-            )}
-          </div>
-        </section>
+          {band.tourDates?.length && (
+            <div className="text-center mt-8">
+              <PrimaryButton href="/tour">View All Shows →</PrimaryButton>
+            </div>
+          )}
+        </SectionWrapper>
       </Layout>
     </>
   )

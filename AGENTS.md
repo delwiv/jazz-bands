@@ -154,8 +154,7 @@ apps/jazz-bands/
 │   │   └── shared/
 │   │       ├── Header.tsx        # Navigation
 │   │       ├── Footer.tsx        # Footer
-│   │       ├── Layout.tsx        # Page layout wrapper
-│   │       ├── PageTransition.tsx# Animation wrapper
+│   │       ├── Layout.tsx        # Page layout wrapper (with AnimatePresence, handles page transitions)
 │   │       ├── Skeleton.tsx      # Loading placeholder
 │   │       └── ErrorBoundary.tsx # Error handling
 │   ├── contexts/
@@ -166,6 +165,7 @@ apps/jazz-bands/
 │   │   ├── groq-queries.ts       # GROQ query helpers
 │   │   ├── content.service.ts    # Content fetching service
 │   │   ├── types.ts              # TypeScript interfaces
+│   │   ├── routes.types.ts       # Route loader type definitions
 │   │   └── animationVariants.ts  # framer-motion configs
 │   └── hooks/
 │       └── useReducedMotion.ts   # Accessibility hook
@@ -632,10 +632,47 @@ SANITY_IMPORT_TOKEN=your-token-here
 
 ### Git & Commits
 
+**CRITICAL COMMIT WORKFLOW:**
+
+- **DO NOT COMMIT**: You must NEVER automatically commit code changes. Committing is the developer's responsibility.
+- **PROMPT USER TO COMMIT**: After completing any significant updates (feature completion, bug fixes, refactoring), you must:
+  1. **Notify the user** that changes are complete
+  2. **Provide a commit message suggestion** (semantic style)
+  3. **Ask if they want to commit** the changes
+  4. **Wait for explicit approval** before proceeding
+
+**Example commit prompt:**
+```
+✅ Changes complete. Ready to commit?
+
+Suggested commit message:
+"feat: add type-safe route loaders and clean up redundant animations"
+
+Files modified: [list]
+
+Would you like me to stage and commit these changes?
+```
+
 - **Commit style**: Use semantic commits (`feat:`, `fix:`, `chore:`, `docs:`, etc.) in English.
 - **No author attribution**: Do **not** add co-author, "Ultraworked with", or similar attribution lines in commit messages.
 - **Interactive rebase**: Safety rules block destructive git commands. User will handle `git rebase -i` and commit rewriting manually.
 - **Markdown files**: Do **not** commit agent-generated markdown files (e.g., `MIGRATION-CHANGES.md`, task summaries). Only `README.md` and `AGENTS.md` are tracked. These files pollute the repo and should remain in `.gitignore`.
+
+### Code Quality Standards
+
+- **Type Safety**: Create proper TypeScript interfaces for route loaders (use `app/lib/routes.types.ts` pattern). Avoid `as any` casts.
+- **Animation Architecture**: Layout component handles page transitions. Routes should NOT add redundant `initial/{{ opacity: 0, y: 20 }}` animations — they duplicate what Layout already does.
+- **Reduced Motion**: Import `useReducedMotion` hook only when actually needed (e.g., for parallax/scroll effects). Remove unused imports.
+- **Type Annotations**: Use explicit types for collections (e.g., `TourDate` for tour data filtering/sorting).
+
+### Recent Changes (March 2026)
+
+**Code Cleanup Completed:**
+- Created `app/lib/routes.types.ts` with type-safe route loader interfaces
+- Removed unused `useReducedMotion` imports from contact, musicians, and tour routes
+- Removed redundant page-entry animation props (5 instances across 4 routes)
+- Replaced all `as any` casts with proper TypeScript types in route loaders
+- Fixed 5 `any` type annotations in tour date filtering functions
 
 ### General
 
@@ -645,4 +682,4 @@ SANITY_IMPORT_TOKEN=your-token-here
 
 ---
 
-*Last updated: March 2026*
+*Last updated: March 2026 (post-code-cleanup)*
