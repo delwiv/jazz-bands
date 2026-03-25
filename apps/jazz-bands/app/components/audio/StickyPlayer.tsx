@@ -296,11 +296,12 @@ export function StickyPlayer({
       className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl"
       role="region"
       aria-label="Audio player"
+      style={{ height: '100px' }}
     >
-      <div className="max-w-7xl mx-auto px-3 py-2 md:px-4 md:py-3">
-        <div className="flex items-center gap-2 md:gap-4 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-3 py-2 md:px-4 md:py-3 h-full">
+        <div className="flex items-center gap-2 md:gap-4 overflow-x-hidden h-full">
           {/* Track Info */}
-          <div className="flex flex-col min-w-0 md:w-auto">
+          <div className="flex flex-col min-w-0 md:w-auto h-full">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center shrink-0">
                 <Music className="w-4 h-4 md:w-6 md:h-6 text-white" />
@@ -316,7 +317,7 @@ export function StickyPlayer({
             </div>
 
             {/* Seek Bar - inline on mobile */}
-            <div className="flex items-center gap-1 md:gap-2 mt-1.5 w-full">
+            <div className="flex items-center gap-1 md:gap-2 mt-1.5 w-full flex-1">
               <span className="text-[10px] md:text-xs text-gray-300 w-8 md:w-10 text-right shrink-0">
                 {formatTime(currentTime)}
               </span>
