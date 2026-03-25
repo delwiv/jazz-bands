@@ -37,6 +37,7 @@ export const getBandBySlug = `
       instrument,
       bio,
       "images": images[0].asset->url,
+      "photo": coalesce(images[0].asset->url, musician->images[0].asset->url),
       "musician": musician-> {
         _id,
         name,

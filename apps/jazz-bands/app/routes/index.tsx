@@ -7,6 +7,7 @@ import {
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { Skeleton } from '~/components/shared/Skeleton'
+import { Badge } from '~/components/shared/Badge'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
@@ -200,39 +201,40 @@ export default function BandHome() {
           <p>Hero section with band name: {band.name}</p>
         </div>
 
-        {/* Musicians Section with Stagger Animation */}
+       {/* Musicians Section - Horizontal Scroll */}
         <SectionWrapper title="Our Musicians">
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            className="flex flex-wrap justify-center gap-6 md:gap-8 max-w-7xl mx-auto"
             variants={staggerContainerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-100px' }}
           >
-            {band.members?.slice(0, 3).map((musician) => (
-              <motion.div
-                key={musician._id}
+            {band.members?.map((musician) => (
+              <motion.a
+                key={musician._key}
+                href={`/musicians/${musician.musician?.slug}`}
                 variants={itemVariants}
-                className="text-center"
+                className="flex-none"
               >
-                <GlassCard className="p-8">
+                <GlassCard className="w-64 p-6 text-center hover:shadow-xl transition-shadow">
                   {musician.photo && (
                     <img
                       src={musician.photo}
-                      alt={musician.name}
+                      alt={musician.musician?.name}
                       loading="lazy"
                       decoding="async"
-                      className="w-48 h-48 mx-auto rounded-full object-cover mb-4 shadow-lg hover:shadow-xl transition-shadow ring-2 ring-white/[0.1]"
+                      className="w-40 h-40 mx-auto rounded-full object-cover mb-4 shadow-lg ring-2 ring-white/[0.1]"
                     />
                   )}
                   <h3 className="text-xl font-bold text-white mb-2">
-                    {musician.name}
+                    {musician.musician?.name}
                   </h3>
                   {musician.instrument && (
-                    <p className="text-gray-300">{musician.instrument}</p>
+                    <Badge variant="default">{musician.instrument}</Badge>
                   )}
                 </GlassCard>
-              </motion.div>
+              </motion.a>
             ))}
           </motion.div>
 
