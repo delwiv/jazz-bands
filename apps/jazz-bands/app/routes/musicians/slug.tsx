@@ -112,7 +112,7 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
   if (!data) return []
 
   const musician = data.musician as MusicianDetailResponse
-  const title = `${musician.name} - ${musician.instrument || 'Musician'}${data.band ? ` | ${data.band}` : ''}`
+  const title = `${musician.name} - ${musician.instrument || 'Musician'}${data.band ? ` | ${data.band.name}` : ''}`
   const description =
     musician.bio?.[0]?.children?.[0]?.text ||
     `${musician.name}, ${musician.instrument || 'Musician'}`
@@ -182,11 +182,11 @@ export default function MusicianDetail() {
                   {musician.instrument}
                 </p>
               )}
-              {band && (
-                <p className="text-gray-300 text-sm">
-                  Member of <span className="text-white">{band}</span>
-                </p>
-              )}
+{band && (
+                 <p className="text-gray-300 text-sm">
+                   Member of <span className="text-white">{band.name}</span>
+                 </p>
+               )}
             </div>
           </div>
 
