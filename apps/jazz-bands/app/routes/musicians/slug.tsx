@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { Layout } from '~/components/shared/Layout'
 import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
 import type { Photo } from '~/lib/types'
@@ -102,7 +103,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       bio,
       instrument,
     },
-    band: band?.name,
+    band, // Full band object for Layout
     origin,
   }
 }
@@ -142,6 +143,7 @@ export default function MusicianDetail() {
   const gallery: Photo[] = [{ url: musician.photo }, ...musician.gallery]
 
   return (
+    <Layout band={band}>
     <div className="min-h-screen bg-gray-900">
       <MusicianStructuredData musician={musician} band={band} origin={origin} />
 
@@ -245,5 +247,6 @@ export default function MusicianDetail() {
         </div>
       </div>
     </div>
+    </Layout>
   )
 }
