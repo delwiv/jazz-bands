@@ -44,6 +44,12 @@ export const tourDateType = defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      description: 'URL-friendly identifier (e.g., "2024-03-15-paris-le-baiser-sale")',
+      type: 'string',
+    }),
   ],
   preview: {
     select: {
@@ -51,6 +57,7 @@ export const tourDateType = defineType({
       city: 'city',
       venue: 'venue',
       soldOut: 'soldOut',
+      slug: 'slug',
     },
     prepare(selection) {
       const { date, city, venue, soldOut } = selection

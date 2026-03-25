@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
+import { GlassCard } from '~/components/shared/GlassCard'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
 import { MusiciansLoaderData } from '~/lib/routes.types'
 import { getBandBySlug, getMusiciansByBandId } from '~/lib/queries'
@@ -45,14 +47,15 @@ export function meta({
 export default function MusiciansPage() {
   const { band, musicians, baseUrl } = useLoaderData<MusiciansLoaderData>()
   const [expandedMusician, setExpandedMusician] = useState<string | null>(null)
+  const reducedMotion = useReducedMotion()
 
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
-        <div className="py-16 px-6 bg-gray-50">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-4xl font-bold text-center mb-12">
+        <div className="py-16 px-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+          <div className="container-max">
+            <h1 className="text-4xl font-bold text-center mb-12 text-white">
               Our Musicians
             </h1>
 
@@ -63,39 +66,47 @@ export default function MusiciansPage() {
               animate="visible"
             >
               {musicians.map((musician) => (
-                <motion.div
+                <GlassCard
                   key={musician._id}
-                  variants={itemVariants}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden"
-                  whileHover={{
-                    y: -8,
-                    boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.2)',
-                  }}
-                  transition={{ duration: 0.3 }}
+                  className="rounded-xl overflow-hidden"
                 >
                   {musician.photo && (
-                    <motion.img
-                      src={musician.photo}
-                      alt={musician.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-64 object-cover"
-                      whileHover={{ scale: 1.05 }}
+                    <motion.div
+                      className="relative w-full h-64 overflow-hidden"
+                      whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
                       transition={{ duration: 0.4 }}
-                    />
+                    >
+                      <motion.img
+                        src={musician.photo}
+                        alt={musician.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover"
+                      />
+                      <motion.div
+                        className="absolute inset-0 bg-slate-900/70 flex items-center justify-center"
+                        initial={!reducedMotion ? { opacity: 0 } : undefined}
+                        whileHover={!reducedMotion ? { opacity: 1 } : undefined}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="bg-white/[0.1] backdrop-blur-md border border-white/[0.2] px-4 py-2 rounded-lg">
+                          <span className="text-white text-sm font-medium">View Profile</span>
+                        </div>
+                      </motion.div>
+                    </motion.div>
                   )}
 
                   <div className="p-6">
-                    <h2 className="text-2xl font-bold mb-2">
+                    <h2 className="text-2xl font-bold mb-2 text-white">
                       <Link
                         to={`/musicians/${musician.slug}`}
-                        className="hover:text-amber-600 transition-colors"
+                        className="focus-ring hover:text-amber-400 transition-colors"
                       >
                         {musician.name}
                       </Link>
                     </h2>
                     {musician.instrument && (
-                      <p className="text-blue-600 font-semibold mb-4">
+                      <p className="text-gray-300 font-semibold mb-4">
                         {musician.instrument}
                       </p>
                     )}
@@ -108,65 +119,85 @@ export default function MusiciansPage() {
                             : musician._id,
                         )
                       }
-                      className="text-blue-600 hover:underline"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="focus-ring text-amber-400 hover:text-amber-300 hover:underline transition-colors"
+                      whileHover={!reducedMotion ? { scale: 1.05 } : undefined}
+                      whileTap={!reducedMotion ? { scale: 0.95 } : undefined}
                     >
                       {expandedMusician === musician._id
                         ? 'Show Less'
                         : 'Read Bio'}
                     </motion.button>
 
-                    <AnimatePresence>
-                      {expandedMusician === musician._id && musician.bio && (
-                        <motion.div
-                          className="mt-4 prose max-w-none"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          {musician.bio.map((block, idx) => (
-                            <p key={idx}>{block.children?.[0]?.text}</p>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    {!reducedMotion && (
+                      <AnimatePresence>
+                        {expandedMusician === musician._id && musician.bio && (
+                          <motion.div
+                            className="mt-4 prose max-w-none bg-white/[0.04] backdrop-blur-sm border border-white/[0.05] rounded-lg p-4"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <p className="text-gray-300">
+                              {musician.bio.map((block) => block.children?.[0]?.text).join(' ')}
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    )}
+                    {reducedMotion && expandedMusician === musician._id && musician.bio && (
+                      <div className="mt-4 prose max-w-none bg-white/[0.04] backdrop-blur-sm border border-white/[0.05] rounded-lg p-4">
+                        <p className="text-gray-300">
+                          {musician.bio.map((block) => block.children?.[0]?.text).join(' ')}
+                        </p>
+                      </div>
+                    )}
 
                     {musician.galleryImages &&
                       musician.galleryImages.length > 0 &&
                       musician.galleryImages.some((img) => img.image).length >
-                        0 && (
+                      0 && (
                         <motion.div
                           className="mt-4 grid grid-cols-3 gap-2"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
+                          initial={!reducedMotion ? { opacity: 0 } : undefined}
+                          animate={!reducedMotion ? { opacity: 1 } : undefined}
                           transition={{ delay: 0.2 }}
                         >
                           {musician.galleryImages
                             .slice(0, 3)
                             .filter((img) => img.image)
                             .map((img, idx) => (
-                              <motion.img
+                              <motion.div
                                 key={idx}
-                                src={img.image}
-                                alt={
-                                  img.caption ||
-                                  `${musician.name} photo ${idx + 1}`
-                                }
-                                loading="lazy"
-                                decoding="async"
-                                className="w-full h-20 object-cover rounded"
-                                whileHover={{ scale: 1.1, rotate: 2 }}
+                                className="relative w-full h-20 rounded-lg overflow-hidden"
+                                whileHover={!reducedMotion ? { scale: 1.05, zIndex: 1 } : undefined}
                                 transition={{ duration: 0.2 }}
-                              />
+                              >
+                                <img
+                                  src={img.image}
+                                  alt={img.caption || `${musician.name} photo ${idx + 1}`}
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="w-full h-full object-cover"
+                                />
+                                <motion.div
+                                  className="absolute inset-0 bg-slate-900/70 flex items-center justify-center"
+                                  initial={!reducedMotion ? { opacity: 0 } : undefined}
+                                  whileHover={!reducedMotion ? { opacity: 1 } : undefined}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <div className="bg-white/[0.1] backdrop-blur-md border border-white/[0.2] px-2 py-1 rounded">
+                                    <span className="text-white text-xs">+</span>
+                                  </div>
+                                </motion.div>
+                              </motion.div>
                             ))}
                         </motion.div>
                       )}
                   </div>
-                </motion.div>
-              ))}
-            </motion.div>
+                 </GlassCard>
+               ))}
+             </motion.div>
           </div>
         </div>
       </Layout>

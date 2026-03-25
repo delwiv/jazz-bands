@@ -1085,8 +1085,30 @@ async function migrateBand(
     const tourDates = []
     const dateJazzDocs = await db.collection('DateJazz').find().toArray()
 
+    // Helper function to generate slug from date, city, venue
+    const generateTourDateSlug = (date, city, venue) => {
+      const dateStr = date.toISOString().split('T')[0] // YYYY-MM-DD
+      const slugify = (text) =>
+        text
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g,'') // Remove accents
+          .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with dash
+          .replace(/^-+|-+$/g, '') // Trim dashes
+      const citySlug = slugify(city)
+      const venueSlug = slugify(venue)
+      return `${dateStr}-${citySlug}-${venueSlug}`
+    }
+
     let tourDateIndex = 0
     for (const dateJazz of dateJazzDocs) {
+      const date = new Date(dateJazz.datetime)
+      const tourDateSlug = generateTourDateSlug(
+        date,
+        dateJazz.city || '',
+        dateJazz.place || ''
+      )
+
       tourDates.push({
         _key: `tourdate_${Date.now()}_${tourDateIndex++}`,
         _type: 'tourDate',
@@ -1097,6 +1119,7 @@ async function migrateBand(
         details: dateJazz.informations,
         ticketsUrl: dateJazz.ticketsUrl || undefined,
         soldOut: dateJazz.soldOut ?? false,
+        slug: tourDateSlug,
       })
     }
 

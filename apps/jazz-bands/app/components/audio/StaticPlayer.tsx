@@ -65,15 +65,15 @@ export function StaticPlayer({
                   <h4 className="font-semibold text-white truncate">
                     {currentTrack.title}
                   </h4>
-                  <p className="text-xs md:text-sm text-gray-400 truncate">
-                    {currentTrack.album || 'Single'}
-                  </p>
+                  <p className="text-xs md:text-sm text-gray-300 truncate">
+                     {currentTrack.album || 'Single'}
+                   </p>
                 </div>
               </div>
 
               {/* Seek Bar - inline on mobile */}
               <div className="flex items-center gap-1 md:gap-2 mt-1.5 w-full">
-                <span className="text-[10px] md:text-xs text-gray-400 w-8 md:w-10 text-right shrink-0">
+                <span className="text-[10px] md:text-xs text-gray-300 w-8 md:w-10 text-right shrink-0">
                   {formatTime(currentTime)}
                 </span>
                 <input
@@ -88,7 +88,7 @@ export function StaticPlayer({
                   aria-valuemax={duration}
                   disabled
                 />
-                <span className="text-[10px] md:text-xs text-gray-400 w-8 md:w-10 shrink-0">
+                <span className="text-[10px] md:text-xs text-gray-300 w-8 md:w-10 shrink-0">
                   {formatTime(duration)}
                 </span>
               </div>
@@ -146,7 +146,7 @@ export function StaticPlayer({
                 className="hidden md:flex items-center gap-2"
                 aria-hidden="true"
               >
-                <Volume2 className="w-5 h-5 text-gray-400" />
+                <Volume2 className="w-5 h-5 text-gray-300" />
                 <div className="w-20 h-1 bg-gray-600 rounded-lg" />
               </div>
 

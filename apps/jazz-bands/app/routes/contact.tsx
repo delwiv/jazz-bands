@@ -2,6 +2,7 @@ import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { motion } from 'framer-motion'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { ContactLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
@@ -38,69 +39,97 @@ export function meta({
 
 export default function ContactPage() {
   const { band, baseUrl } = useLoaderData<ContactLoaderData>()
+  const reducedMotion = useReducedMotion()
+
+  // Brand color mapping for social icons
+  const socialColors: Record<string, string> = {
+    twitter: 'hover:text-[#1DA1F2]',
+    facebook: 'hover:text-[#1877F2]',
+    instagram: 'hover:text-[#E4405F]',
+    spotify: 'hover:text-[#1DB954]',
+    youtube: 'hover:text-[#FF0000]',
+  }
 
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
-        <div className="py-16 px-6 bg-gray-50">
+        <div className="py-16 px-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold text-center mb-12">Contact</h1>
+            {/* Hero Title */}
+            <h1 className="text-5xl font-bold text-center mb-16 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+              Contact
+            </h1>
 
-            <div className="bg-white rounded-lg shadow-md p-8">
-              <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
+            {/* Glass Contact Card */}
+            <div className="glass-card shadow-2xl p-10">
+              <h2 className="text-3xl font-bold mb-8 text-white">Get in Touch</h2>
 
+              {/* Email Section */}
               {band.contact?.email && (
-                <div className="mb-4">
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Email
-                  </label>
+                <div className="mb-8 p-6 bg-white/[0.04] rounded-xl border border-white/[0.05]">
+                <label className="block text-gray-300 font-medium mb-3">
+                     Email
+                   </label>
                   <a
                     href={`mailto:${band.contact.email}`}
-                    className="text-blue-600 hover:underline text-lg"
+                    className="focus-ring text-gray-300 hover:text-white transition-colors text-xl break-all"
+                    style={{ '--brand-primary': band.branding?.primaryColor } as React.CSSProperties}
+                    aria-label={`Email ${band.name} at ${band.contact.email}`}
                   >
                     {band.contact.email}
                   </a>
                 </div>
               )}
 
+              {/* Phone Section */}
               {band.contact?.phone && (
-                <div className="mb-6">
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Phone
-                  </label>
-                  <p className="text-lg">{band.contact.phone}</p>
+                <div className="mb-8 p-6 bg-white/[0.04] rounded-xl border border-white/[0.05]">
+                 <label className="block text-gray-300 font-medium mb-3">
+                     Phone
+                   </label>
+                  <p className="text-gray-300 text-xl">{band.contact.phone}</p>
                 </div>
               )}
 
+              {/* Social Media Section */}
               {band.socialMedia && band.socialMedia.length > 0 && (
                 <div className="mb-8">
-                  <label className="block text-gray-700 font-semibold mb-4">
-                    Follow Us
-                  </label>
+                <label className="block text-gray-300 font-medium mb-4">
+                     Follow Us
+                   </label>
                   <div className="flex flex-wrap gap-4">
-                    {band.socialMedia.map((social: any, idx: number) => (
-                      <motion.a
-                        key={idx}
-                        href={social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition capitalize"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {social.platform}
-                      </motion.a>
-                    ))}
+                    {band.socialMedia.map((social: any, idx: number) => {
+                      const platform = social.platform?.toLowerCase() || ''
+                      const hoverColor = socialColors[platform] || 'hover:text-white'
+
+                      return (
+<motion.a
+                         key={idx}
+                         href={social.url}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className={`focus-ring bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] text-gray-300 hover:text-white hover:border-white/[0.2] px-5 py-3 rounded-xl transition-all capitalize ${hoverColor}`}
+                         whileHover={!reducedMotion
+                           ? { scale: 1.05, boxShadow: '0 4px 12px rgba(255,255,255,0.1)' }
+                           : undefined}
+                         whileTap={!reducedMotion ? { scale: 0.95 } : undefined}
+                         aria-label={`Follow ${band.name} on ${social.platform}`}
+                       >
+                           {social.platform}
+                         </motion.a>
+                      )
+                    })}
                   </div>
                 </div>
               )}
 
-              <div className="border-t pt-6">
-                <p className="text-gray-600">
-                  For booking inquiries, please contact us via email or phone.
-                  We typically respond within 48 hours.
-                </p>
+              {/* Footer Message */}
+              <div className="border-t border-white/[0.1] pt-6">
+              <p className="text-gray-300 leading-relaxed">
+                   For booking inquiries, please contact us via email or phone.
+                   We typically respond within 48 hours.
+                 </p>
               </div>
             </div>
           </div>

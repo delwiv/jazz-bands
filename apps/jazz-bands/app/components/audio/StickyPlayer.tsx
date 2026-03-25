@@ -78,19 +78,23 @@ function SortableTrack({
       style={style}
       {...attributes}
       onClick={() => onClick?.(track)}
-      className={`flex items-center justify-between rounded-lg p-3 cursor-pointer transition-colors ${
+      className={`focus-ring flex items-center justify-between rounded-lg p-3 cursor-pointer transition-colors ${
         isCurrent
           ? 'bg-amber-500/30 border border-amber-500/50 hover:bg-amber-500/40'
           : 'bg-gray-800/50 hover:bg-gray-700/50'
       }`}
+      tabIndex={0}
+      role="button"
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div
-          {...listeners}
-          className="w-5 h-5 flex items-center justify-center text-gray-500 cursor-grab shrink-0"
-          aria-label="Drag handle"
-          onClick={(e) => e.stopPropagation()}
-        >
+           {...listeners}
+           className="focus-ring w-5 h-5 flex items-center justify-center text-gray-300 cursor-grab shrink-0"
+           aria-label="Drag handle"
+           onClick={(e) => e.stopPropagation()}
+           tabIndex={0}
+           role="button"
+         >
           <MoveHorizontal className="w-5 h-5" />
         </div>
         <div className="min-w-0">
@@ -99,13 +103,13 @@ function SortableTrack({
           >
             {track.title}
           </p>
-          {track.album && (
-            <p className="text-sm text-gray-400 truncate">{track.album}</p>
-          )}
+             {track.album && (
+    <p className="text-sm text-gray-300 truncate">{track.album}</p>
+  )}
         </div>
       </div>
       <span
-        className={`text-sm ml-2 shrink-0 ${isCurrent ? 'text-amber-200' : 'text-gray-500'}`}
+        className={`text-sm ml-2 shrink-0 ${isCurrent ? 'text-amber-200' : 'text-gray-300'}`}
       >
         {track.duration ? formatTime(track.duration) : '--:--'}
       </span>
@@ -176,16 +180,16 @@ function IntegrationQueue({
           <div className="flex items-center gap-2">
             <ListMusic className="w-4 h-4 text-white" />
             <h3 className="text-sm font-semibold text-white">Queue</h3>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-300">
               {queue.length} {queue.length === 1 ? 'track' : 'tracks'}
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
-            aria-label="Close queue"
-          >
-            <X className="w-4 h-4 text-gray-400" />
+<button
+                onClick={onClose}
+                className="focus-ring p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Close queue"
+              >
+            <X className="w-4 h-4 text-gray-300" />
           </button>
         </div>
 
@@ -195,7 +199,7 @@ function IntegrationQueue({
           style={{ maxHeight: '200px' }}
         >
           {queue.length === 0 ? (
-            <p className="text-center text-gray-500 py-4 text-sm">
+            <p className="text-center text-gray-300 py-4 text-sm">
               No tracks in queue
             </p>
           ) : (
@@ -305,7 +309,7 @@ export function StickyPlayer({
                 <h4 className="font-semibold text-white truncate">
                   {currentTrack.title}
                 </h4>
-                <p className="text-xs md:text-sm text-gray-400 truncate">
+                <p className="text-xs md:text-sm text-gray-300 truncate">
                   {currentTrack.album || 'Single'}
                 </p>
               </div>
@@ -313,7 +317,7 @@ export function StickyPlayer({
 
             {/* Seek Bar - inline on mobile */}
             <div className="flex items-center gap-1 md:gap-2 mt-1.5 w-full">
-              <span className="text-[10px] md:text-xs text-gray-400 w-8 md:w-10 text-right shrink-0">
+              <span className="text-[10px] md:text-xs text-gray-300 w-8 md:w-10 text-right shrink-0">
                 {formatTime(currentTime)}
               </span>
               <input
@@ -328,7 +332,7 @@ export function StickyPlayer({
                 aria-valuemin={0}
                 aria-valuemax={duration}
               />
-              <span className="text-[10px] md:text-xs text-gray-400 w-8 md:w-10 shrink-0">
+              <span className="text-[10px] md:text-xs text-gray-300 w-8 md:w-10 shrink-0">
                 {formatTime(duration)}
               </span>
             </div>
@@ -336,19 +340,19 @@ export function StickyPlayer({
 
           {/* Controls */}
           <div className="flex items-center justify-center gap-2 md:gap-4 mx-auto flex-1 shrink-0">
-            <button
-              onClick={prev}
-              className="p-1.5 md:p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 shrink-0"
-              aria-label="Previous track"
-            >
+<button
+                onClick={prev}
+                className="focus-ring p-1.5 md:p-2 hover:bg-gray-700 rounded-full transition-colors shrink-0"
+                aria-label="Previous track"
+              >
               <SkipBack className="w-4 h-4 md:w-5 md:h-5 text-gray-300" />
             </button>
 
-            <button
-              onClick={togglePlay}
-              className="p-2 md:p-3 bg-white hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 shrink-0"
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-            >
+<button
+                onClick={togglePlay}
+                className="focus-ring p-2 md:p-3 bg-white hover:bg-gray-100 rounded-full transition-colors shrink-0"
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+              >
               {isPlaying ? (
                 <Pause className="w-5 h-5 md:w-6 md:h-6 text-gray-900" />
               ) : (
@@ -356,13 +360,13 @@ export function StickyPlayer({
               )}
             </button>
 
-            <button
-              onClick={next}
-              className="p-1.5 md:p-2 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 shrink-0"
-              aria-label={
-                isOnLastTrack ? 'Loop back to first track' : 'Next track'
-              }
-            >
+<button
+                onClick={next}
+                className="focus-ring p-1.5 md:p-2 hover:bg-gray-700 rounded-full transition-colors shrink-0"
+                aria-label={
+                  isOnLastTrack ? 'Loop back to first track' : 'Next track'
+                }
+              >
               {isOnLastTrack ? (
                 <RotateCw className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
               ) : (
@@ -376,11 +380,11 @@ export function StickyPlayer({
             {/* Volume - hidden on mobile, visible on md+ */}
             <div className="hidden md:flex items-center gap-2">
               {volume === 0 ? (
-                <VolumeX className="w-5 h-5 text-gray-400" />
+                <VolumeX className="w-5 h-5 text-gray-300" />
               ) : volume < 0.5 ? (
-                <Volume1 className="w-5 h-5 text-gray-400" />
+                <Volume1 className="w-5 h-5 text-gray-300" />
               ) : (
-                <Volume2 className="w-5 h-5 text-gray-400" />
+                <Volume2 className="w-5 h-5 text-gray-300" />
               )}
               <input
                 type="range"
@@ -398,25 +402,25 @@ export function StickyPlayer({
             </div>
 
             {/* Queue Button */}
-            <button
-              onClick={() => setIsQueueOpen(!isQueueOpen)}
-              className={`p-1.5 md:p-2 rounded-lg transition-colors flex-shrink-0 ${
-                isQueueOpen
-                  ? 'bg-amber-500 text-white'
-                  : 'hover:bg-gray-700 text-gray-300'
-              }`}
-              aria-label="Toggle queue"
-              aria-expanded={isQueueOpen}
-            >
+<button
+                onClick={() => setIsQueueOpen(!isQueueOpen)}
+                className={`focus-ring p-1.5 md:p-2 rounded-lg transition-colors flex-shrink-0 ${
+                  isQueueOpen
+                    ? 'bg-amber-500 text-white'
+                    : 'hover:bg-gray-700 text-gray-300'
+                }`}
+                aria-label="Toggle queue"
+                aria-expanded={isQueueOpen}
+              >
               <ListMusic className="w-4 h-4 md:w-5 md:h-5" />
             </button>
 
             {/* Compact Toggle Button */}
-            <button
-              onClick={toggleCompact}
-              className="p-1.5 md:p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
-              aria-label="Collapse player to compact mode"
-            >
+<button
+                onClick={toggleCompact}
+                className="focus-ring p-1.5 md:p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
+                aria-label="Collapse player to compact mode"
+              >
               <Minimize2 className="w-4 h-4 md:w-5 md:h-5 text-gray-300" />
             </button>
           </div>

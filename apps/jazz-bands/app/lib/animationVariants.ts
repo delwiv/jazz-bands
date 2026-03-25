@@ -51,7 +51,7 @@ export const itemVariants: Variants = {
   },
 }
 
-export const fadeUpVariants = {
+export const fadeUpVariants: Variants = {
   initial: {
     opacity: 0,
     y: 40,
@@ -64,9 +64,9 @@ export const fadeUpVariants = {
       ease: 'easeOut',
     },
   },
-}
+} as Variants
 
-export const fadeInVariants = {
+export const fadeInVariants: Variants = {
   initial: {
     opacity: 0,
   },
@@ -77,9 +77,9 @@ export const fadeInVariants = {
       ease: 'easeOut',
     },
   },
-}
+} as Variants
 
-export const scaleInVariants = {
+export const scaleInVariants: Variants = {
   initial: {
     opacity: 0,
     scale: 0.9,
@@ -92,7 +92,7 @@ export const scaleInVariants = {
       ease: 'easeOut',
     },
   },
-}
+} as Variants
 
 export const heroParallaxVariants = {
   container: {
@@ -114,22 +114,45 @@ export const heroParallaxVariants = {
   },
 }
 
-export const cardHoverVariants = {
+export const cardHoverVariants: Variants = {
   initial: {
     y: 0,
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 4px 6px -1px rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   hover: {
     y: -4,
-    boxShadow: '0 12px 24px -8px rgba(0, 0, 0, 0.2)',
+    boxShadow: '0 12px 24px -8px rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     transition: {
       duration: 0.3,
       ease: 'easeOut',
     },
   },
-}
+} as Variants
 
-export const buttonVariants = {
+export const glassHoverVariants: Variants = {
+  initial: {
+    y: 0,
+    scale: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+  },
+  hover: {
+    y: -2,
+    scale: 1.02,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 12px 24px -8px rgba(255, 255, 255, 0.1)',
+    transition: {
+      duration: 0.3,
+      ease: 'easeOut',
+    },
+  },
+} as Variants
+
+export const buttonVariants: Variants = {
   initial: {
     scale: 1,
   },
@@ -147,9 +170,9 @@ export const buttonVariants = {
       ease: 'easeIn',
     },
   },
-}
+} as Variants
 
-export const navUnderlineVariants = {
+export const navUnderlineVariants: Variants = {
   hidden: {
     width: '0%',
     x: '-100%',
@@ -162,7 +185,7 @@ export const navUnderlineVariants = {
       ease: 'easeOut',
     },
   },
-}
+} as Variants
 
 export const galleryItemVariants: Variants = {
   hidden: {

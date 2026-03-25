@@ -52,7 +52,7 @@ function TourDateStructuredData({
 
   data.offers = {
     '@type': 'Offer',
-    url: tourDate.ticketsUrl || `${origin}/tour/${tourDate.slug}`,
+    url: tourDate.ticketsUrl || `${origin}/tour/${tourDate.slug || tourDate._key}`,
     availability: tourDate.soldOut
       ? 'https://schema.org/SoldOut'
       : 'https://schema.org/InStock',
@@ -78,11 +78,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const origin = new URL(request.url).origin
 
-  const band = await sanityClient.fetch(
-    getBandWithTourDates,
-    { bandSlug },
-    'includeUnknownTypes',
-  )
+  const band = await sanityClient.fetch(getBandWithTourDates, { bandSlug })
 
   if (!band || !band.tourDates) {
     throw new Response('Band not found', { status: 404 })
@@ -165,15 +161,15 @@ export default function TourDateDetail() {
         <div className="max-w-4xl mx-auto px-4 py-16">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center gap-2 mb-8 text-white/80 hover:text-white transition-colors"
+            className="focus-ring flex items-center gap-2 mb-8 text-white/80 hover:text-white transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="icon-md" />
             Back to tour dates
           </button>
 
           <div className="mb-4">
             <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
-              <Calendar className="w-4 h-4" />
+              <Calendar className="icon-sm" />
               {formatMonthYear(tourDate.date)}
             </span>
           </div>
@@ -190,7 +186,7 @@ export default function TourDateDetail() {
 
           {tourDate.soldOut && (
             <div className="mt-6 flex items-center gap-2 bg-red-600/80 px-4 py-2 rounded-lg">
-              <AlertCircle className="w-5 h-5" />
+              <AlertCircle className="icon-md" />
               <span className="font-medium">This show is sold out</span>
             </div>
           )}
@@ -219,22 +215,22 @@ export default function TourDateDetail() {
               </h2>
 
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-amber-500 mt-1" />
-                  <div>
-                    <p className="text-gray-400 text-sm">Date & Time</p>
-                    <p className="text-white font-medium">
-                      {formatDate(tourDate.date)}
-                    </p>
-                  </div>
-                </div>
+                 <div className="flex items-start gap-3">
+                   <Calendar className="icon-md text-amber-500 mt-1" />
+                   <div>
+                     <p className="text-gray-300 text-sm">Date & Time</p>
+                     <p className="text-white font-medium">
+                       {formatDate(tourDate.date)}
+                     </p>
+                   </div>
+                 </div>
 
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-amber-500 mt-1" />
-                  <div>
-                    <p className="text-gray-400 text-sm">Venue</p>
-                    <p className="text-white font-medium">{tourDate.venue}</p>
-                    <p className="text-gray-400">
+                 <div className="flex items-start gap-3">
+                   <MapPin className="icon-md text-amber-500 mt-1" />
+                   <div>
+                     <p className="text-gray-300 text-sm">Venue</p>
+                     <p className="text-white font-medium">{tourDate.venue}</p>
+                     <p className="text-gray-300">
                       {tourDate.city}
                       {tourDate.region ? `, ${tourDate.region}` : ''}
                     </p>
@@ -246,9 +242,9 @@ export default function TourDateDetail() {
                 href={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white"
+                className="focus-ring mt-6 inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="icon-sm" />
                 View on Google Maps
               </a>
             </div>
@@ -264,9 +260,9 @@ export default function TourDateDetail() {
                     href={tourDate.ticketsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors text-white font-medium"
+                    className="focus-ring flex items-center gap-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors text-white font-medium"
                   >
-                    <Ticket className="w-5 h-5" />
+                    <Ticket className="icon-md" />
                     Buy Tickets
                   </a>
                 )}
@@ -291,19 +287,19 @@ export default function TourDateDetail() {
               <ShareButton
                 platform="facebook"
                 label="Share on Facebook"
-                url={`${origin}/tour/${tourDate.slug}`}
+                url={`${origin}/tour/${tourDate.slug || tourDate._key}`}
                 text={`Can't wait to see ${band} at ${tourDate.venue} on ${tourDate.date}!`}
               />
               <ShareButton
                 platform="twitter"
                 label="Share on Twitter"
-                url={`${origin}/tour/${tourDate.slug}`}
+                url={`${origin}/tour/${tourDate.slug || tourDate._key}`}
                 text={`Can't wait to see ${band} at ${tourDate.venue} on ${tourDate.date}!`}
               />
               <ShareButton
                 platform="linkedin"
                 label="Share on LinkedIn"
-                url={`${origin}/tour/${tourDate.slug}`}
+                url={`${origin}/tour/${tourDate.slug || tourDate._key}`}
                 text={`Excited for ${band} performing at ${tourDate.venue}`}
               />
             </div>
@@ -344,7 +340,7 @@ function ShareButton({
       href={shareUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white text-sm"
+      className="focus-ring flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white text-sm"
     >
       {label}
     </a>

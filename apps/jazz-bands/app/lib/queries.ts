@@ -128,7 +128,7 @@ export const getBandWithTourDates = `
       details,
       ticketsUrl,
       soldOut,
-      "slug": slug({date, city, venue})
+      slug
     }
   }
 `
@@ -142,7 +142,8 @@ export const getAllTourDates = `
       date,
       city,
       venue,
-      region
+      region,
+      slug
     }
   }
 `
