@@ -169,30 +169,12 @@ export default function BandHome() {
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
-        {/* Hero Section with Parallax */}
+         {/* Hero Section */}
         <section
           className="relative flex items-center justify-center overflow-hidden w-full"
           aria-labelledby="hero-title"
           style={{ contain: 'layout', aspectRatio: '16/9' }}
         >
-          {band.heroImage ? (
-            <motion.div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage: `url(${band.heroImage})`,
-                backgroundPositionY: reducedMotion ? '0%' : bgY,
-              }}
-              animate={!reducedMotion ? { scale: heroScale } : {}}
-              transition={{ type: 'tween', ease: 'linear' }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950" />
-            </motion.div>
-          ) : (
-            <div
-              className="absolute inset-0 bg-gray-200 dark:bg-gray-700"
-              aria-hidden="true"
-            />
-          )}
           <div
             className="relative z-10 text-center text-white px-3"
             style={{ opacity: reducedMotion ? 1 : heroOpacity }}
@@ -206,10 +188,10 @@ export default function BandHome() {
           </div>
         </section>
 
-        {/* Description Section */}
+            {/* Description Section */}
         {band.description && band.description.length > 0 && (
           <section className="max-w-7xl mx-auto px-3 py-8 md:py-16 text-center">
-            <div className="prose prose-invert mx-auto max-w-3xl text-gray-200">
+            <div className="prose prose-invert mx-auto max-w-3xl text-gray-200 bg-slate-950/60 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/5">
               {band.description.map((block, idx) => (
                 <p
                   key={block._key || idx}
@@ -218,11 +200,12 @@ export default function BandHome() {
                   {block.children?.[0]?.text}
                 </p>
               ))}
-            </div>
-          </section>
-        )}
+              {/* End glass container for description */}
+              </div>
+            </section>
+          )}
 
-        {/* Main Content Images Gallery */}
+          {/* Main Content Images Gallery */}
         {band.mainImages && band.mainImages.length > 0 && (
           <section className="max-w-7xl mx-auto px-3 py-8 md:py-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -5,6 +5,7 @@ import {
   BandStructuredData,
   EventStructuredData,
 } from '~/components/StructuredData'
+import { SectionWrapper } from '~/components/shared/SectionWrapper'
 import { Layout } from '~/components/shared/Layout'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
@@ -138,11 +139,8 @@ export default function TourPage() {
         />
       ))}
       <Layout band={band}>
-        <div className="py-16 px-6 bg-gradient-to-b from-slate-900 to-slate-800">
+        <SectionWrapper title="Tour Dates" className="py-8">
           <div className="container-max">
-            <h1 className="text-4xl font-bold text-center mb-12 text-white">
-              Tour Dates
-            </h1>
 
             {regions.length > 0 && (
               <div className="mb-8 text-center">
@@ -390,11 +388,11 @@ export default function TourPage() {
                     </div>
                   )
                 })}
-              </div>
-            )}
-          </div>
-        </div>
-      </Layout>
-    </>
-  )
+               </div>
+             )}
+           </div>
+         </SectionWrapper>
+       </Layout>
+     </>
+   )
 }

@@ -7,9 +7,9 @@ interface FooterProps {
 export function Footer({ band }: FooterProps) {
   const secondaryColor = band.branding?.secondaryColor || '#dc2626'
 
-  return (
-    <footer className="bg-white/[0.06] backdrop-blur-xl border-t border-white/[0.1] py-8 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+ return (
+     <footer className="relative bg-slate-950/85 backdrop-blur-md border-t border-white/15 py-12">
+       <div className="max-w-7xl mx-auto px-3 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h3
             className="font-bold text-lg mb-4 text-gray-300 hover:text-opacity-100 transition-colors"
