@@ -42,12 +42,20 @@ export const bandType = defineType({
       },
     }),
     defineField({
-      name: 'heroImage',
-      title: 'Image Principale',
+      name: 'backgroundImage',
+      title: 'Image de Fond (Page Background)',
       type: 'image',
       options: {
         hotspot: true,
       },
+      description: 'Image utilisée comme fond d\'écran fixe sur toutes les pages du site (bg.jpg, background.jpg).',
+    }),
+    defineField({
+      name: 'contentImages',
+      title: 'Images du Contenu',
+      type: 'array',
+      of: [{ type: 'image', options: { hotspot: true } }],
+      description: 'Images principales affichées dans le contenu (remy.png, main.png, affiche_*.jpg, etc.). Ce ne sont PAS des images de fond.',
     }),
     defineField({
       name: 'members',

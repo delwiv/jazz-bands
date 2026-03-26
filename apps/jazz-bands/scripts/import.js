@@ -116,12 +116,23 @@ async function main() {
   console.log('Processing _sanityAsset references...')
   const sanityAssetFiles = new Set()
   for (const doc of regularDocs) {
-    if (doc.heroImage?.asset?._sanityAsset) {
-      const match = doc.heroImage.asset._sanityAsset.match(/image@file:\/\/(.*$)/)
+    // Check backgroundImage field
+    if (doc.backgroundImage?.asset?._sanityAsset) {
+      const match = doc.backgroundImage.asset._sanityAsset.match(/image@file:\/\/(.*$)/)
       if (match) sanityAssetFiles.add(match[1])
-    } else if (doc.heroImage?._sanityAsset) {
-      const match = doc.heroImage._sanityAsset.match(/image@file:\/\/(.*$)/)
+    } else if (doc.backgroundImage?._sanityAsset) {
+      const match = doc.backgroundImage._sanityAsset.match(/image@file:\/\/(.*$)/)
       if (match) sanityAssetFiles.add(match[1])
+    }
+    
+    // Check contentImages array
+    if (Array.isArray(doc.contentImages)) {
+      for (const img of doc.contentImages) {
+        if (img._sanityAsset) {
+          const match = img._sanityAsset.match(/image@file:\/\/(.*$)/)
+          if (match) sanityAssetFiles.add(match[1])
+        }
+      }
     }
   }
   
@@ -159,9 +170,11 @@ async function main() {
   
   for (const band of bands) {
     const { bandMembers, ...bandWithoutMembers } = band
-    await client.create(bandWithoutMembers).catch(() => {})
+    await client.createOrReplace(bandWithoutMembers).catch((err) => {
+      console.error(`❌ Failed to create/replace ${band.slug.current}:`, err.message)
+    })
   }
-  console.log('✓ Phase 1: Created', bands.length, 'bands')
+  console.log('✓ Phase 1: Created/Replaced', bands.length, 'bands')
   
   for (const musician of musicians) {
     const { bands: _, bandOverrides, ...musicianClean } = musician

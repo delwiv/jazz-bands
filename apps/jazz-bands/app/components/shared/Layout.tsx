@@ -17,51 +17,89 @@ export function Layout({ band, children }: LayoutProps) {
   // Handle single child or array of children
   const childrenArray = children ? [children].flat() : []
 
+  // Use background image as fixed background if band has one
+  const hasBackgroundImage = band.backgroundImage != null
+
+  console.log({ hasBackgroundImage, backgroundImage: band.backgroundImage })
+
   // If reduced motion is enabled, render children without animation wrapper
   if (reducedMotion) {
     return (
-      <div className="min-h-screen flex flex-col pb-[70px] md:pb-[82px] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="min-h-screen flex flex-col pb-[70px] md:pb-[82px] relative">
+        {/* Simple fixed background - no gradient, no blur */}
+        {hasBackgroundImage && (
+          <div
+            className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
+            style={{
+              backgroundImage: `url(${band.backgroundImage})`,
+              backgroundPosition: 'center top',
+            }}
+          />
+        )}
+        {!hasBackgroundImage && (
+          <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 z-0" />
+        )}
+
         <a
           href="#main-content"
           className="skip-to-content absolute top-0 left-0 z-50 -translate-y-full bg-blue-600 text-white px-4 py-2 transition-transform focus:translate-y-0"
         >
           Skip to main content
         </a>
-        <Header band={band} />
-        <main id="main-content" className="flex flex-col flex-1">
-          {childrenArray}
-        </main>
-        <Footer band={band} />
+
+        {/* Dark overlay for readability (no blur) */}
+        <div className="fixed inset-0 bg-slate-950/50 z-0" />
+
+        <div className="relative z-10 flex flex-col flex-1">
+          <Header band={band} />
+          <main id="main-content" className="flex flex-col flex-1">
+            {childrenArray}
+          </main>
+          <Footer band={band} />
+        </div>
       </div>
     )
   }
 
   // Render with animations
   return (
-    <div className="min-h-screen flex flex-col pb-[70px] md:pb-[82px] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <a
-        href="#main-content"
-        className="skip-to-content absolute top-0 left-0 z-50 -translate-y-full bg-blue-600 text-white px-4 py-2 transition-transform focus:translate-y-0"
-      >
-        Skip to main content
-      </a>
-      <Header band={band} />
-      <main id="main-content" className="flex flex-col flex-1">
-        <AnimatePresence mode="wait">
-          {childrenArray.map((child, index) => (
-            <motion.div
-              key={index}
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-            >
-              {child}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </main>
-      <Footer band={band} />
+    <div className="min-h-screen flex flex-col pb-[70px] md:pb-[82px] relative">
+      {/* Simple fixed background - no gradient, no blur */}
+      {hasBackgroundImage && (
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
+          style={{
+            backgroundImage: `url(${band.backgroundImage})`,
+            backgroundPosition: 'center top',
+          }}
+        />
+      )}
+      {!hasBackgroundImage && (
+        <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 z-0" />
+      )}
+
+      {/* Dark overlay for readability (no blur) */}
+      <div className="fixed inset-0 bg-slate-950/50 z-0" />
+
+      <div className="relative z-10 flex flex-col flex-1">
+        <Header band={band} />
+        <main id="main-content" className="flex flex-col flex-1">
+          <AnimatePresence mode="wait">
+            {childrenArray.map((child, index) => (
+              <motion.div
+                key={index}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                {child}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </main>
+        <Footer band={band} />
+      </div>
     </div>
   )
 }
