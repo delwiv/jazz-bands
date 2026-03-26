@@ -1,6 +1,7 @@
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { motion } from 'framer-motion'
 import { BandStructuredData } from '~/components/StructuredData'
+import { SectionWrapper } from '~/components/shared/SectionWrapper'
 import { Layout } from '~/components/shared/Layout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { ContactLoaderData } from '~/lib/routes.types'
@@ -54,12 +55,8 @@ export default function ContactPage() {
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
-        <div className="py-16 px-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <SectionWrapper title="Contact" className="py-8">
           <div className="max-w-3xl mx-auto">
-            {/* Hero Title */}
-            <h1 className="text-5xl font-bold text-center mb-16 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-              Contact
-            </h1>
 
             {/* Glass Contact Card */}
             <div className="glass-card shadow-2xl p-10">
@@ -124,16 +121,16 @@ export default function ContactPage() {
                 </div>
               )}
 
-              {/* Footer Message */}
-              <div className="border-t border-white/[0.1] pt-6">
-              <p className="text-gray-300 leading-relaxed">
-                   For booking inquiries, please contact us via email or phone.
-                   We typically respond within 48 hours.
-                 </p>
-              </div>
+             {/* Footer Message */}
+               <div className="border-t border-white/[0.1] pt-6">
+               <p className="text-gray-300 leading-relaxed">
+                    For booking inquiries, please contact us via email or phone.
+                    We typically respond within 48 hours.
+                  </p>
+               </div>
             </div>
           </div>
-        </div>
+        </SectionWrapper>
       </Layout>
     </>
   )

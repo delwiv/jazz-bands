@@ -19,19 +19,23 @@ export function SectionWrapper({
 }: SectionWrapperProps) {
   const isReducedMotion = useReducedMotion();
 
-  const gradients = {
-    default: 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900',
-    accent: 'bg-gradient-to-b from-slate-900 to-slate-800',
-    custom: '',
-  };
+     // Glass effect for consistent appearance
+    const glassClasses =
+      'bg-slate-950/60 backdrop-blur-sm border border-white/5 rounded-3xl p-6 md:p-10'
 
-  return (
-    <section
-      id={id}
-      className={`section-base ${gradients[gradient]} ${className}`}
-      aria-labelledby={title ? 'title' : undefined}
-    >
-      <div className="container-max">
+    const gradients = {
+      default: '',
+      accent: '',
+      custom: '',
+    }
+
+    return (
+      <section
+        id={id}
+        className={`section-base ${gradients[gradient]} ${glassClasses} ${className}`}
+        aria-labelledby={title ? 'title' : undefined}
+      >
+        <div className="container-max">
         {title && (
           <motion.h2
             id="title"

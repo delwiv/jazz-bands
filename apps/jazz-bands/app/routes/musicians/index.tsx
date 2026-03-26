@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
+import { SectionWrapper } from '~/components/shared/SectionWrapper'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { itemVariants, staggerContainerVariants } from '~/lib/animationVariants'
@@ -41,7 +42,7 @@ export function meta({
   loaderData: Awaited<ReturnType<typeof loader>> | null
 }) {
   if (!loaderData?.band) return []
-  return buildBandMeta(loaderData.band, loaderData.baseUrl, 'musicians')
+  return buildBandMeta(loaderData.band, loaderData.baseUrl, 'musicians' )
 }
 
 export default function MusiciansPage() {
@@ -53,11 +54,8 @@ export default function MusiciansPage() {
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
-        <div className="py-16 px-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <SectionWrapper title="Our Musicians" className="py-8">
           <div className="container-max">
-            <h1 className="text-4xl font-bold text-center mb-12 text-white">
-              Our Musicians
-            </h1>
 
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -196,10 +194,10 @@ export default function MusiciansPage() {
                       )}
                   </div>
                  </GlassCard>
-               ))}
-             </motion.div>
+                ))}
+              </motion.div>
           </div>
-        </div>
+        </SectionWrapper>
       </Layout>
     </>
   )
