@@ -385,9 +385,9 @@ async function scanAllStorageAssets(
       GLOBAL_STATS.byTier[category].size += fileStat.size
 
       if (DRY_RUN) {
-        console.log(
-          `  ⚠️  Image: ${file} (${formatBytes(fileStat.size)}) - will optimize to ~${formatBytes(estimateOutputSize(fileStat.size, 'sanity-source'))} for Sanity (DRY_RUN)`,
-        )
+        // console.log(
+        //   `  ⚠️  Image: ${file} (${formatBytes(fileStat.size)}) - will optimize to ~${formatBytes(estimateOutputSize(fileStat.size, 'sanity-source'))} for Sanity (DRY_RUN)`,
+        // )
       }
     }
   }
@@ -417,8 +417,20 @@ async function collectAllMusicians(client) {
           sourceBand: bandSlug,
           sourceId: musician._id?.toString() || `unknown_${Date.now()}`,
         })
+        if (DRY_RUN) {
+          console.log(
+            `    ✓ Found musician: ${musician.name} (${musician.instrument || 'N/A'}) from ${bandSlug}`,
+          )
+        }
+      }
+
+      if (DRY_RUN) {
+        console.log(`  ✔️  Extracted ${allMusicians.filter((m) => m.sourceBand === bandSlug).length} musicians from ${dbName} (${bandSlug})`)
       }
     } catch (error) {
+      console.log(
+        `  ❌  ERROR in ${dbName} (${bandSlug}): ${error.message}`,
+      )
       if (DRY_RUN) {
         console.log(`  ⚠️  No musicians collection found in ${dbName}`)
       }
@@ -466,17 +478,36 @@ async function deduplicateAndMergeMusicians(allMusicians) {
     if (candidates.length === 1) {
       // No duplicates - use as-is
       const { musician, sourceBand } = candidates[0]
-      const musicianId = `musician_${musician._id?.toString()}`
+      // Generate musician ID from normalized name instead of MongoDB ID
+      // This avoids ID collisions when databases are cloned
+      const normalized = normalizeMusicianName(musician.name)
+      const musicianId = normalized ? `musician_${normalized}` : `musician_unknown_${Date.now()}`
+      
       globalMusicians.set(musicianId, {
         musician,
         sourceBands: [sourceBand],
       })
       uniqueCount++
+      if (DRY_RUN) {
+        console.log(
+          `   [UNIQUE] ${musician.name} (${musician.instrument}) from ${sourceBand} (ID: ${musicianId})`,
+        )
+      }
       continue
     }
 
     // Found duplicates
     duplicateGroups++
+    if (DRY_RUN) {
+      console.log(
+        `   [DUPLICATE GROUP ${duplicateGroups}] Key: ${key}`,
+      )
+      candidates.forEach((c, i) => {
+        console.log(
+          `     ${i + 1}. ${c.musician.name} (${c.musician.instrument}) from ${c.sourceBand} (ID: ${c.sourceId})`,
+        )
+      })
+    }
 
     // Get storage base for the first band (used for image resolution checks)
     const firstBand = candidates[0].sourceBand
@@ -488,7 +519,10 @@ async function deduplicateAndMergeMusicians(allMusicians) {
       storageBase,
     )
 
-    const musicianId = `musician_${merged.musician._id?.toString()}`
+    // Use the normalized name from the key as the musician ID (not MongoDB ID)
+// key format is "normalized-name|instrument"
+const [normalizedName] = key.split('|')
+    const musicianId = `musician_${normalizedName}`
     const sourceBands = candidates.map((c) => c.sourceBand)
 
     globalMusicians.set(musicianId, {
@@ -497,6 +531,12 @@ async function deduplicateAndMergeMusicians(allMusicians) {
       sources: candidates,
     })
     mergedCount++
+
+    if (DRY_RUN) {
+      console.log(
+        `     → Merged into: ${musicianId} (${sourceBands.join(', ')})`,
+      )
+    }
 
     // Create overrides for each band where data differs
     for (const candidate of candidates) {
@@ -780,6 +820,20 @@ async function migrate() {
     console.log('\n🔄 PHASE 2: Deduplicating and merging musicians...')
     const { globalMusicians, overrides, stats } =
       await deduplicateAndMergeMusicians(allMusicians)
+
+    if (DRY_RUN) {
+      for (const [dbName, bandSlug] of Object.entries(BAND_MAPPING)) {
+        const bandMusicians = Array.from(globalMusicians.entries()).filter(
+          ([_, data]) => data.sourceBands.includes(bandSlug),
+        )
+        console.log(
+          `     ${bandSlug} (${dbName}): ${bandMusicians.length} musicians`,
+        )
+        bandMusicians.forEach(([id, { musician }]) => {
+          console.log(`       - ${musician.name} (${musician.instrument})`)
+        })
+      }
+    }
     dedupeStats = stats
 
     if (DRY_RUN) {
@@ -885,6 +939,12 @@ async function migrate() {
         { musician, sourceBands },
       ] of globalMusicians.entries()) {
         if (!sourceBands.includes(bandSlug)) continue
+
+        if (DRY_RUN) {
+          console.log(
+            `    → Adding ${musician.name} to ${bandSlug}`,
+          )
+        }
 
         // Check if there's an override for this musician
         const overrideEntry = bandOverrides.find(
@@ -1055,33 +1115,63 @@ async function migrateBand(
     const descriptionBlocks = htmlToSanityBlock(descriptionHTML)
     const homePictures = homeDoc?.homePictures || []
     
-    // Fallback: Check for hardcoded images in legacy templates
+    const { readFileSync, readdirSync } = await import('fs')
+    
+    // Fallback: Check for hero images in legacy files
     const bandBasePath = `/home/leon/dev/jazz-bands/apps/${bandSlug}`
     const bodyHtmlPath = `${bandBasePath}/client/partials/body.html`
-    let legacyHardcodedImages = []
+    const storageImgPath = `${bandBasePath}/server/storage/img`
+    
+    let legacyHeroImage = null
+    let legacyMainPictures = []
+    
+    // Priority 1: Check for background image files (bg.jpg, background.jpg)
+    if (existsSync(storageImgPath)) {
+      const storageFiles = readdirSync(storageImgPath)
+      const bgFiles = storageFiles.filter(
+        f => /^bg\.jpe?g$/i.test(f) || /^background\.jpe?g$/i.test(f)
+      )
+      if (bgFiles.length > 0) {
+        legacyHeroImage = bgFiles.find(f => /^bg\.jpe?g$/i.test(f)) || bgFiles[0]
+        console.log(`    📸 Background image: ${legacyHeroImage}`)
+      }
+    }
+    
+    // Priority 2: Check for hardcoded "main picture" in templates
     if (existsSync(bodyHtmlPath)) {
-      const { readFileSync } = await import('fs')
       const bodyHtml = readFileSync(bodyHtmlPath, 'utf-8')
-      // Find img tags with id="homePicture"
-      const imgMatches = bodyHtml.match(/<img[^>]+id=["']homePicture["'][^>]*>/g) || []
+      // Match id="homePicture" OR class="main-pic"
+      const imgMatches = bodyHtml.match(
+        /<img[^>]+(?:id=["']homePicture["']|class=["'][^"']*main-pic[^"']*["'])[^>]*>/g
+      ) || []
+      
       for (const match of imgMatches) {
         const srcMatch = match.match(/src=["']([^"']+)["']/)
         if (srcMatch) {
-          const srcPath = srcMatch[1]
-          // Remove /assets/ prefix if present, the asset is in server/storage
-          const filename = srcPath.replace(/^\/assets\//, '')
-          legacyHardcodedImages.push(filename)
-          console.log(`    📸 Found legacy hardcoded image: ${filename}`)
+          const fileName = srcMatch[1].replace(/^\/assets\//, '')
+          if (legacyHeroImage) {
+            // Already have background, treat this as extra image
+            legacyMainPictures.push(fileName)
+            console.log(`    📸 Main picture: ${fileName}`)
+          } else {
+            // Use main picture as hero if no background
+            legacyHeroImage = fileName
+            console.log(`    📸 Main picture (as hero): ${fileName}`)
+          }
         }
       }
     }
     
-    if (legacyHardcodedImages.length > 0) {
-      console.log(`    📸 Using ${legacyHardcodedImages.length} legacy hardcoded images as mainImages`)
+    // Log what we found
+    if (legacyHeroImage) {
+      console.log(`    ✓ Hero image will be: ${legacyHeroImage}`)
+    }
+    if (legacyMainPictures.length > 0) {
+      console.log(`    ✓ Extra main images: ${legacyMainPictures.join(', ')}`)
     }
     
-    // Use legacy hardcoded images if homePictures is empty
-    const allHomePictures = homePictures.length > 0 ? homePictures : legacyHardcodedImages
+    // Use legacy main pictures if MongoDB homePictures is empty
+    const allHomePictures = homePictures.length > 0 ? homePictures : legacyMainPictures
     const tourDates = []
     const dateJazzDocs = await db.collection('DateJazz').find().toArray()
 
@@ -1142,23 +1232,21 @@ async function migrateBand(
           GLOBAL_STATS.byTier.audio.count++
           GLOBAL_STATS.byTier.audio.size += fileStat.size
 
-          if (DRY_RUN) {
-            console.log(
-              `  ⚠️  Audio: ${audioFile} (${formatBytes(fileStat.size)}) (DRY_RUN)`,
-            )
-          } else {
-            // Extract ID3 metadata
-            let duration, album, releaseYear
-            try {
-              const tag = ID3.readFile(audioPath)
-              if (tag) {
-                duration = tag.duration
-                  ? Math.round(tag.duration / 1000)
-                  : undefined // Convert ms to seconds
-                album = tag.album || undefined
-                releaseYear = tag.year ? parseInt(tag.year, 10) : undefined
-              }
-            } catch (id3Error) {
+if (DRY_RUN) {
+              // console.log(
+              //   `  ⚠️  Audio: ${audioFile} (${formatBytes(fileStat.size)}) (DRY_RUN)`,
+              // )
+            } else {
+              // Extract ID3 metadata
+              let duration, album, releaseYear
+              try {
+                const tag = ID3.readFile(audioPath)
+                if (tag) {
+                  duration = tag.tag.timeStamp?.seconds;
+                  album = tag.tag.album;
+                  releaseYear = tag.tag.year;
+                }
+              } catch (id3Error) {
               console.warn(
                 `  ⚠️  Could not read ID3 tags for ${audioFile}:`,
                 id3Error.message,
@@ -1221,9 +1309,9 @@ async function migrateBand(
          stats.assets.standard.count++
          GLOBAL_STATS.byTier.standard.count++
          
-         if (DRY_RUN) {
-           console.log(`    ⚠️  Main Image: ${picturePath} (DRY_RUN)`)
-         } else {
+if (DRY_RUN) {
+            // console.log(`    ⚠️  Main Image: ${picturePath} (DRY_RUN)`)
+          } else {
            try {
              const fileStat = await stat(fullImagePath)
              stats.assets.standard.size += fileStat.size
@@ -1286,8 +1374,8 @@ async function migrateBand(
               },
             ],
       logo: undefined,
-      // Fallback to placeholder if no description in MongoDB
-      heroImage: mainImages.length > 0 ? mainImages[0] : undefined,
+       // Use legacy hero image (background or main picture) if found, or first main image
+       heroImage: legacyHeroImage || (mainImages.length > 0 ? mainImages[0] : undefined),
       socialMedia: [],
       // Auto-generate SEO from band name
       seo: {
