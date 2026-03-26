@@ -26,8 +26,8 @@ export const getBandBySlug = `
     "slug": slug.current,
     description,
     "logo": logo.asset->url,
-    "heroImage": heroImage.asset->url,
-    "mainImages": coalesce(mainImages, [])[] {
+    "backgroundImage": backgroundImage.asset->url,
+    "contentImages": coalesce(contentImages, [])[] {
       _key,
       "url": asset->url
     },

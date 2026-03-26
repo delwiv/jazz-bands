@@ -128,9 +128,9 @@ export interface Band {
     current: string
   }
   description: PortableTextBlock[]
-  logo?: SanityImage
-  heroImage?: SanityImage
-  mainImages?: Array<{
+  logo?: string
+  backgroundImage?: string
+  contentImages?: Array<{
     _key?: string
     _type?: 'image'
     url: string

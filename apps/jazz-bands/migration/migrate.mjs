@@ -1122,22 +1122,32 @@ async function migrateBand(
     const bodyHtmlPath = `${bandBasePath}/client/partials/body.html`
     const storageImgPath = `${bandBasePath}/server/storage/img`
     
-    let legacyHeroImage = null
+    let legacyBackgroundImage = null
     let legacyMainPictures = []
+    let backgroundImageSourcePath = null
     
-    // Priority 1: Check for background image files (bg.jpg, background.jpg)
-    if (existsSync(storageImgPath)) {
-      const storageFiles = readdirSync(storageImgPath)
-      const bgFiles = storageFiles.filter(
-        f => /^bg\.jpe?g$/i.test(f) || /^background\.jpe?g$/i.test(f)
-      )
-      if (bgFiles.length > 0) {
-        legacyHeroImage = bgFiles.find(f => /^bg\.jpe?g$/i.test(f)) || bgFiles[0]
-        console.log(`    📸 Background image: ${legacyHeroImage}`)
+    // Priority 1: Check for background image files (bg.jpg, background.jpg ONLY)
+    // Check both /server/storage/img and /client/img directories
+    const imgPathsToCheck = [
+      storageImgPath,
+      `${bandBasePath}/client/img`
+    ]
+    
+    for (const imgPath of imgPathsToCheck) {
+      if (existsSync(imgPath)) {
+        const storageFiles = readdirSync(imgPath)
+        const bgFiles = storageFiles.filter(
+          f => /^bg\.jpe?g$/i.test(f) || /^background\.jpe?g$/i.test(f)
+        )
+        if (bgFiles.length > 0 && !legacyBackgroundImage) {
+          legacyBackgroundImage = bgFiles.find(f => /^bg\.jpe?g$/i.test(f)) || bgFiles[0]
+          backgroundImageSourcePath = imgPath
+          console.log(`    📸 Background image: ${legacyBackgroundImage} (from ${imgPath})`)
+        }
       }
     }
     
-    // Priority 2: Check for hardcoded "main picture" in templates
+    // Priority 2: Check for hardcoded pictures in templates (main images for content)
     if (existsSync(bodyHtmlPath)) {
       const bodyHtml = readFileSync(bodyHtmlPath, 'utf-8')
       // Match id="homePicture" OR class="main-pic"
@@ -1149,25 +1159,24 @@ async function migrateBand(
         const srcMatch = match.match(/src=["']([^"']+)["']/)
         if (srcMatch) {
           const fileName = srcMatch[1].replace(/^\/assets\//, '')
-          if (legacyHeroImage) {
-            // Already have background, treat this as extra image
+          // These are CONTENT images, NOT background images
+          // Add them to legacyMainPictures regardless of backgroundImage presence
+          if (!legacyMainPictures.includes(fileName)) {
             legacyMainPictures.push(fileName)
-            console.log(`    📸 Main picture: ${fileName}`)
-          } else {
-            // Use main picture as hero if no background
-            legacyHeroImage = fileName
-            console.log(`    📸 Main picture (as hero): ${fileName}`)
+            console.log(`    📸 Main picture (content): ${fileName}`)
           }
         }
       }
     }
     
     // Log what we found
-    if (legacyHeroImage) {
-      console.log(`    ✓ Hero image will be: ${legacyHeroImage}`)
+    if (legacyBackgroundImage) {
+      console.log(`    ✓ Background image will be: ${legacyBackgroundImage}`)
+    } else {
+      console.log(`    ℹ️ No background image found (bg.jpg or background.jpg)` )
     }
     if (legacyMainPictures.length > 0) {
-      console.log(`    ✓ Extra main images: ${legacyMainPictures.join(', ')}`)
+      console.log(`    ✓ Content images: ${legacyMainPictures.join(', ')}`)
     }
     
     // Use legacy main pictures if MongoDB homePictures is empty
@@ -1285,6 +1294,7 @@ if (DRY_RUN) {
     // Migrate homePictures (main content images)
     // Use legacy hardcoded images if MongoDB homePictures is empty
     const mainImages = []
+    let contentImgCounter = 0
     for (const picturePath of allHomePictures) {
       if (!picturePath) continue
       
@@ -1332,6 +1342,7 @@ if (DRY_RUN) {
                ? outputImagePath 
                : join(process.cwd(), outputImagePath).replace(/\\/g, '/')
              mainImages.push({
+               _key: `contentimg_${contentImgCounter++}`,
                _type: 'image',
                _sanityAsset: `image@file://${absoluteImagePath}`
              })
@@ -1344,6 +1355,39 @@ if (DRY_RUN) {
        } else {
          console.warn(`    ⚠️  Image file not found: ${picturePath}`)
        }
+    }
+
+   // Process backgroundImage (bg.jpg) as a proper Sanity image reference
+    let backgroundImageRef = undefined
+    
+    if (legacyBackgroundImage) {
+      // Try to find the background image file
+      const backgroundImagePath = join(backgroundImageSourcePath || storageImgPath, legacyBackgroundImage)
+      if (!existsSync(backgroundImagePath)) {
+        console.log(`    ⚠️ Background image file not found: ${backgroundImagePath}`)
+        backgroundImageRef = null
+      } else {
+        // Convert to relative path from migration output
+        const relativePath = join(
+          'assets',
+          bandSlug,
+          'images',
+          `${bandSlug}-background-${legacyBackgroundImage}`
+        )
+        console.log(`    ✓ Background image: ${relativePath}`)
+        backgroundImageRef = {
+          _type: 'image',
+          asset: {
+            _sanityAsset: `image@file://${join(OUTPUT_DIR, relativePath)}`
+          }
+        }
+        copyFileSync(
+          backgroundImagePath,
+          join(OUTPUT_DIR, relativePath)
+        )
+      }
+    } else {
+      console.log(`    ℹ️ No background image to process`)
     }
 
     const bandName = bandSlug
@@ -1372,12 +1416,11 @@ if (DRY_RUN) {
                 ],
                 style: 'normal',
               },
-            ],
+          ],
       logo: undefined,
-       // Use legacy hero image (background or main picture) if found, or first main image
-       heroImage: legacyHeroImage || (mainImages.length > 0 ? mainImages[0] : undefined),
+      backgroundImage: backgroundImageRef,
+      contentImages: mainImages.length > 0 ? mainImages : undefined,
       socialMedia: [],
-      // Auto-generate SEO from band name
       seo: {
         metaTitle: `${bandName} - Jazz Band`,
         metaDescription: `${bandName} is a jazz band. Visit us for tour dates, music, and more.`,

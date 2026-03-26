@@ -434,10 +434,11 @@ export function sanityBlockToHtml(blocks) {
  * // or null if all data matches
  */
 export function createBandOverride(globalMusician, sourceData, bandSlug) {
+  const normalizedName = normalizeMusicianName(globalMusician.name)
   const override = {
     _type: 'bandMemberOverride',
     musician: {
-      _ref: `musician_${globalMusician._id?.toString() || 'unknown'}`,
+      _ref: normalizedName ? `musician_${normalizedName}` : `musician_unknown_${Date.now()}`,
     },
   };
 
