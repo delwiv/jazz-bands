@@ -87,16 +87,18 @@ function SortableTrack({
           >
            <MoveHorizontal className="w-5 h-5" />
          </div>
-        <div className="min-w-0">
+      <div className="min-w-0">
           <p
             className={`font-medium truncate ${isCurrent ? 'text-amber-200' : 'text-white'}`}
           >
             {track.title}
           </p>
-             {track.album && (
-    <p className="text-sm text-gray-300 truncate">{track.album}</p>
-  )}
-        </div>
+          {track.composer ? (
+            <p className="text-sm text-gray-400 truncate">{track.composer}</p>
+          ) : track.album && (
+            <p className="text-sm text-gray-300 truncate">{track.album}</p>
+          )}
+         </div>
       </div>
       <span
         className={`text-sm ml-2 shrink-0 ${isCurrent ? 'text-amber-200' : 'text-gray-300'}`}
@@ -159,9 +161,9 @@ interface IntegrationQueueProps {
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.2 }}
-     className="bg-gradient-to-b from-gray-900 to-gray-800/95 border-b border-gray-700 backdrop-blur-sm"
-       role="region"
-       aria-label={intl.formatMessage({ id: 'audioPlayer.playlistQueue' })}
+     className="glass-card border-b border-gray-700/50"
+        role="region"
+        aria-label={intl.formatMessage({ id: 'audioPlayer.playlistQueue' })}
      >
        <div className="max-w-7xl mx-auto">
          <div
@@ -289,12 +291,12 @@ export function StickyPlayer({
     currentSongIndex >= 0 && currentSongIndex === songCount - 1 && songCount > 1
 
    const ExpandedPlayer = () => (
-       <div
-         className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl"
-         role="region"
-         aria-label={intl.formatMessage({ id: 'audioPlayer.title' })}
-         style={{ height: '100px' }}
-       >
+        <div
+          className="glass-card border-t border-gray-700/50 shadow-2xl"
+          role="region"
+          aria-label={intl.formatMessage({ id: 'audioPlayer.title' })}
+          style={{ height: '100px' }}
+        >
       <div className="max-w-7xl mx-auto px-3 py-2 md:px-4 md:py-3 h-full">
         <div className="flex items-center gap-2 md:gap-4 overflow-x-hidden h-full">
           {/* Track Info */}
