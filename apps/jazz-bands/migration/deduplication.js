@@ -9,6 +9,13 @@
 
 import { stat } from 'fs/promises';
 import { existsSync } from 'fs';
+import { createRequire } from 'module';
+import { htmlToPortableText } from '@portabletext/html';
+import { JSDOM } from 'jsdom';
+
+// Use CommonJS require for he package (it's CommonJS-based)
+const require = createRequire(import.meta.url);
+const he = require('he');
 
 /**
  * Normalizes a musician name for consistent comparison.
@@ -341,58 +348,26 @@ function biosAreEqual(bio1, bio2) {
 
 /**
  * Converts HTML description to Sanity Portable Text block format
- * Preserves paragraph structure and basic formatting
+ * Preserves paragraph structure and rich formatting (bold, italic, links, headings, lists)
  */
 export function htmlToSanityBlock(html) {
   if (!html || typeof html !== 'string') return [];
   
+  const trimmed = html.trim();
+  if (!trimmed) return [];
+  
   try {
-    // Split by paragraph tags to preserve structure
-    const paragraphs = html
-      .split(/<p[^>]*>/i)
-      .filter(p => p.trim() && !p.startsWith('</p>'))
-      .map(p => {
-        // Strip remaining HTML tags but preserve text
-        let text = p
-          .replace(/<\/[^>]+>/g, ' ')  // Close tags → space
-          .replace(/<[^>]+>/g, ' ')    // Open tags → space
-          .replace(/\s+/g, ' ')        // Multiple spaces → single
-          .trim();
-        
-        if (!text) return null;
-        
-        return {
-          _type: 'block',
-          children: [
-            {
-              _type: 'span',
-              text,
-            },
-          ],
-          style: 'normal',
-        };
-      })
-      .filter(block => block !== null);
+    // Decode HTML entities FIRST to prevent double encoding
+    // e.g., "Robert &amp; Jean" → "Robert & Jean"
+    // e.g., "N&#xe9;" → "Né"
+    const decodedHtml = he.decode(trimmed);
     
-    // If no paragraphs found, try single block
-    if (paragraphs.length === 0) {
-      const text = html
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      if (text) {
-        return [
-          {
-            _type: 'block',
-            children: [{ _type: 'span', text }],
-            style: 'normal',
-          },
-        ];
-      }
-    }
+    const blocks = htmlToPortableText(decodedHtml, {
+      schema: htmlToPortableText.defaultSchema,
+      parseHtml: (root) => new JSDOM(root).window.document,
+    });
     
-    return paragraphs;
+    return blocks || [];
   } catch (error) {
     console.warn(`HTML conversion failed:`, error.message);
     // Fallback: return empty array

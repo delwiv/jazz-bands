@@ -17,8 +17,7 @@ import { MongoClient } from 'mongodb'
 import { writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync } from 'fs'
 import { join, basename } from 'path'
 import { stat } from 'fs/promises'
-import id3 from 'id3'
-const { ID3 } = id3
+import { parseFile } from 'music-metadata'
 import {
   classifyImage,
   optimizeImage,
@@ -61,6 +60,7 @@ const GLOBAL_STATS = {
   totalAssets: 0,
   originalSize: 0,
   estimatedSize: 0,
+  skippedDateCount: 0,
   byBand: {},
   byTier: {
     background: { count: 0, size: 0 },
@@ -68,6 +68,13 @@ const GLOBAL_STATS = {
     thumbnail: { count: 0, size: 0 },
     audio: { count: 0, size: 0 },
   },
+}
+
+// Contact consolidation accumulator
+const CONTACT_CONSOLIDATION = {
+  emails: [],
+  phones: [],
+  socialMedia: [],
 }
 
 // Global asset collection
@@ -618,24 +625,16 @@ async function createSanityMusicianFromMongo(
     }))
     .filter((o) => o.bio || o.images || o.instrument)
 
-  const sanityMusician = {
-    _type: 'musician',
-    _id: `musician_${mongoMusician._id?.toString()}`,
-    name: mongoMusician.name,
-    slug: {
-      _type: 'slug',
-      current: generateMusicianSlug(mongoMusician.name) || 'unnamed',
-    },
-    bio: mongoMusician.description
-      ? [
-        {
-          _type: 'block',
-          children: [{ _type: 'span', text: mongoMusician.description }],
-          style: 'normal',
-        },
-      ]
-      : [],
-    instrument: mongoMusician.instrument,
+ const sanityMusician = {
+      _type: 'musician',
+      _id: `musician_${generateMusicianSlug(mongoMusician.name)}`,
+      name: mongoMusician.name,
+      slug: {
+        _type: 'slug',
+        current: generateMusicianSlug(mongoMusician.name) || 'unnamed',
+      },
+      bio: htmlToSanityBlock(mongoMusician.description || ''),
+     instrument: mongoMusician.instrument,
     images: [],
     bands,
     bandOverrides: bandOverrides.length > 0 ? bandOverrides : undefined,
@@ -1014,8 +1013,66 @@ async function migrate() {
       }
 
       GLOBAL_STATS.byBand[bandSlug] = bandStats
-      printBandStats(bandSlug, bandStats)
-    }
+       printBandStats(bandSlug, bandStats)
+     }
+
+     // =====================================================
+     // PHASE 5: Create shared contact document
+     // =====================================================
+     console.log('\n📧 PHASE 5: Creating shared contact document...')
+     
+     // Consolidate contact data
+     // Email: first non-null from any band
+     const sharedEmail = CONTACT_CONSOLIDATION.emails.length > 0 
+       ? CONTACT_CONSOLIDATION.emails[0].email 
+       : ''
+     
+     // Phone: first non-null from any band
+     const sharedPhone = CONTACT_CONSOLIDATION.phones.length > 0 
+       ? CONTACT_CONSOLIDATION.phones[0].phone 
+       : ''
+     
+     // Social media: merge all, dedupe by platform
+     const platformSet = new Set()
+     const uniqueSocialMedia = CONTACT_CONSOLIDATION.socialMedia.filter(sm => {
+       const platform = sm.platform || sm._type || 'unknown'
+       if (platformSet.has(platform)) {
+         return false // Duplicate, skip
+       }
+       platformSet.add(platform)
+       // Remove sourceBand tracking field before final document
+       delete sm.sourceBand
+       return true
+     })
+     
+     const contactDoc = {
+       _id: 'contact_shared',
+       _type: 'contact',
+       email: sharedEmail || undefined,
+       phone: sharedPhone || undefined,
+       socialMedia: uniqueSocialMedia.length > 0 ? uniqueSocialMedia : undefined,
+     }
+     
+     allDocuments.push(contactDoc)
+     
+     if (DRY_RUN) {
+       console.log(`   ✓ Will create shared contact document (ID: contact_shared)`)
+       if (contactDoc.email) console.log(`     - Email: ${contactDoc.email}`)
+       if (contactDoc.phone) console.log(`     - Phone: ${contactDoc.phone}`)
+       if (contactDoc.socialMedia) console.log(`     - SocialMedia: ${contactDoc.socialMedia.length} platform(s)`)
+     } else {
+       console.log(`   ✓ Created shared contact document (ID: contact_shared)`)
+       if (contactDoc.email) console.log(`     - Email: ${contactDoc.email}`)
+       if (contactDoc.phone) console.log(`     - Phone: ${contactDoc.phone}`)
+       if (contactDoc.socialMedia) console.log(`     - SocialMedia: ${contactDoc.socialMedia.length} platform(s)`)
+     }
+     
+     GLOBAL_STATS.contactConsolidated = {
+       emailSources: CONTACT_CONSOLIDATION.emails.length,
+       phoneSources: CONTACT_CONSOLIDATION.phones.length,
+       socialMediaSources: CONTACT_CONSOLIDATION.socialMedia.length,
+       uniqueSocialMedia: uniqueSocialMedia.length,
+     }
 
     GLOBAL_STATS.totalDocuments = allDocuments.length
 
@@ -1202,6 +1259,12 @@ async function migrateBand(
     let tourDateIndex = 0
     for (const dateJazz of dateJazzDocs) {
       const date = new Date(dateJazz.datetime)
+      // Skip dates before 1990 (filters epoch dates like 1970-01-01)
+      if (date.getFullYear() < 1990) {
+        console.warn(`Skipped invalid date: ${dateJazz.datetime} (${date.getFullYear()})`)
+        GLOBAL_STATS.skippedDateCount++
+        continue
+      }
       const tourDateSlug = generateTourDateSlug(
         date,
         dateJazz.city || '',
@@ -1246,34 +1309,53 @@ if (DRY_RUN) {
               //   `  ⚠️  Audio: ${audioFile} (${formatBytes(fileStat.size)}) (DRY_RUN)`,
               // )
             } else {
-              // Extract ID3 metadata
-              let duration, album, releaseYear
+              // Extract metadata using music-metadata
+              let duration, album, releaseYear, composer, trackNumber
               try {
-                const tag = ID3.readFile(audioPath)
-                if (tag) {
-                  duration = tag.tag.timeStamp?.seconds;
-                  album = tag.tag.album;
-                  releaseYear = tag.tag.year;
+                const metadata = await parseFile(audioPath)
+                if (metadata) {
+                  duration = metadata.format?.duration
+                  album = metadata.common?.album
+                  releaseYear = metadata.common?.year
+                  composer = metadata.common?.composer
+                  trackNumber = metadata.common?.track?.no
                 }
-              } catch (id3Error) {
-              console.warn(
-                `  ⚠️  Could not read ID3 tags for ${audioFile}:`,
-                id3Error.message,
-              )
-            }
+              } catch (metaError) {
+                console.warn(
+                  `  ⚠️  Could not read metadata for ${audioFile}:`,
+                  metaError.message,
+                )
+              }
+              
+              // Fallback: extract trackNumber from filename if not in ID3
+              // Pattern: "01-nova-dream.mp3" → trackNumber = 1
+              if (!trackNumber) {
+                const trackMatch = audioFile.match(/^(\d{1,3})[\s-]*/)
+                if (trackMatch) {
+                  trackNumber = parseInt(trackMatch[1], 10)
+                }
+              }
 
-// Extract clean song title from filename
-              // Format: "01 - Title (Composer.ext" or "1 - Song Name (Author; .mp3"
-              const cleanTitle = cleanAudioTitle(audioFile)
-              const recordingTitle = cleanTitle || audioFile
-              const recording = {
-                _key: `recording_${Date.now()}`,
-                _type: 'recording',
-                title: recordingTitle,
-                downloadEnabled: true,
-                duration,
-                album,
-                releaseYear,
+// Extract clean song title and composer from filename
+               // Format: "01 - Title (Composer.ext" or "1 - Song Name (Author; .mp3"
+               const { title: cleanTitle, composer: composerFromFilename } = cleanAudioTitle(audioFile)
+               const recordingTitle = cleanTitle || audioFile.replace(/\.[^/.]+$/, '')
+               
+               // Use ID3 composer first, fallback to filename
+               if (!composer && composerFromFilename) {
+                 composer = composerFromFilename
+               }
+               
+               const recording = {
+                 _key: `recording_${Date.now()}`,
+                 _type: 'recording',
+                 title: recordingTitle,
+                 downloadEnabled: true,
+                 duration,
+                 album,
+                 releaseYear,
+                 composer,
+                 trackNumber,
                 audio: {
                   _type: 'file',
                   asset: await copyAssetToLocal(
@@ -1394,6 +1476,35 @@ if (DRY_RUN) {
       .replace(/-/g, ' ')
       .replace(/\b\w/g, (l) => l.toUpperCase())
 
+    // Extract contact data from MongoDB if exists
+    let bandContactData = null
+    try {
+      const contactDoc = await db.collection('Contact').findOne()
+      if (contactDoc) {
+        bandContactData = {
+          email: contactDoc.email || '',
+          phone: contactDoc.phone || '',
+          socialMedia: contactDoc.socialMedia || [],
+        }
+        
+        // Consolidate for shared contact document
+        if (bandContactData.email) {
+          CONTACT_CONSOLIDATION.emails.push({ bandSlug, email: bandContactData.email })
+        }
+        if (bandContactData.phone) {
+          CONTACT_CONSOLIDATION.phones.push({ bandSlug, phone: bandContactData.phone })
+        }
+        if (bandContactData.socialMedia && Array.isArray(bandContactData.socialMedia)) {
+          CONTACT_CONSOLIDATION.socialMedia.push(...bandContactData.socialMedia.map(sm => ({ ...sm, sourceBand: bandSlug })))
+        }
+      }
+    } catch (contactError) {
+      // No Contact collection exists for this band - continue without contact data
+      if (DRY_RUN) {
+        console.log(`    ℹ️ No contact data found for ${bandSlug}`)
+      }
+    }
+
     const sanityBand = {
       _type: 'band',
       _id: `band_${bandSlug}`,
@@ -1450,10 +1561,15 @@ if (DRY_RUN) {
         // Remove bio and images overrides for initial import
       })),
       
-      contact: {
-        email: '',
-        phone: '',
-      },
+      contact: bandContactData
+        ? {
+            email: bandContactData.email || '',
+            phone: bandContactData.phone || '',
+          }
+        : {
+            email: '',
+            phone: '',
+          },
       branding: {
         _type: 'branding',
         primaryColor: '#1e3a8a',
@@ -1507,23 +1623,30 @@ async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets, o
 
 // Clean audio title from messy old format
 // "01 - Title (Composer.ext" -> "Title"
-// "1 - Song (Author; " -> "Song"
+// "1 - Song (Author; " -> { title: "Song", composer: "Author" }
 function cleanAudioTitle(filename) {
   let title = filename
+  let composer = null
   
   // Remove extension
   title = title.replace(/\.[^/.]+$/, '')
   
-  // Remove order prefix (01 - , 1 - , etc.)
-  title = title.replace(/^[\d]+-+\s*/, '')
+  // Extract composer from filename: "01 - Title (Composer" -> composer = "Composer"
+  // Pattern: text between ( and end of string (before .ext)
+  const composerMatch = title.match(/\s*\((.+)$/)
+  if (composerMatch && composerMatch[1]) {
+    composer = composerMatch[1].trim()
+    // Remove composer part from title
+    title = title.replace(/\s*\(.+$/, '')
+  }
   
-  // Remove composer info starting with (
-  title = title.replace(/\s*\([^)]*$/, '')
+  // Remove order prefix (01 - , 1 - , 04 -, etc.) with optional spaces around dash
+  title = title.replace(/^[\d]+[\s]*-[\s]*/, '')
   
   // Trim whitespace
   title = title.trim()
   
-  return title || null
+  return { title: title || null, composer }
 }
 
 // Generate descriptive filename for assets
@@ -1649,6 +1772,9 @@ function printGlobalStats() {
   console.log(
     `  Size: ${formatBytes(totalSize)} → ~${formatBytes(savings.estimated)} estimated (${savings.reductionPercent}% reduction)`,
   )
+  if (GLOBAL_STATS.skippedDateCount > 0) {
+    console.log(`  ⚠️  Skipped invalid dates: ${GLOBAL_STATS.skippedDateCount}`)
+  }
   console.log('')
   console.log('  Breakdown by tier:')
   console.log(

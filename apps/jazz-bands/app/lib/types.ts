@@ -49,6 +49,8 @@ export interface Recording {
   duration?: number
   album?: string
   releaseYear?: number
+  composer?: string
+  trackNumber?: number
   description?: string
   audioUrl?: string // Direct CDN URL from GROQ
   downloadEnabled?: boolean

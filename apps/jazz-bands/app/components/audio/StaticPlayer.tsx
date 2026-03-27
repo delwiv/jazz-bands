@@ -59,7 +59,7 @@ export function StaticPlayer({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col overflow-hidden">
       <div
-        className="static-player bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl"
+        className="static-player glass-card border-t border-gray-700/50 shadow-2xl"
         role="region"
         aria-label={ariaLabels.audioPlayer}
         aria-disabled="true"
@@ -75,14 +75,20 @@ export function StaticPlayer({
                     aria-hidden="true"
                   />
                 </div>
-                <div className="min-w-0">
-                  <h4 className="font-semibold text-white truncate">
-                    {currentTrack.title}
-                  </h4>
-<p className="text-xs md:text-sm text-gray-300 truncate">
-                    {currentTrack.album || <FormattedMessage id="audioPlayer.single" />}
-                  </p>
-                </div>
+            <div className="min-w-0">
+               <h4 className="font-semibold text-white truncate">
+                 {currentTrack.title}
+               </h4>
+               {currentTrack.composer ? (
+                 <p className="text-xs md:text-sm text-gray-400 truncate">
+                   {currentTrack.composer}
+                 </p>
+               ) : (
+                 <p className="text-xs md:text-sm text-gray-300 truncate">
+                   {currentTrack.album || <FormattedMessage id="audioPlayer.single" />}
+                 </p>
+               )}
+             </div>
               </div>
 
               {/* Seek Bar - inline on mobile */}
