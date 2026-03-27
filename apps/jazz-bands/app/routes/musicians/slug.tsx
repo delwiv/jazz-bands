@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { FormattedMessage } from 'react-intl'
+import { PortableText } from '@portabletext/react'
 import { Layout } from '~/components/shared/Layout'
 import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
@@ -193,23 +194,50 @@ export default function MusicianDetail() {
           </div>
 
          {/* Bio */}
-           <div className="mt-8 p-6 bg-gray-800/50 rounded-lg">
-             <h2 className="text-xl font-semibold text-white mb-4">
-              <FormattedMessage id="musicians.biography" />
-             </h2>
-             <div className="prose prose-invert max-w-none">
-               {bio && bio.length > 0 ? (
-                 <p className="text-gray-300">
-                   {bio[0]?.children?.map((child: any) => child.text).join('') ||
-                     ''}
-                 </p>
-               ) : (
-                 <p className="text-gray-300">
-                   <FormattedMessage id="musicians.noBiographyAvailable" />
-                 </p>
-               )}
-             </div>
-           </div>
+            <div className="mt-8 p-6 bg-gray-800/50 rounded-lg">
+              <h2 className="text-xl font-semibold text-white mb-4">
+               <FormattedMessage id="musicians.biography" />
+              </h2>
+              <div className="prose prose-invert max-w-none text-gray-300">
+                {bio && bio.length > 0 ? (
+                  <PortableText
+                    value={bio}
+                    components={{
+                      block: {
+                        normal: ({ children }) => (
+                          <p className="mb-4 leading-relaxed">{children}</p>
+                        ),
+                        h1: ({ children }) => (
+                          <h3 className="text-2xl font-bold mb-4">{children}</h3>
+                        ),
+                        h2: ({ children }) => (
+                          <h4 className="text-xl font-semibold mb-3">{children}</h4>
+                        ),
+                        h3: ({ children }) => (
+                          <h5 className="text-lg font-medium mb-2">{children}</h5>
+                        ),
+                      },
+                      marks: {
+                        strong: ({ children }) => <strong>{children}</strong>,
+                        em: ({ children }) => <em>{children}</em>,
+                        link: ({ children, value }) => (
+                          <a
+                            href={value.href}
+                            className="text-blue-400 hover:underline"
+                          >
+                            {children}
+                          </a>
+                        ),
+                      },
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-300">
+                    <FormattedMessage id="musicians.noBiographyAvailable" />
+                  </p>
+                )}
+              </div>
+            </div>
 
         {/* Gallery */}
            {gallery.length > 1 && (

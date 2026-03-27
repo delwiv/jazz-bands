@@ -5,6 +5,7 @@ import {
   useNavigation,
 } from 'react-router'
 import { FormattedMessage } from 'react-intl'
+import { PortableText } from '@portabletext/react'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { Skeleton } from '~/components/shared/Skeleton'
@@ -192,19 +193,49 @@ export default function BandHome() {
             {/* Description Section */}
         {band.description && band.description.length > 0 && (
           <section className="max-w-7xl mx-auto px-3 py-8 md:py-16 text-center">
-            <div className="prose prose-invert mx-auto max-w-3xl text-gray-200 bg-slate-950/60 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/5">
-              {band.description.map((block, idx) => (
-                <p
-                  key={block._key || idx}
-                  className="text-lg md:text-xl leading-relaxed mb-4"
-                >
-                  {block.children?.[0]?.text}
-                </p>
-              ))}
-              {/* End glass container for description */}
-              </div>
-            </section>
-          )}
+            <div className="prose prose-invert mx-auto max-w-3xl bg-slate-950/60 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/5">
+              <PortableText
+                value={band.description}
+                components={{
+                  block: {
+                    normal: ({ children }) => (
+                      <p className="text-lg md:text-xl leading-relaxed mb-4 text-gray-200">
+                        {children}
+                      </p>
+                    ),
+                    h1: ({ children }) => (
+                      <h2 className="text-3xl font-bold mb-4 text-white">
+                        {children}
+                      </h2>
+                    ),
+                    h2: ({ children }) => (
+                      <h3 className="text-2xl font-semibold mb-3 text-white">
+                        {children}
+                      </h3>
+                    ),
+                    h3: ({ children }) => (
+                      <h4 className="text-xl font-medium mb-2 text-gray-100">
+                        {children}
+                      </h4>
+                    ),
+                  },
+                  marks: {
+                    strong: ({ children }) => <strong>{children}</strong>,
+                    em: ({ children }) => <em>{children}</em>,
+                    link: ({ children, value }) => (
+                      <a
+                        href={value.href}
+                        className="text-blue-400 hover:underline"
+                      >
+                        {children}
+                      </a>
+                    ),
+                  },
+                }}
+              />
+            </div>
+          </section>
+        )}
 
           {/* Main Content Images Gallery */}
         {band.mainImages && band.mainImages.length > 0 && (
