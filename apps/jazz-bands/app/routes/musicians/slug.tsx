@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { FormattedMessage } from 'react-intl'
 import { Layout } from '~/components/shared/Layout'
 import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
@@ -155,13 +156,13 @@ export default function MusicianDetail() {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
-        <button
-          onClick={() => window.history.back()}
-          className="focus-ring absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
-        >
-          <ArrowLeft className="icon-md" />
-          Back to musicians
-        </button>
+         <button
+           onClick={() => window.history.back()}
+           className="focus-ring absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
+         >
+           <ArrowLeft className="icon-md" />
+           <FormattedMessage id="musicians.backToMusicians" />
+         </button>
       </div>
 
       {/* Content */}
@@ -182,33 +183,40 @@ export default function MusicianDetail() {
                   {musician.instrument}
                 </p>
               )}
-{band && (
-                 <p className="text-gray-300 text-sm">
-                   Member of <span className="text-white">{band.name}</span>
+              {band && (
+                  <p className="text-gray-300 text-sm">
+                    <FormattedMessage id="musicians.memberOf" />{' '}
+                    <span className="text-white">{band.name}</span>
+                  </p>
+                )}
+            </div>
+          </div>
+
+         {/* Bio */}
+           <div className="mt-8 p-6 bg-gray-800/50 rounded-lg">
+             <h2 className="text-xl font-semibold text-white mb-4">
+              <FormattedMessage id="musicians.biography" />
+             </h2>
+             <div className="prose prose-invert max-w-none">
+               {bio && bio.length > 0 ? (
+                 <p className="text-gray-300">
+                   {bio[0]?.children?.map((child: any) => child.text).join('') ||
+                     ''}
+                 </p>
+               ) : (
+                 <p className="text-gray-300">
+                   <FormattedMessage id="musicians.noBiographyAvailable" />
                  </p>
                )}
-            </div>
-          </div>
+             </div>
+           </div>
 
-          {/* Bio */}
-          <div className="mt-8 p-6 bg-gray-800/50 rounded-lg">
-            <h2 className="text-xl font-semibold text-white mb-4">Biography</h2>
-            <div className="prose prose-invert max-w-none">
-              {bio && bio.length > 0 ? (
-                <p className="text-gray-300">
-                  {bio[0]?.children?.map((child: any) => child.text).join('') ||
-                    ''}
-                </p>
-              ) : (
-                <p className="text-gray-300">No biography available.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Gallery */}
-          {gallery.length > 1 && (
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold text-white mb-4">Gallery</h2>
+        {/* Gallery */}
+           {gallery.length > 1 && (
+             <div className="mt-8">
+               <h2 className="text-xl font-semibold text-white mb-4">
+                 <FormattedMessage id="musicians.gallery" />
+               </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {gallery.slice(1).map((photo, idx) => (
                   <div
@@ -226,12 +234,12 @@ export default function MusicianDetail() {
             </div>
           )}
 
-          {/* Band memberships */}
-          {musician.bands && musician.bands.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Band Memberships
-              </h2>
+       {/* Band memberships */}
+           {musician.bands && musician.bands.length > 0 && (
+             <div className="mt-8">
+               <h2 className="text-xl font-semibold text-white mb-4">
+                 <FormattedMessage id="musicians.bandMemberships" />
+               </h2>
               <div className="flex flex-wrap gap-2">
                 {musician.bands.map((bandItem) => (
                   <span

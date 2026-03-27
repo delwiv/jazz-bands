@@ -1,0 +1,97 @@
+{
+  "errorPage": {
+    "pageNotFound": "Page not found",
+    "error": "Error",
+    "siteName": "Jazz Bands",
+    "pageDoesNotExist": "The page you're looking for doesn't exist.",
+    "somethingWentWrong": "Something went wrong. Please try again.",
+    "oopsError": "Oops! Something went wrong",
+    "goHome": "Go Home",
+    "checkUrlOrReturn": "Check the URL or return to the homepage.",
+    "contactSupport": "If the problem persists, please contact support."
+  },
+  "header": {
+    "home": "Home",
+    "musicians": "Musicians",
+    "tour": "Tour",
+    "contact": "Contact",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "footer": {
+    "contact": "Contact",
+    "followUs": "Follow Us",
+    "allRightsReserved": "All rights reserved."
+  },
+  "home": {
+    "ourMusicians": "Our Musicians",
+    "upcomingShows": "Upcoming Shows",
+    "viewAllMusicians": "View All Musicians →",
+    "viewAllShows": "View All Shows →",
+    "getTickets": "Get Tickets",
+    "soldOut": "Sold Out",
+    "upcoming": "Upcoming",
+    "mainImageAlt": "{bandName} main image {index}"
+  },
+  "tour": {
+    "tourDates": "Tour Dates",
+    "filterByRegion": "Filter by Region:",
+    "filterByRegionAria": "Filter by region",
+    "allRegions": "All Regions",
+    "next14Days": "Next 14 days",
+    "noUpcomingShows": "No upcoming shows scheduled.",
+    "getTickets": "Get Tickets",
+    "ticketsTBA": "Tickets TBA",
+    "soldOut": "Sold Out",
+    "upcoming": "Upcoming",
+    "past": "Past"
+  },
+  "musicians": {
+    "ourMusicians": "Our Musicians",
+    "viewProfile": "View Profile",
+    "readBio": "Read Bio",
+    "showLess": "Show Less",
+    "backToMusicians": "Back to musicians",
+    "biography": "Biography",
+    "noBiographyAvailable": "No biography available.",
+    "gallery": "Gallery",
+    "bandMemberships": "Band Memberships",
+    "memberOf": "Member of"
+  },
+  "contact": {
+    "contact": "Contact",
+    "getInTouch": "Get in Touch",
+    "email": "Email",
+    "phone": "Phone",
+    "followUs": "Follow Us",
+    "bookingInquiries": "For booking inquiries, please contact us via email or phone.",
+    "responseTime": "We typically respond within 48 hours.",
+    "emailAria": "Email {bandName} at {email}",
+    "followAria": "Follow {bandName} on {platform}"
+  },
+  "audioPlayer": {
+    "title": "Audio player",
+    "seek": "Seek",
+    "previousTrack": "Previous track",
+    "pause": "Pause",
+    "play": "Play",
+    "nextTrack": "Next track",
+    "loopToFirst": "Loop back to first track",
+    "volume": "Volume",
+    "toggleQueue": "Toggle queue",
+    "collapsePlayer": "Collapse player to compact mode",
+    "dragHandle": "Drag handle",
+    "playlistQueue": "Playlist queue",
+    "closeQueue": "Close queue",
+    "queue": "Queue",
+    "trackCount": {
+      "one": "{count} track",
+      "other": "{count} tracks"
+    },
+    "noTracksInQueue": "No tracks in queue",
+    "paused": "Paused",
+    "readyToPlay": "Ready to play",
+    "openQueue": "Open queue",
+    "single": "Single"
+  }
+}

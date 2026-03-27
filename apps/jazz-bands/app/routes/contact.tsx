@@ -1,4 +1,5 @@
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { FormattedMessage, useIntl } from 'react-intl'
 import { motion } from 'framer-motion'
 import { BandStructuredData } from '~/components/StructuredData'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
@@ -38,9 +39,10 @@ export function meta({
   return buildBandMeta(loaderData.band, loaderData.baseUrl, 'contact')
 }
 
-export default function ContactPage() {
-  const { band, baseUrl } = useLoaderData<ContactLoaderData>()
-  const reducedMotion = useReducedMotion()
+ export default function ContactPage() {
+    const { band, baseUrl } = useLoaderData<ContactLoaderData>()
+    const reducedMotion = useReducedMotion()
+    const intl = useIntl()
 
   // Brand color mapping for social icons
   const socialColors: Record<string, string> = {
@@ -55,46 +57,48 @@ export default function ContactPage() {
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
-        <SectionWrapper title="Contact" className="py-8">
+        <SectionWrapper title={<FormattedMessage id="contact.contact" />} className="py-8">
           <div className="max-w-3xl mx-auto">
 
-            {/* Glass Contact Card */}
-            <div className="glass-card shadow-2xl p-10">
-              <h2 className="text-3xl font-bold mb-8 text-white">Get in Touch</h2>
+           {/* Glass Contact Card */}
+             <div className="glass-card shadow-2xl p-10">
+               <h2 className="text-3xl font-bold mb-8 text-white">
+                 <FormattedMessage id="contact.getInTouch" />
+               </h2>
 
-              {/* Email Section */}
-              {band.contact?.email && (
-                <div className="mb-8 p-6 bg-white/[0.04] rounded-xl border border-white/[0.05]">
-                <label className="block text-gray-300 font-medium mb-3">
-                     Email
-                   </label>
-                  <a
-                    href={`mailto:${band.contact.email}`}
-                    className="focus-ring text-gray-300 hover:text-white transition-colors text-xl break-all"
-                    style={{ '--brand-primary': band.branding?.primaryColor } as React.CSSProperties}
-                    aria-label={`Email ${band.name} at ${band.contact.email}`}
-                  >
+               {/* Email Section */}
+               {band.contact?.email && (
+                 <div className="mb-8 p-6 bg-white/[0.04] rounded-xl border border-white/[0.05]">
+                 <label className="block text-gray-300 font-medium mb-3">
+                      <FormattedMessage id="contact.email" />
+                    </label>
+          <a
+                     href={`mailto:${band.contact.email}`}
+                     className="focus-ring text-gray-300 hover:text-white transition-colors text-xl break-all"
+                     style={{ '--brand-primary': band.branding?.primaryColor } as React.CSSProperties}
+                     aria-label={intl.formatMessage({ id: 'contact.emailAria' }, { bandName: band.name, email: band.contact.email })}
+                   >
                     {band.contact.email}
                   </a>
                 </div>
               )}
 
-              {/* Phone Section */}
-              {band.contact?.phone && (
-                <div className="mb-8 p-6 bg-white/[0.04] rounded-xl border border-white/[0.05]">
-                 <label className="block text-gray-300 font-medium mb-3">
-                     Phone
-                   </label>
+            {/* Phone Section */}
+               {band.contact?.phone && (
+                 <div className="mb-8 p-6 bg-white/[0.04] rounded-xl border border-white/[0.05]">
+                  <label className="block text-gray-300 font-medium mb-3">
+                      <FormattedMessage id="contact.phone" />
+                    </label>
                   <p className="text-gray-300 text-xl">{band.contact.phone}</p>
                 </div>
               )}
 
-              {/* Social Media Section */}
-              {band.socialMedia && band.socialMedia.length > 0 && (
-                <div className="mb-8">
-                <label className="block text-gray-300 font-medium mb-4">
-                     Follow Us
-                   </label>
+             {/* Social Media Section */}
+               {band.socialMedia && band.socialMedia.length > 0 && (
+                 <div className="mb-8">
+                 <label className="block text-gray-300 font-medium mb-4">
+                      <FormattedMessage id="contact.followUs" />
+                    </label>
                   <div className="flex flex-wrap gap-4">
                     {band.socialMedia.map((social: any, idx: number) => {
                       const platform = social.platform?.toLowerCase() || ''
@@ -111,7 +115,7 @@ export default function ContactPage() {
                            ? { scale: 1.05, boxShadow: '0 4px 12px rgba(255,255,255,0.1)' }
                            : undefined}
                          whileTap={!reducedMotion ? { scale: 0.95 } : undefined}
-                         aria-label={`Follow ${band.name} on ${social.platform}`}
+                         aria-label={intl.formatMessage({ id: 'contact.followAria' }, { bandName: band.name, platform: social.platform })}
                        >
                            {social.platform}
                          </motion.a>
@@ -121,13 +125,13 @@ export default function ContactPage() {
                 </div>
               )}
 
-             {/* Footer Message */}
-               <div className="border-t border-white/[0.1] pt-6">
-               <p className="text-gray-300 leading-relaxed">
-                    For booking inquiries, please contact us via email or phone.
-                    We typically respond within 48 hours.
-                  </p>
-               </div>
+            {/* Footer Message */}
+                <div className="border-t border-white/[0.1] pt-6">
+                <p className="text-gray-300 leading-relaxed">
+                     <FormattedMessage id="contact.bookingInquiries" />{' '}
+                     <FormattedMessage id="contact.responseTime" />
+                   </p>
+                </div>
             </div>
           </div>
         </SectionWrapper>

@@ -1,0 +1,97 @@
+{
+  "errorPage": {
+    "pageNotFound": "Page non trouvée",
+    "error": "Erreur",
+    "siteName": "Jazz Bands",
+    "pageDoesNotExist": "La page que vous cherchez n'existe pas.",
+    "somethingWentWrong": "Quelque chose s'est mal passé. Veuillez réessayer.",
+    "oopsError": "Oups ! Quelque chose s'est mal passé",
+    "goHome": "Accueil",
+    "checkUrlOrReturn": "Vérifiez l'URL ou retournez à l'accueil.",
+    "contactSupport": "Si le problème persiste, veuillez contacter le support."
+  },
+  "header": {
+    "home": "Accueil",
+    "musicians": "Musiciens",
+    "tour": "Tournée",
+    "contact": "Contact",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu"
+  },
+  "footer": {
+    "contact": "Contact",
+    "followUs": "Suivez-nous",
+    "allRightsReserved": "Tous droits réservés."
+  },
+  "home": {
+    "ourMusicians": "Nos Musiciens",
+    "upcomingShows": "Prochaines Spectacles",
+    "viewAllMusicians": "Voir tous les musiciens →",
+    "viewAllShows": "Voir tous les spectacles →",
+    "getTickets": "Obtenir des billets",
+    "soldOut": "Complet",
+    "upcoming": "À venir",
+    "mainImageAlt": "Image principale {bandName} {index}"
+  },
+  "tour": {
+    "tourDates": "Dates de Tournée",
+    "filterByRegion": "Filtrer par région :",
+    "filterByRegionAria": "Filtrer par région",
+    "allRegions": "Toutes les régions",
+    "next14Days": "14 prochains jours",
+    "noUpcomingShows": "Aucun spectacle à venir prévu.",
+    "getTickets": "Obtenir des billets",
+    "ticketsTBA": "Billets Bientôt",
+    "soldOut": "Complet",
+    "upcoming": "À venir",
+    "past": "Passé"
+  },
+  "musicians": {
+    "ourMusicians": "Nos Musiciens",
+    "viewProfile": "Voir le profil",
+    "readBio": "Lire la bio",
+    "showLess": "Voir moins",
+    "backToMusicians": "Retour aux musiciens",
+    "biography": "Biographie",
+    "noBiographyAvailable": "Aucune biographie disponible.",
+    "gallery": "Galerie",
+    "bandMemberships": "Appartenances aux groupes",
+    "memberOf": "Membre de"
+  },
+  "contact": {
+    "contact": "Contact",
+    "getInTouch": "Contactez-nous",
+    "email": "Email",
+    "phone": "Téléphone",
+    "followUs": "Suivez-nous",
+    "bookingInquiries": "Pour les demandes de réservation, veuillez nous contacter par email ou téléphone.",
+    "responseTime": "Nous répondons généralement sous 48 heures.",
+    "emailAria": "Email {bandName} à {email}",
+    "followAria": "Suivre {bandName} sur {platform}"
+  },
+  "audioPlayer": {
+    "title": "Lecteur audio",
+    "seek": "Rechercher",
+    "previousTrack": "Piste précédente",
+    "pause": "Pause",
+    "play": "Lecture",
+    "nextTrack": "Piste suivante",
+    "loopToFirst": "Boucle vers la première piste",
+    "volume": "Volume",
+    "toggleQueue": "Basculer la file d'attente",
+    "collapsePlayer": "Réduire le lecteur en mode compact",
+    "dragHandle": "Poignée de glisser-déposer",
+    "playlistQueue": "File d'attente de la playlist",
+    "closeQueue": "Fermer la file d'attente",
+    "queue": "File d'attente",
+    "trackCount": {
+      "one": "{count} piste",
+      "other": "{count} pistes"
+    },
+    "noTracksInQueue": "Aucune piste dans la file d'attente",
+    "paused": "En pause",
+    "readyToPlay": "Prêt à jouer",
+    "openQueue": "Ouvrir la file d'attente",
+    "single": "Single"
+  }
+}

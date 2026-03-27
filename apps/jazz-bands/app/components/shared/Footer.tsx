@@ -1,3 +1,4 @@
+import { FormattedMessage } from 'react-intl'
 import type { Band } from '~/lib/types'
 
 interface FooterProps {
@@ -22,40 +23,45 @@ export function Footer({ band }: FooterProps) {
           </p>
         </div>
 
-        <div>
-          <h4 className="text-gray-300 font-bold mb-4">Contact</h4>
+       <div>
+          <h4 className="text-gray-300 font-bold mb-4">
+            <FormattedMessage id="footer.contact" />
+          </h4>
           {band.contact?.email && (
-            <p className="text-gray-300">📧 {band.contact.email}</p>
-          )}
+             <p className="text-gray-300">📧 {band.contact.email}</p>
+           )}
           {band.contact?.phone && (
-            <p className="text-gray-300">📞 {band.contact.phone}</p>
-          )}
-        </div>
+             <p className="text-gray-300">📞 {band.contact.phone}</p>
+           )}
+         </div>
 
-        <div>
-          <h4 className="text-gray-300 font-bold mb-4">Follow Us</h4>
-          <div className="flex gap-4">
-            {band.socialMedia?.map((social, idx) => (
-              <a
-                key={idx}
-                href={social.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="focus-ring text-gray-300 hover:text-white transition-colors"
-                aria-label={social.platform}
-              >
-                {social.platform}
-              </a>
-            ))}
-          </div>
-        </div>
-      </div>
+         <div>
+           <h4 className="text-gray-300 font-bold mb-4">
+            <FormattedMessage id="footer.followUs" />
+          </h4>
+           <div className="flex gap-4">
+             {band.socialMedia?.map((social, idx) => (
+               <a
+                 key={idx}
+                 href={social.url}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="focus-ring text-gray-300 hover:text-white transition-colors"
+                 aria-label={social.platform}
+               >
+                 {social.platform}
+               </a>
+             ))}
+           </div>
+         </div>
+       </div>
 
-      <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-white/[0.1] text-center text-gray-300">
-        <p>
-          © {new Date().getFullYear()} {band.name}. All rights reserved.
-        </p>
-      </div>
+       <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-white/[0.1] text-center text-gray-300">
+         <p>
+           © {new Date().getFullYear()} {band.name}.{' '}
+           <FormattedMessage id="footer.allRightsReserved" />
+         </p>
+       </div>
     </footer>
   )
 }

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
 import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
+import { FormattedMessage } from 'react-intl'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
@@ -54,7 +55,7 @@ export default function MusiciansPage() {
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
-        <SectionWrapper title="Our Musicians" className="py-8">
+        <SectionWrapper title={<FormattedMessage id="musicians.ourMusicians" />} className="py-8">
           <div className="container-max">
 
             <motion.div
@@ -87,9 +88,11 @@ export default function MusiciansPage() {
                         whileHover={!reducedMotion ? { opacity: 1 } : undefined}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="bg-white/[0.1] backdrop-blur-md border border-white/[0.2] px-4 py-2 rounded-lg">
-                          <span className="text-white text-sm font-medium">View Profile</span>
-                        </div>
+                     <div className="bg-white/[0.1] backdrop-blur-md border border-white/[0.2] px-4 py-2 rounded-lg">
+                         <span className="text-white text-sm font-medium">
+                           <FormattedMessage id="musicians.viewProfile" />
+                         </span>
+                       </div>
                       </motion.div>
                     </motion.div>
                   )}
@@ -120,11 +123,13 @@ export default function MusiciansPage() {
                       className="focus-ring text-amber-400 hover:text-amber-300 hover:underline transition-colors"
                       whileHover={!reducedMotion ? { scale: 1.05 } : undefined}
                       whileTap={!reducedMotion ? { scale: 0.95 } : undefined}
-                    >
-                      {expandedMusician === musician._id
-                        ? 'Show Less'
-                        : 'Read Bio'}
-                    </motion.button>
+                         >
+                         {expandedMusician === musician._id ? (
+                           <FormattedMessage id="musicians.showLess" />
+                         ) : (
+                           <FormattedMessage id="musicians.readBio" />
+                         )}
+                       </motion.button>
 
                     {!reducedMotion && (
                       <AnimatePresence>

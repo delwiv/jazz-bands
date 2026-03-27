@@ -4,6 +4,7 @@ import {
   useLoaderData,
   useNavigation,
 } from 'react-router'
+import { FormattedMessage } from 'react-intl'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { Skeleton } from '~/components/shared/Skeleton'
@@ -233,8 +234,8 @@ export default function BandHome() {
           <p>Hero section with band name: {band.name}</p>
         </div>
 
-        {/* Musicians Section - Horizontal Scroll */}
-        <SectionWrapper title="Our Musicians">
+      {/* Musicians Section - Horizontal Scroll */}
+         <SectionWrapper title={<FormattedMessage id="home.ourMusicians" />}>
           <motion.div
             className="flex flex-wrap justify-center gap-6 md:gap-8 max-w-7xl mx-auto"
             variants={staggerContainerVariants}
@@ -270,15 +271,15 @@ export default function BandHome() {
             ))}
           </motion.div>
 
-          <div className="text-center mt-8">
-            <PrimaryButton href="/musicians">
-              View All Musicians →
-            </PrimaryButton>
-          </div>
+         <div className="text-center mt-8">
+             <PrimaryButton href="/musicians">
+               <FormattedMessage id="home.viewAllMusicians" />
+             </PrimaryButton>
+           </div>
         </SectionWrapper>
 
         {/* Tour Dates Section with Scroll Animations */}
-        <SectionWrapper title="Upcoming Shows">
+         <SectionWrapper title={<FormattedMessage id="home.upcomingShows" />}>
           {() => {
             const currentDate = new Date()
             currentDate.setHours(0, 0, 0, 0)
@@ -329,39 +330,41 @@ export default function BandHome() {
                               {date.region && `, ${date.region}`}
                             </p>
                           </div>
-                          <div className="flex flex-col gap-2">
-                            {date.soldOut && (
-                              <span className="bg-red-900/50 text-red-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-red-500/[0.3]">
-                                Sold Out
-                              </span>
-                            )}
-                            {isUpcoming && (
-                              <span className="bg-green-900/50 text-green-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-green-500/[0.3]">
-                                Upcoming
-                              </span>
-                            )}
-                          </div>
+                         <div className="flex flex-col gap-2">
+                             {date.soldOut && (
+                               <span className="bg-red-900/50 text-red-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-red-500/[0.3]">
+                                 <FormattedMessage id="home.soldOut" />
+                               </span>
+                             )}
+                             {isUpcoming && (
+                               <span className="bg-green-900/50 text-green-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-green-500/[0.3]">
+                                 <FormattedMessage id="home.upcoming" />
+                               </span>
+                             )}
+                           </div>
                         </div>
-                        {date.ticketsUrl && (
-                          <PrimaryButton
-                            href={date.ticketsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-4"
-                          >
-                            Get Tickets
-                          </PrimaryButton>
-                        )}
+                       {date.ticketsUrl && (
+                           <PrimaryButton
+                             href={date.ticketsUrl}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="mt-4"
+                           >
+                             <FormattedMessage id="home.getTickets" />
+                           </PrimaryButton>
+                         )}
                       </GlassCard>
                     </motion.div>
                   )
                 })}
 
-                {upcomingDates?.length && (
-                  <div className="text-center mt-8">
-                    <PrimaryButton href="/tour">View All Shows →</PrimaryButton>
-                  </div>
-                )}
+               {upcomingDates?.length && (
+                   <div className="text-center mt-8">
+                     <PrimaryButton href="/tour">
+                       <FormattedMessage id="home.viewAllShows" />
+                     </PrimaryButton>
+                   </div>
+                 )}
               </motion.div>
             )
           }}
