@@ -1319,8 +1319,10 @@ if (DRY_RUN) {
                    releaseYear = metadata.common?.year
                    // Clean up composer: remove trailing semicolons from ID3 metadata
                    let composerFromId3 = metadata.common?.composer
+                   console.log(`  [DEBUG] Raw ID3 composer: "${composerFromId3}"`)
                    if (composerFromId3) {
-                     composerFromId3 = composerFromId3.replace(/;+$/, '').trim()
+                     composerFromId3 = composerFromId3.replace(/;+\s*$/, '').trim()
+                     console.log(`  [DEBUG] Cleaned ID3 composer: "${composerFromId3}"`)
                    }
                    let composerFallback = composerFromId3
                    composer = composerFallback
@@ -1641,8 +1643,8 @@ function cleanAudioTitle(filename) {
   // Pattern: text between ( and end of string (before .ext)
   const composerMatch = title.match(/\s*\((.+)$/)
   if (composerMatch && composerMatch[1]) {
-    // Clean up composer: remove trailing semicolon, trim whitespace
-    composer = composerMatch[1].replace(/;$/, '').trim()
+    // Clean up composer: remove trailing semicolon(s) and whitespace
+    composer = composerMatch[1].replace(/;+\s*$/, '').trim()
     // Remove composer part from title
     title = title.replace(/\s*\(.+$/, '')
   }
