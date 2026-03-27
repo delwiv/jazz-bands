@@ -309,9 +309,15 @@ export function StickyPlayer({
                 <h4 className="font-semibold text-white truncate">
                   {currentTrack.title}
                 </h4>
-               <p className="text-xs md:text-sm text-gray-300 truncate">
-                   {currentTrack.album || <FormattedMessage id="audioPlayer.single" />}
-                 </p>
+               {currentTrack.composer ? (
+                  <p className="text-xs md:text-sm text-gray-400 truncate">
+                    {currentTrack.composer}
+                  </p>
+                ) : (
+                  <p className="text-xs md:text-sm text-gray-300 truncate">
+                    {currentTrack.album || <FormattedMessage id="audioPlayer.single" />}
+                  </p>
+                )}
               </div>
             </div>
 
