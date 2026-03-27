@@ -56,22 +56,40 @@ export function AudioProvider({
   initialPlayerState,
 }: AudioProviderProps) {
 const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
-     if (initialPlayerState?.currentTrack) return initialPlayerState.currentTrack
+     console.log('[AudioContext] currentTrack init:', {
+       hasInitialPlayerState: !!initialPlayerState,
+       hasInitialTrack: !!initialPlayerState?.currentTrack,
+       initialTrackComposer: initialPlayerState?.currentTrack?.composer,
+     })
+     
+     if (initialPlayerState?.currentTrack) {
+       console.log('[AudioContext] ➜ Returning initialPlayerState.currentTrack WITH composer:', initialPlayerState.currentTrack.composer)
+       return initialPlayerState.currentTrack
+     }
+     
      if (typeof window === 'undefined') return null
+     
      const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
      if (!stored) return null
+     
      try {
        const parsed = JSON.parse(stored)
-       // Merge localStorage data with initialPlayerState to include new fields (like composer)
-       if (initialPlayerState?.currentTrack) {
-         const storedTitle = parsed.title || parsed._key
-         const initialTrack = initialPlayerState.currentTrack
-         // If title matches, use fresh data from Sanity (has new fields)
-         if (initialTrack.title === storedTitle || initialTrack._key === storedTitle) {
-           console.log('[AudioContext] Using fresh data from Sanity for:', storedTitle)
-           return initialTrack
+       console.log('[AudioContext] localStorage parsed track:', { title: parsed.title, composer: parsed.composer, tracksWithAudio: initialPlaylist?.length })
+       
+       // Always prefer fresh data from Sanity (initialPlaylist) if available
+       // Find matching track in initialPlaylist and use that instead of localStorage cached data
+       if (initialPlaylist && initialPlaylist.length > 0) {
+         const matchingTrack = initialPlaylist.find(
+           t => t.title === parsed?.title || t._key === parsed?._key
+         )
+         if (matchingTrack) {
+           console.log('[AudioContext] ➜ Using FRESH track from Sanity playlist (has composer):', matchingTrack.composer)
+           return matchingTrack
          }
        }
+       
+       // Fallback to localStorage
+       console.log('[AudioContext] ➜ Falling back to localStorage track (no composer):', parsed.composer)
        return parsed
      } catch (e) {
        console.warn('[AudioContext] Failed to parse localStorage currentTrack:', e)
