@@ -7,10 +7,12 @@ import {
   useLoaderData,
   useRouteError,
 } from 'react-router'
+import { FormattedMessage } from 'react-intl'
 import { AlertTriangle, Home } from 'lucide-react'
 import type { Route } from './+types/root'
 import { StickyPlayer } from './components/audio/StickyPlayer'
 import { AudioProvider } from './contexts/AudioContext'
+import { I18nProvider } from './i18n/I18nProvider'
 import './tailwind.css'
 import { getBandBySlug } from './lib/queries'
 import { sanityClient } from './lib/sanity.settings'
@@ -64,22 +66,24 @@ export default function App() {
   const { bandSlug, recordings, initialPlayerState } = useLoaderData()
 
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <Meta />
         <Links />
       </head>
       <body>
-        <AudioProvider
-          initialPlaylist={recordings || []}
-          initialPlayerState={initialPlayerState}
-        >
-          <Outlet />
-          <StickyPlayer
-            initialTrack={initialPlayerState.currentTrack}
-            initialQueue={initialPlayerState.queue}
-          />
-        </AudioProvider>
+        <I18nProvider>
+          <AudioProvider
+            initialPlaylist={recordings || []}
+            initialPlayerState={initialPlayerState}
+          >
+            <Outlet />
+            <StickyPlayer
+              initialTrack={initialPlayerState.currentTrack}
+              initialQueue={initialPlayerState.queue}
+            />
+          </AudioProvider>
+        </I18nProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -96,23 +100,17 @@ export function ErrorPage() {
     'status' in error &&
     error.status === 404
 
-  const getErrorMessage = (): string => {
-    if (is404) {
-      return "The page you're looking for doesn't exist."
-    }
-    if (error instanceof Error) {
-      return error.message
-    }
-    if (typeof error === 'string') {
-      return error
-    }
-    return 'Something went wrong. Please try again.'
-  }
-
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
-        <title>{is404 ? 'Page Not Found' : 'Error'} - Jazz Bands</title>
+        <title>
+          {is404 ? (
+            <FormattedMessage id="errorPage.pageNotFound" />
+          ) : (
+            <FormattedMessage id="errorPage.error" />
+          )}{' '}
+          - <FormattedMessage id="errorPage.siteName" />
+        </title>
         <Meta />
         <Links />
       </head>
@@ -124,12 +122,24 @@ export function ErrorPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
-              {is404 ? 'Page Not Found' : 'Oops! Something went wrong'}
+              {is404 ? (
+                <FormattedMessage id="errorPage.pageNotFound" />
+              ) : (
+                <FormattedMessage id="errorPage.oopsError" />
+              )}
             </h1>
 
             <div className="bg-red-50 rounded-lg p-4 mb-6">
               <p className="text-red-700 text-sm leading-relaxed">
-                {getErrorMessage()}
+                {is404 ? (
+                  <FormattedMessage id="errorPage.pageDoesNotExist" />
+                ) : error instanceof Error ? (
+                  error.message
+                ) : typeof error === 'string' ? (
+                  error
+                ) : (
+                  <FormattedMessage id="errorPage.somethingWentWrong" />
+                )}
               </p>
             </div>
 
@@ -138,13 +148,15 @@ export function ErrorPage() {
               className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-red-600 hover:to-orange-600 transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-red-200"
             >
               <Home className="w-5 h-5" />
-              {is404 ? 'Go Home' : 'Go Back Home'}
+              <FormattedMessage id="errorPage.goHome" />
             </a>
 
             <p className="mt-6 text-sm text-gray-500">
-              {is404
-                ? 'Check the URL or return to the homepage.'
-                : 'If the problem persists, please contact support.'}
+              {is404 ? (
+                <FormattedMessage id="errorPage.checkUrlOrReturn" />
+              ) : (
+                <FormattedMessage id="errorPage.contactSupport" />
+              )}
             </p>
           </div>
         </div>

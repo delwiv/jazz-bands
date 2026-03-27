@@ -1,17 +1,6 @@
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from '@dnd-kit/sortable'
+import { closestCenter, DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { FormattedMessage, useIntl } from 'react-intl'
+import { SortableContext, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -57,6 +46,7 @@ function SortableTrack({
   isCurrent = false,
   onClick,
 }: SortableTrackProps) {
+  const intl = useIntl()
   const {
     attributes,
     listeners,
@@ -88,15 +78,15 @@ function SortableTrack({
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div
-           {...listeners}
-           className="focus-ring w-5 h-5 flex items-center justify-center text-gray-300 cursor-grab shrink-0"
-           aria-label="Drag handle"
-           onClick={(e) => e.stopPropagation()}
-           tabIndex={0}
-           role="button"
-         >
-          <MoveHorizontal className="w-5 h-5" />
-        </div>
+            {...listeners}
+            className="focus-ring w-5 h-5 flex items-center justify-center text-gray-300 cursor-grab shrink-0"
+            aria-label={intl.formatMessage({ id: 'audioPlayer.dragHandle' })}
+            onClick={(e) => e.stopPropagation()}
+            tabIndex={0}
+            role="button"
+          >
+           <MoveHorizontal className="w-5 h-5" />
+         </div>
         <div className="min-w-0">
           <p
             className={`font-medium truncate ${isCurrent ? 'text-amber-200' : 'text-white'}`}
@@ -118,20 +108,21 @@ function SortableTrack({
 }
 
 interface IntegrationQueueProps {
-  queue: Recording[]
-  isCurrentTrack: (title: string) => boolean
-  onClose: () => void
-  onReorder: (oldIndex: number, newIndex: number) => void
-  playTrack: (track: Recording) => void
-}
+   queue: Recording[]
+    isCurrentTrack: (title: string) => boolean
+    onClose: () => void
+    onReorder: (oldIndex: number, newIndex: number) => void
+    playTrack: (track: Recording) => void
+ }
 
-function IntegrationQueue({
-  queue,
-  isCurrentTrack,
-  onClose,
-  onReorder,
-  playTrack,
-}: IntegrationQueueProps) {
+ function IntegrationQueue({
+    queue,
+    isCurrentTrack,
+    onClose,
+    onReorder,
+    playTrack,
+ }: IntegrationQueueProps) {
+    const intl = useIntl()
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -168,26 +159,31 @@ function IntegrationQueue({
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="bg-gradient-to-b from-gray-900 to-gray-800/95 border-b border-gray-700 backdrop-blur-sm"
-      role="region"
-      aria-label="Playlist queue"
-    >
-      <div className="max-w-7xl mx-auto">
-        <div
-          className="flex items-center justify-between px-3 py-2 border-b border-gray-700"
-          style={{ minHeight: `${headerHeight}px` }}
-        >
-          <div className="flex items-center gap-2">
-            <ListMusic className="w-4 h-4 text-white" />
-            <h3 className="text-sm font-semibold text-white">Queue</h3>
-            <span className="text-xs text-gray-300">
-              {queue.length} {queue.length === 1 ? 'track' : 'tracks'}
-            </span>
+     className="bg-gradient-to-b from-gray-900 to-gray-800/95 border-b border-gray-700 backdrop-blur-sm"
+       role="region"
+       aria-label={intl.formatMessage({ id: 'audioPlayer.playlistQueue' })}
+     >
+       <div className="max-w-7xl mx-auto">
+         <div
+           className="flex items-center justify-between px-3 py-2 border-b border-gray-700"
+           style={{ minHeight: `${headerHeight}px` }}
+         >
+           <div className="flex items-center gap-2">
+             <ListMusic className="w-4 h-4 text-white" />
+             <h3 className="text-sm font-semibold text-white">
+               <FormattedMessage id="audioPlayer.queue" />
+             </h3>
+             <span className="text-xs text-gray-300">
+                {intl.formatMessage(
+                  { id: 'audioPlayer.trackCount' },
+                  { count: queue.length },
+                )}
+              </span>
           </div>
-<button
+           <button
                 onClick={onClose}
                 className="focus-ring p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
-                aria-label="Close queue"
+                aria-label={intl.formatMessage({ id: 'audioPlayer.closeQueue' })}
               >
             <X className="w-4 h-4 text-gray-300" />
           </button>
@@ -198,11 +194,11 @@ function IntegrationQueue({
           className={`overflow-y-auto scrollbar-hidden`}
           style={{ maxHeight: '200px' }}
         >
-          {queue.length === 0 ? (
-            <p className="text-center text-gray-300 py-4 text-sm">
-              No tracks in queue
-            </p>
-          ) : (
+         {queue.length === 0 ? (
+              <p className="text-center text-gray-300 py-4 text-sm">
+                <FormattedMessage id="audioPlayer.noTracksInQueue" />
+              </p>
+            ) : (
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -229,10 +225,11 @@ function IntegrationQueue({
 }
 
 export function StickyPlayer({
-  initialTrack,
-  initialQueue,
-}: StickyPlayerProps) {
-  const isHydrated = useIsHydrated()
+   initialTrack,
+   initialQueue,
+ }: StickyPlayerProps) {
+    const isHydrated = useIsHydrated()
+    const intl = useIntl()
   const {
     currentTrack,
     isPlaying,
@@ -291,13 +288,13 @@ export function StickyPlayer({
   const isOnLastTrack =
     currentSongIndex >= 0 && currentSongIndex === songCount - 1 && songCount > 1
 
-  const ExpandedPlayer = () => (
-    <div
-      className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl"
-      role="region"
-      aria-label="Audio player"
-      style={{ height: '100px' }}
-    >
+   const ExpandedPlayer = () => (
+       <div
+         className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 shadow-2xl"
+         role="region"
+         aria-label={intl.formatMessage({ id: 'audioPlayer.title' })}
+         style={{ height: '100px' }}
+       >
       <div className="max-w-7xl mx-auto px-3 py-2 md:px-4 md:py-3 h-full">
         <div className="flex items-center gap-2 md:gap-4 overflow-x-hidden h-full">
           {/* Track Info */}
@@ -310,9 +307,9 @@ export function StickyPlayer({
                 <h4 className="font-semibold text-white truncate">
                   {currentTrack.title}
                 </h4>
-                <p className="text-xs md:text-sm text-gray-300 truncate">
-                  {currentTrack.album || 'Single'}
-                </p>
+               <p className="text-xs md:text-sm text-gray-300 truncate">
+                   {currentTrack.album || <FormattedMessage id="audioPlayer.single" />}
+                 </p>
               </div>
             </div>
 
@@ -328,7 +325,7 @@ export function StickyPlayer({
                 value={currentTime}
                 onChange={handleSeek}
                 className="flex-1 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                aria-label="Seek"
+                aria-label={intl.formatMessage({ id: 'audioPlayer.seek' })}
                 aria-valuenow={currentTime}
                 aria-valuemin={0}
                 aria-valuemax={duration}
@@ -341,10 +338,10 @@ export function StickyPlayer({
 
           {/* Controls */}
           <div className="flex items-center justify-center gap-2 md:gap-4 mx-auto flex-1 shrink-0">
-<button
+            <button
                 onClick={prev}
                 className="focus-ring p-1.5 md:p-2 hover:bg-gray-700 rounded-full transition-colors shrink-0"
-                aria-label="Previous track"
+                aria-label={intl.formatMessage({ id: 'audioPlayer.previousTrack' })}
               >
               <SkipBack className="w-4 h-4 md:w-5 md:h-5 text-gray-300" />
             </button>
@@ -352,7 +349,7 @@ export function StickyPlayer({
 <button
                 onClick={togglePlay}
                 className="focus-ring p-2 md:p-3 bg-white hover:bg-gray-100 rounded-full transition-colors shrink-0"
-                aria-label={isPlaying ? 'Pause' : 'Play'}
+                aria-label={intl.formatMessage({ id: isPlaying ? 'audioPlayer.pause' : 'audioPlayer.play' })}
               >
               {isPlaying ? (
                 <Pause className="w-5 h-5 md:w-6 md:h-6 text-gray-900" />
@@ -364,9 +361,7 @@ export function StickyPlayer({
 <button
                 onClick={next}
                 className="focus-ring p-1.5 md:p-2 hover:bg-gray-700 rounded-full transition-colors shrink-0"
-                aria-label={
-                  isOnLastTrack ? 'Loop back to first track' : 'Next track'
-                }
+                aria-label={intl.formatMessage({ id: isOnLastTrack ? 'audioPlayer.loopToFirst' : 'audioPlayer.nextTrack' })}
               >
               {isOnLastTrack ? (
                 <RotateCw className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
@@ -395,7 +390,7 @@ export function StickyPlayer({
                 value={volume}
                 onChange={handleVolumeChange}
                 className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                aria-label="Volume"
+                aria-label={intl.formatMessage({ id: 'audioPlayer.volume' })}
                 aria-valuenow={volume}
                 aria-valuemin={0}
                 aria-valuemax={1}
@@ -410,7 +405,7 @@ export function StickyPlayer({
                     ? 'bg-amber-500 text-white'
                     : 'hover:bg-gray-700 text-gray-300'
                 }`}
-                aria-label="Toggle queue"
+                aria-label={intl.formatMessage({ id: 'audioPlayer.toggleQueue' })}
                 aria-expanded={isQueueOpen}
               >
               <ListMusic className="w-4 h-4 md:w-5 md:h-5" />
@@ -420,7 +415,7 @@ export function StickyPlayer({
 <button
                 onClick={toggleCompact}
                 className="focus-ring p-1.5 md:p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
-                aria-label="Collapse player to compact mode"
+                aria-label={intl.formatMessage({ id: 'audioPlayer.collapsePlayer' })}
               >
               <Minimize2 className="w-4 h-4 md:w-5 md:h-5 text-gray-300" />
             </button>

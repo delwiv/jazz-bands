@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
 import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
+import { FormattedMessage, useIntl } from 'react-intl'
 import {
   BandStructuredData,
   EventStructuredData,
@@ -49,11 +50,12 @@ export function meta({
   return buildBandMeta(loaderData.band, loaderData.baseUrl, 'tour')
 }
 
-export default function TourPage() {
-  const { band, baseUrl } = useLoaderData<TourLoaderData>()
-  const [filterRegion, setFilterRegion] = useState<string>('')
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const reducedMotion = useReducedMotion()
+  export default function TourPage() {
+   const { band, baseUrl } = useLoaderData<TourLoaderData>()
+   const [filterRegion, setFilterRegion] = useState<string>('')
+   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+   const reducedMotion = useReducedMotion()
+   const intl = useIntl()
 
   const regions = Array.from(
     new Set(band.tourDates?.map((d: TourDate) => d.region).filter(Boolean)),
@@ -87,8 +89,8 @@ export default function TourPage() {
     const date = new Date(dateStr)
 
     if (date <= next14Days) {
-      return 'Next 14 days'
-    }
+       return intl.formatMessage({ id: 'tour.next14Days' })
+     }
 
     const groupStart = getNextGroupDate(today)
     const groups: string[] = [groupStart]
@@ -111,10 +113,11 @@ export default function TourPage() {
     {},
   )
 
-  const sortedGroups = Object.entries(groupedDates).sort((a, b) => {
-    if (a[0] === 'Next 14 days') return -1
-    if (b[0] === 'Next 14 days') return 1
-    return a[0].localeCompare(b[0])
+    const next14DaysKey = intl.formatMessage({ id: 'tour.next14Days' })
+     const sortedGroups = Object.entries(groupedDates).sort((a, b) => {
+       if (a[0] === next14DaysKey) return -1
+       if (b[0] === next14DaysKey) return 1
+       return a[0].localeCompare(b[0])
   })
 
   const formatDateBadge = (
@@ -138,24 +141,24 @@ export default function TourPage() {
           baseUrl={baseUrl}
         />
       ))}
-      <Layout band={band}>
-        <SectionWrapper title="Tour Dates" className="py-8">
+   <Layout band={band}>
+          <SectionWrapper title={<FormattedMessage id="tour.tourDates" />} className="py-8">
           <div className="container-max">
 
-            {regions.length > 0 && (
-              <div className="mb-8 text-center">
-                <label className="mr-4 font-semibold text-gray-300">
-                  Filter by Region:
-                </label>
-                <div className="inline-block relative">
-                  <button
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="focus-ring bg-slate-900/90 backdrop-blur-xl border border-white/[0.1] text-white px-4 py-2 rounded-lg hover:bg-slate-800/90 transition"
-                    aria-label="Filter by region"
-                    aria-expanded={isDropdownOpen}
-                  >
-                    {filterRegion || 'All Regions'}
-                  </button>
+           {regions.length > 0 && (
+               <div className="mb-8 text-center">
+                 <label className="mr-4 font-semibold text-gray-300">
+                   <FormattedMessage id="tour.filterByRegion" />
+                 </label>
+                 <div className="inline-block relative">
+<button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="focus-ring bg-slate-900/90 backdrop-blur-xl border border-white/[0.1] text-white px-4 py-2 rounded-lg hover:bg-slate-800/90 transition"
+                      aria-label={intl.formatMessage({ id: 'tour.filterByRegionAria' })}
+                      aria-expanded={isDropdownOpen}
+                    >
+                     {filterRegion || <FormattedMessage id="tour.allRegions" />}
+                   </button>
                   {!reducedMotion && isDropdownOpen && (
                     <AnimatePresence>
                       <motion.div
@@ -166,15 +169,15 @@ export default function TourPage() {
                         className="absolute top-full mt-2 left-0 bg-slate-900/90 backdrop-blur-xl border border-white/[0.1] rounded-lg overflow-hidden z-50 min-w-[200px]"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button
-                          onClick={() => {
-                            setFilterRegion('')
-                            setIsDropdownOpen(false)
-                          }}
-                          className="focus-ring w-full text-left px-4 py-2 text-white hover:bg-white/[0.06] transition"
-                        >
-                          All Regions
-                        </button>
+                     <button
+                           onClick={() => {
+                             setFilterRegion('')
+                             setIsDropdownOpen(false)
+                           }}
+                           className="focus-ring w-full text-left px-4 py-2 text-white hover:bg-white/[0.06] transition"
+                         >
+                           <FormattedMessage id="tour.allRegions" />
+                         </button>
                         {regions.map((region) => (
                           <button
                             key={region}
@@ -222,11 +225,11 @@ export default function TourPage() {
               </div>
             )}
 
-            {upcomingDates.length === 0 ? (
-              <p className="text-center text-gray-300">
-                No upcoming shows scheduled.
-              </p>
-            ) : (
+          {upcomingDates.length === 0 ? (
+               <p className="text-center text-gray-300">
+                 <FormattedMessage id="tour.noUpcomingShows" />
+               </p>
+             ) : (
               <div className="space-y-8">
                 {sortedGroups.map(([group, dates]: [string, TourDate[]]) => {
                   const renderTourCard = (date: TourDate) => (
@@ -255,38 +258,40 @@ export default function TourPage() {
                       </div>
 
                       <div className="flex gap-4 flex-wrap justify-center md:justify-end">
-                        <Badge
-                          variant={
-                            date.soldOut
-                              ? 'warning'
-                              : formatDateBadge(date.date) === 'upcoming'
-                                ? 'success'
-                                : 'default'
-                          }
-                        >
-                          {date.soldOut
-                            ? 'Sold Out'
-                            : formatDateBadge(date.date) === 'upcoming'
-                              ? 'Upcoming'
-                              : 'Past'}
-                        </Badge>
+               <Badge
+                           variant={
+                             date.soldOut
+                               ? 'warning'
+                               : formatDateBadge(date.date) === 'upcoming'
+                                 ? 'success'
+                                 : 'default'
+                           }
+                         >
+                           {date.soldOut ? (
+                             <FormattedMessage id="tour.soldOut" />
+                           ) : formatDateBadge(date.date) === 'upcoming' ? (
+                             <FormattedMessage id="tour.upcoming" />
+                           ) : (
+                             <FormattedMessage id="tour.past" />
+                           )}
+                         </Badge>
 
-                        {date.soldOut || !date.ticketsUrl ? null : (
-                          <PrimaryButton
-                            href={date.ticketsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="!py-2"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Get Tickets
-                          </PrimaryButton>
-                        )}
-                        {!date.ticketsUrl && !date.soldOut && (
-                          <Badge variant="default" className="!px-6 !py-2">
-                            Tickets TBA
-                          </Badge>
-                        )}
+                         {date.soldOut || !date.ticketsUrl ? null : (
+                           <PrimaryButton
+                             href={date.ticketsUrl}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="!py-2"
+                             onClick={(e) => e.stopPropagation()}
+                           >
+                             <FormattedMessage id="tour.getTickets" />
+                           </PrimaryButton>
+                         )}
+                         {!date.ticketsUrl && !date.soldOut && (
+                           <Badge variant="default" className="!px-6 !py-2">
+                             <FormattedMessage id="tour.ticketsTBA" />
+                           </Badge>
+                         )}
                       </div>
                     </GlassCard>
                   )
@@ -329,10 +334,10 @@ export default function TourPage() {
                             }
                           >
                             {date.soldOut
-                              ? 'Sold Out'
+                              ? intl.formatMessage({ id: 'tour.soldOut' })
                               : formatDateBadge(date.date) === 'upcoming'
-                                ? 'Upcoming'
-                                : 'Past'}
+                                ? intl.formatMessage({ id: 'tour.upcoming' })
+                                : intl.formatMessage({ id: 'tour.past' })}
                           </Badge>
 
                           {date.soldOut || !date.ticketsUrl ? null : (
