@@ -178,9 +178,11 @@ async function main() {
   
   for (const musician of musicians) {
     const { bands: _, bandOverrides, ...musicianClean } = musician
-    await client.create(musicianClean).catch(() => {})
+    await client.createOrReplace(musicianClean).catch((err) => {
+      console.error(`❌ Failed to create/replace ${musician.slug.current}:`, err.message)
+    })
   }
-  console.log('✓ Phase 2: Created', musicians.length, 'musicians')
+  console.log('✓ Phase 2: Created/Replaced', musicians.length, 'musicians')
   
   for (const band of bands) {
     if (band.bandMembers && band.bandMembers.length > 0) {
