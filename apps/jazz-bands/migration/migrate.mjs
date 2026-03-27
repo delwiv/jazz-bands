@@ -1635,7 +1635,8 @@ function cleanAudioTitle(filename) {
   // Pattern: text between ( and end of string (before .ext)
   const composerMatch = title.match(/\s*\((.+)$/)
   if (composerMatch && composerMatch[1]) {
-    composer = composerMatch[1].trim()
+    // Clean up composer: remove trailing semicolon, trim whitespace
+    composer = composerMatch[1].replace(/;$/, '').trim()
     // Remove composer part from title
     title = title.replace(/\s*\(.+$/, '')
   }
