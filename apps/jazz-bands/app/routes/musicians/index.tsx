@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
 import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import { FormattedMessage } from 'react-intl'
+import { PortableText } from '@portabletext/react'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
@@ -132,29 +133,71 @@ export default function MusiciansPage() {
                        </motion.button>
 
                     {!reducedMotion && (
-                      <AnimatePresence>
-                        {expandedMusician === musician._id && musician.bio && (
-                          <motion.div
-                            className="mt-4 prose max-w-none bg-white/[0.04] backdrop-blur-sm border border-white/[0.05] rounded-lg p-4"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <p className="text-gray-300">
-                              {musician.bio.map((block) => block.children?.[0]?.text).join(' ')}
-                            </p>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    )}
-                    {reducedMotion && expandedMusician === musician._id && musician.bio && (
-                      <div className="mt-4 prose max-w-none bg-white/[0.04] backdrop-blur-sm border border-white/[0.05] rounded-lg p-4">
-                        <p className="text-gray-300">
-                          {musician.bio.map((block) => block.children?.[0]?.text).join(' ')}
-                        </p>
-                      </div>
-                    )}
+                       <AnimatePresence>
+                         {expandedMusician === musician._id && musician.bio && (
+                           <motion.div
+                             className="mt-4 prose prose-invert max-w-none bg-white/[0.04] backdrop-blur-sm border border-white/[0.05] rounded-lg p-4"
+                             initial={{ opacity: 0, height: 0 }}
+                             animate={{ opacity: 1, height: 'auto' }}
+                             exit={{ opacity: 0, height: 0 }}
+                             transition={{ duration: 0.3 }}
+                           >
+                             <PortableText
+                               value={musician.bio}
+                               components={{
+                                 block: {
+                                   normal: ({ children }) => (
+                                     <p className="text-gray-300 mb-2">
+                                       {children}
+                                     </p>
+                                   ),
+                                 },
+                                 marks: {
+                                   strong: ({ children }) => (
+                                     <strong>{children}</strong>
+                                   ),
+                                   em: ({ children }) => <em>{children}</em>,
+                                   link: ({ children, value }) => (
+                                     <a
+                                       href={value.href}
+                                       className="text-blue-400 hover:underline"
+                                     >
+                                       {children}
+                                     </a>
+                                   ),
+                                 },
+                               }}
+                             />
+                           </motion.div>
+                         )}
+                       </AnimatePresence>
+                     )}
+                     {reducedMotion && expandedMusician === musician._id && musician.bio && (
+                       <div className="mt-4 prose prose-invert max-w-none bg-white/[0.04] backdrop-blur-sm border border-white/[0.05] rounded-lg p-4">
+                         <PortableText
+                           value={musician.bio}
+                           components={{
+                             block: {
+                               normal: ({ children }) => (
+                                 <p className="text-gray-300 mb-2">{children}</p>
+                               ),
+                             },
+                             marks: {
+                               strong: ({ children }) => <strong>{children}</strong>,
+                               em: ({ children }) => <em>{children}</em>,
+                               link: ({ children, value }) => (
+                                 <a
+                                   href={value.href}
+                                   className="text-blue-400 hover:underline"
+                                 >
+                                   {children}
+                                 </a>
+                               ),
+                             },
+                           }}
+                         />
+                       </div>
+                     )}
 
                     {musician.galleryImages &&
                       musician.galleryImages.length > 0 &&
