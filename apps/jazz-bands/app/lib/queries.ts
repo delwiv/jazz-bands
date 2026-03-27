@@ -58,6 +58,8 @@ export const getBandBySlug = `
       duration,
       album,
       releaseYear,
+      composer,
+      trackNumber,
       description,
       downloadEnabled,
       "audioUrl": audio.asset->url
