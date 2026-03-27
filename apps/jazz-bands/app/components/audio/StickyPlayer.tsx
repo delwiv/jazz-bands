@@ -87,18 +87,16 @@ function SortableTrack({
           >
            <MoveHorizontal className="w-5 h-5" />
          </div>
-      <div className="min-w-0">
-          <p
-            className={`font-medium truncate ${isCurrent ? 'text-amber-200' : 'text-white'}`}
-          >
-            {track.title}
-          </p>
-          {track.composer ? (
-            <p className="text-sm text-gray-400 truncate">{track.composer}</p>
-          ) : track.album && (
-            <p className="text-sm text-gray-300 truncate">{track.album}</p>
-          )}
-         </div>
+<div className="min-w-0">
+           <p
+             className={`font-medium truncate ${isCurrent ? 'text-amber-200' : 'text-white'}`}
+           >
+             {track.title}
+           </p>
+           {track.composer && (
+             <p className="text-sm text-gray-400 truncate">{track.composer}</p>
+           )}
+          </div>
       </div>
       <span
         className={`text-sm ml-2 shrink-0 ${isCurrent ? 'text-amber-200' : 'text-gray-300'}`}
@@ -305,20 +303,16 @@ export function StickyPlayer({
               <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center shrink-0">
                 <Music className="w-4 h-4 md:w-6 md:h-6 text-white" />
               </div>
-              <div className="min-w-0">
-                <h4 className="font-semibold text-white truncate">
-                  {currentTrack.title}
-                </h4>
-               {currentTrack.composer ? (
+<div className="min-w-0">
+                 <h4 className="font-semibold text-white truncate">
+                   {currentTrack.title}
+                 </h4>
+                {currentTrack.composer && (
                   <p className="text-xs md:text-sm text-gray-400 truncate">
                     {currentTrack.composer}
                   </p>
-                ) : (
-                  <p className="text-xs md:text-sm text-gray-300 truncate">
-                    {currentTrack.album || <FormattedMessage id="audioPlayer.single" />}
-                  </p>
                 )}
-              </div>
+               </div>
             </div>
 
             {/* Seek Bar - inline on mobile */}
