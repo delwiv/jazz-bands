@@ -1309,23 +1309,29 @@ if (DRY_RUN) {
               //   `  ⚠️  Audio: ${audioFile} (${formatBytes(fileStat.size)}) (DRY_RUN)`,
               // )
             } else {
-              // Extract metadata using music-metadata
-              let duration, album, releaseYear, composer, trackNumber
-              try {
-                const metadata = await parseFile(audioPath)
-                if (metadata) {
-                  duration = metadata.format?.duration
-                  album = metadata.common?.album
-                  releaseYear = metadata.common?.year
-                  composer = metadata.common?.composer
-                  trackNumber = metadata.common?.track?.no
-                }
-              } catch (metaError) {
-                console.warn(
-                  `  ⚠️  Could not read metadata for ${audioFile}:`,
-                  metaError.message,
-                )
-              }
+// Extract metadata using music-metadata
+               let duration, album, releaseYear, composer, trackNumber
+               try {
+                 const metadata = await parseFile(audioPath)
+                 if (metadata) {
+                   duration = metadata.format?.duration
+                   album = metadata.common?.album
+                   releaseYear = metadata.common?.year
+                   // Clean up composer: remove trailing semicolons from ID3 metadata
+                   let composerFromId3 = metadata.common?.composer
+                   if (composerFromId3) {
+                     composerFromId3 = composerFromId3.replace(/;+$/, '').trim()
+                   }
+                   let composerFallback = composerFromId3
+                   composer = composerFallback
+                   trackNumber = metadata.common?.track?.no
+                 }
+               } catch (metaError) {
+                 console.warn(
+                   `  ⚠️  Could not read metadata for ${audioFile}:`,
+                   metaError.message,
+                 )
+               }
               
               // Fallback: extract trackNumber from filename if not in ID3
               // Pattern: "01-nova-dream.mp3" → trackNumber = 1
