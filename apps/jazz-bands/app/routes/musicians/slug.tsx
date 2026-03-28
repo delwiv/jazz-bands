@@ -261,16 +261,16 @@ export default function MusicianDetail() {
                   <FormattedMessage id="musicians.gallery" />
                 </h2>
                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                 {gallery.map((photo, idx) => (
+                 {gallery.slice(1).map((photo, idx) => (
                    <button
                      key={idx}
-                     onClick={() => openCarousel(idx)}
+                     onClick={() => openCarousel(idx + 1)}
                      className="relative aspect-square rounded-lg overflow-hidden bg-gray-800 focus-ring text-left"
-                     aria-label={`View ${musician.name} photo ${idx + 1} in full size`}
+                     aria-label={`View ${musician.name} photo ${idx + 2} in full size`}
                    >
                      <img
                        src={photo.url}
-                       alt={`${musician.name} - Photo ${idx + 1}`}
+                       alt={`${musician.name} - Photo ${idx + 2}`}
                        className="w-full h-full object-cover hover:scale-105 transition-transform pointer-events-none"
                      />
                    </button>
