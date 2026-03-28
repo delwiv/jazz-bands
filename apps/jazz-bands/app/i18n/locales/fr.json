@@ -50,6 +50,7 @@
   "musicians": {
     "ourMusicians": "Nos Musiciens",
     "viewProfile": "Voir le profil",
+    "viewPhotos": "Voir les photos",
     "readBio": "Lire la bio",
     "showLess": "Voir moins",
     "backToMusicians": "Retour aux musiciens",
@@ -91,5 +92,16 @@
     "readyToPlay": "Prêt à jouer",
     "openQueue": "Ouvrir la file d'attente",
     "single": "Single"
+  },
+  "gallery": {
+    "ourGallery": "Notre Galerie",
+    "noImages": "Aucune image disponible pour le moment",
+    "comingSoon": "La galerie sera bientôt disponible",
+    "viewFullSize": "Voir en taille réelle"
+  },
+  "carousel": {
+    "close": "Fermer le carrousel",
+    "previous": "Image précédente",
+    "next": "Image suivante"
   }
 }

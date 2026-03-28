@@ -50,6 +50,7 @@
   "musicians": {
     "ourMusicians": "Our Musicians",
     "viewProfile": "View Profile",
+    "viewPhotos": "View Photos",
     "readBio": "Read Bio",
     "showLess": "Show Less",
     "backToMusicians": "Back to musicians",
@@ -91,5 +92,15 @@
     "readyToPlay": "Ready to play",
     "openQueue": "Open queue",
     "single": "Single"
-  }
-}
+  },
+  "gallery": {
+    "ourGallery": "Our Gallery",
+    "noImages": "No images available at the moment",
+    "comingSoon": "Gallery coming soon",
+    "viewFullSize": "View Full Size"
+  },
+  "carousel": {
+    "close": "Close carousel",
+    "previous": "Previous image",
+    "next": "Next image"
+  }}
