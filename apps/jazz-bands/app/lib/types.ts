@@ -136,13 +136,22 @@ export interface Band {
   contentImages?: Array<{
     _key?: string
     _type?: 'image'
-    url: string
+    asset?: {
+      _type: 'reference'
+      _ref: string
+    }
     metadata?: any
   }>
   images?: Array<{
     _key?: string
     _type?: 'image'
-    url: string
+    asset?: {
+      _type: 'reference'
+      _ref: string
+    }
+    metadata?: {
+      caption?: string
+    }
   }>
   members?: Array<{
     _type: 'reference'
