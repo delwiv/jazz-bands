@@ -82,7 +82,7 @@ export const getMusicianBySlug = `
     bio,
     instrument,
     "photo": images[0].asset,
-      "gallery": images[] { asset, metadata },
+    "gallery": images[] { asset, metadata },
     "bands": bands[]-> {
       name,
       "slug": slug.current,
