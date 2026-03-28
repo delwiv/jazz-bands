@@ -2,6 +2,7 @@ import { type RouteConfig, route } from '@react-router/dev/routes'
 
 export default [
   route('/', './routes/index.tsx'),
+  route('/gallery', './routes/$subdomain/gallery/index.tsx'),
   route('/musicians', './routes/musicians/index.tsx'),
   route('/musicians/:musicianSlug', './routes/musicians/slug.tsx'),
   route('/tour', './routes/tour/index.tsx'),

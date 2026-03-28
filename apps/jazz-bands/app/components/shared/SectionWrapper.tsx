@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 import { fadeUpVariants } from '~/lib/animationVariants';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 
 interface SectionWrapperProps {
   children: React.ReactNode;
-  title?: string;
+  title?: ReactNode;
   gradient?: 'default' | 'accent' | 'custom';
   className?: string;
   id?: string;

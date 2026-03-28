@@ -1,4 +1,6 @@
+import React from 'react'
 import { defineType, defineField } from 'sanity'
+import { TourDatesArray } from '../components/TourDatesArray'
 
 export const bandType = defineType({
   name: 'band',
@@ -84,6 +86,9 @@ export const bandType = defineType({
       options: {
         sortable: false, // trié automatiquement par date à l'affichage
       },
+      components: {
+        input: TourDatesArray as () => React.ReactElement,
+      },
     }),
     defineField({
       name: 'recordings',
@@ -100,51 +105,10 @@ export const bandType = defineType({
     }),
     defineField({
       name: 'contact',
-      title: 'Coordonnées',
-      type: 'object',
-      fields: [
-        defineField({
-          name: 'email',
-          title: 'Email',
-          type: 'string',
-        }),
-        defineField({
-          name: 'phone',
-          title: 'Téléphone',
-          type: 'string',
-        }),
-      ],
-    }),
-    defineField({
-      name: 'socialMedia',
-      title: 'Réseaux Sociaux',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'platform',
-              title: 'Plateforme',
-              type: 'string',
-              options: {
-                list: [
-                  { title: 'Facebook', value: 'facebook' },
-                  { title: 'Instagram', value: 'instagram' },
-                  { title: 'Twitter', value: 'twitter' },
-                  { title: 'YouTube', value: 'youtube' },
-                  { title: 'SoundCloud', value: 'soundcloud' },
-                ],
-              },
-            }),
-            defineField({
-              name: 'url',
-              title: 'URL',
-              type: 'url',
-            }),
-          ],
-        },
-      ],
+      title: 'Contact',
+      type: 'reference',
+      to: [{ type: 'contact' }],
+      description: 'Référence vers le document de contact partagé.',
     }),
     defineField({
       name: 'branding',

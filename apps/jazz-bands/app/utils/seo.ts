@@ -149,7 +149,7 @@ export function buildBandMeta(
     }
   },
   baseUrl: string,
-  page: 'home' | 'musicians' | 'tour' | 'music' | 'contact' = 'home',
+  page: 'home' | 'musicians' | 'tour' | 'music' | 'contact' | 'gallery' = 'home',
   pageDescription?: string,
 ): ReturnType<MetaFunction> {
   const canonicalUrl = baseUrl
