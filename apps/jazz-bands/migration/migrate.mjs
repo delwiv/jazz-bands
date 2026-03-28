@@ -1427,16 +1427,18 @@ if (DRY_RUN) {
               const outputImagePath = join(destDir, fileName)
               copyFileSync(fullImagePath, outputImagePath)
              
-             // Use _sanityAsset syntax for CLI import to auto-upload the asset
-             // Convert to absolute path with forward slashes for Sanity CLI
-             const absoluteImagePath = outputImagePath.startsWith('/') 
-               ? outputImagePath 
-               : join(process.cwd(), outputImagePath).replace(/\\/g, '/')
-             mainImages.push({
-               _key: `contentimg_${contentImgCounter++}`,
-               _type: 'image',
-               _sanityAsset: `image@file://${absoluteImagePath}`
-             })
+             // Use proper asset: wrapper for CLI import (matches musician image pattern)
+              // Convert to absolute path with forward slashes for Sanity CLI
+              const absoluteImagePath = outputImagePath.startsWith('/') 
+                ? outputImagePath 
+                : join(process.cwd(), outputImagePath).replace(/\\/g, '/')
+              mainImages.push({
+                _key: `contentimg_${contentImgCounter++}`,
+                _type: 'image',
+                asset: {
+                  _sanityAsset: `image@file://${absoluteImagePath}`
+                }
+              })
              
              console.log(`    ✓ Main Image: ${picturePath} → ${outputImagePath}`)
            } catch (err) {
@@ -1479,6 +1481,66 @@ if (DRY_RUN) {
       }
     } else {
       console.log(`    ℹ️ No background image to process`)
+    }
+
+    // =====================================================
+    // Process Gallery Images (group photos, posters, event photos)
+    // =====================================================
+    const sanityGalleryImages = []
+    let galleryImageCounter = 0
+    
+    // Collect all referenced files (main images + background)
+    const allReferencedImages = new Set()
+    allHomePictures.forEach(p => {
+      const fileName = extractFileNameFromMongoPath(p)
+      if (fileName) allReferencedImages.add(fileName)
+    })
+    if (legacyBackgroundImage) {
+      allReferencedImages.add(legacyBackgroundImage)
+    }
+    
+    // Scan for gallery images (group photos, posters, event photos)
+    const galleryImages = scanBandImages(bandSlug, allReferencedImages)
+    console.log(`    📸 Gallery images found: ${galleryImages.length}`)
+    
+    if (galleryImages.length > 0 && !DRY_RUN) {
+      for (const img of galleryImages) {
+        try {
+          const fileStat = await stat(img.filePath)
+          stats.assets.standard.count++
+          GLOBAL_STATS.byTier.standard.count++
+          stats.assets.standard.size += fileStat.size
+          GLOBAL_STATS.byTier.standard.size += fileStat.size
+          
+          // Optimize for Sanity: single high-quality source image
+          const optimized = await optimizeImage(
+            img.filePath,
+            join(OUTPUT_DIR, 'assets', bandSlug, 'gallery'),
+            'sanity-source',
+            false,
+          )
+          
+          if (optimized.success && optimized.optimizedFiles.length > 0) {
+            for (const file of optimized.optimizedFiles) {
+              const assetRef = await copyAssetToLocal(
+                file.path,
+                bandSlug,
+                'image',
+                global.allAssets,
+                { assetType: img.type, title: img.filename }
+              )
+              sanityGalleryImages.push({
+                _key: `galleryimg_${galleryImageCounter++}`,
+                _type: 'image',
+                asset: assetRef,
+              })
+            }
+            console.log(`    ✓ Gallery image: ${img.filename} (${img.type})`)
+          }
+        } catch (err) {
+          console.warn(`    ⚠️  Could not process gallery image ${img.filename}: ${err.message}`)
+        }
+      }
     }
 
     const bandName = bandSlug
@@ -1540,6 +1602,7 @@ if (DRY_RUN) {
       logo: undefined,
       backgroundImage: backgroundImageRef,
       contentImages: mainImages.length > 0 ? mainImages : undefined,
+      images: sanityGalleryImages.length > 0 ? sanityGalleryImages : undefined,
       socialMedia: [],
       seo: {
         metaTitle: `${bandName} - Jazz Band`,

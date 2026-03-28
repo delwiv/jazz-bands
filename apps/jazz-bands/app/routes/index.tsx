@@ -237,11 +237,11 @@ export default function BandHome() {
           </section>
         )}
 
-          {/* Main Content Images Gallery */}
-        {band.mainImages && band.mainImages.length > 0 && (
-          <section className="max-w-7xl mx-auto px-3 py-8 md:py-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {band.mainImages.map((img, idx) => (
+{/* Main Content Images Gallery (remy.png, main.png, etc.) */}
+  {band.contentImages && band.contentImages.length > 0 && (
+    <section className="max-w-7xl mx-auto px-3 py-8 md:py-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {band.contentImages.map((img, idx) => (
                 <motion.div
                   key={img._key || idx}
                   className="rounded-lg overflow-hidden shadow-lg"
