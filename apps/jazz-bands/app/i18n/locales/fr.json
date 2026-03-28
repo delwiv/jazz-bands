@@ -14,6 +14,7 @@
     "home": "Accueil",
     "musicians": "Musiciens",
     "tour": "Tournée",
+    "gallery": "Galerie",
     "contact": "Contact",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu"
@@ -84,10 +85,7 @@
     "playlistQueue": "File d'attente de la playlist",
     "closeQueue": "Fermer la file d'attente",
     "queue": "File d'attente",
-    "trackCount": {
-      "one": "{count} piste",
-      "other": "{count} pistes"
-    },
+    "trackCount": "{count, plural, one {# piste} other {# pistes}}",
     "noTracksInQueue": "Aucune piste dans la file d'attente",
     "paused": "En pause",
     "readyToPlay": "Prêt à jouer",

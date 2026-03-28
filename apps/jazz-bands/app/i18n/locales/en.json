@@ -14,6 +14,7 @@
     "home": "Home",
     "musicians": "Musicians",
     "tour": "Tour",
+    "gallery": "Gallery",
     "contact": "Contact",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
@@ -84,10 +85,7 @@
     "playlistQueue": "Playlist queue",
     "closeQueue": "Close queue",
     "queue": "Queue",
-    "trackCount": {
-      "one": "{count} track",
-      "other": "{count} tracks"
-    },
+    "trackCount": "{count, plural, one {# track} other {# tracks}}",
     "noTracksInQueue": "No tracks in queue",
     "paused": "Paused",
     "readyToPlay": "Ready to play",
