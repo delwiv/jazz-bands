@@ -63,10 +63,13 @@ export default function MusiciansPage() {
               animate="visible"
             >
               {musicians.map((musician) => (
-                <GlassCard
-                  key={musician._id}
-                  className="rounded-xl overflow-hidden"
-                >
+                 <Link
+                   key={musician._id}
+                   to={`/musicians/${musician.slug}`}
+                   className="focus-ring block"
+                   style={{ textDecoration: 'none' }}
+                 >
+                   <GlassCard className="rounded-xl overflow-hidden">
                     {musician.photo && (
                       <motion.div
                         className="w-full h-64 overflow-hidden"
@@ -83,24 +86,19 @@ export default function MusiciansPage() {
                       </motion.div>
                     )}
 
-                  <div className="p-6">
-                    <h2 className="text-2xl font-bold mb-2 text-white">
-                      <Link
-                        to={`/musicians/${musician.slug}`}
-                        className="focus-ring hover:text-amber-400 transition-colors"
-                      >
+                    <div className="p-6">
+                      <h2 className="text-2xl font-bold mb-2 text-white">
                         {musician.name}
-                      </Link>
-                    </h2>
-                    {musician.instrument && (
-                      <p className="text-gray-300 font-semibold mb-4">
-                        {musician.instrument}
-                      </p>
-                    )}
-
+                      </h2>
+                      {musician.instrument && (
+                        <p className="text-gray-300 font-semibold">
+                          {musician.instrument}
+                        </p>
+                      )}
                     </div>
-                  </GlassCard>
-                ))}
+                   </GlassCard>
+                 </Link>
+                 ))}
 </motion.div>
             </div>
           </SectionWrapper>
