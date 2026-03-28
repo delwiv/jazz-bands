@@ -171,95 +171,76 @@ export default function BandHome() {
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <Layout band={band}>
-         {/* Hero Section */}
-        <section
-          className="relative flex items-center justify-center overflow-hidden w-full"
-          aria-labelledby="hero-title"
-          style={{ contain: 'layout', aspectRatio: '16/9' }}
-        >
-          <div
-            className="relative z-10 text-center text-white px-3"
-            style={{ opacity: reducedMotion ? 1 : heroOpacity }}
-          >
-            <h1
-              id="hero-title"
-              className="text-4xl md:text-5xl lg:text-6xl font-bold"
-            >
-              {band.name}
-            </h1>
-          </div>
-        </section>
-
-            {/* Description Section */}
-        {band.description && band.description.length > 0 && (
-          <section className="max-w-7xl mx-auto px-3 py-8 md:py-16 text-center">
-            <div className="prose prose-invert mx-auto max-w-3xl bg-slate-950/60 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/5">
-              <PortableText
-                value={band.description}
-                components={{
-                  block: {
-                    normal: ({ children }) => (
-                      <p className="text-lg md:text-xl leading-relaxed mb-4 text-gray-200">
-                        {children}
-                      </p>
-                    ),
-                    h1: ({ children }) => (
-                      <h2 className="text-3xl font-bold mb-4 text-white">
-                        {children}
-                      </h2>
-                    ),
-                    h2: ({ children }) => (
-                      <h3 className="text-2xl font-semibold mb-3 text-white">
-                        {children}
-                      </h3>
-                    ),
-                    h3: ({ children }) => (
-                      <h4 className="text-xl font-medium mb-2 text-gray-100">
-                        {children}
-                      </h4>
-                    ),
-                  },
-                  marks: {
-                    strong: ({ children }) => <strong>{children}</strong>,
-                    em: ({ children }) => <em>{children}</em>,
-                    link: ({ children, value }) => (
-                      <a
-                        href={value.href}
-                        className="text-blue-400 hover:underline"
-                      >
-                        {children}
-                      </a>
-                    ),
-                  },
-                }}
-              />
-            </div>
-          </section>
-        )}
-
-{/* Main Content Images Gallery (remy.png, main.png, etc.) */}
-  {band.contentImages && band.contentImages.length > 0 && (
-    <section className="max-w-7xl mx-auto px-3 py-8 md:py-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {band.contentImages.map((img, idx) => (
+        {/* Home Section - Side by side like legacy */}
+        <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden w-full py-12 px-6">
+          <div className="max-w-7xl w-full mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+              {/* Left: Main Image */}
+              {band.contentImages && band.contentImages.length > 0 && (
                 <motion.div
-                  key={img._key || idx}
-                  className="rounded-lg overflow-hidden shadow-lg"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.3 }}
+                  className="relative aspect-square md:aspect-auto md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden shadow-2xl"
+                  initial={!reducedMotion ? { opacity: 0, x: -50 } : undefined}
+                  animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
+                  transition={!reducedMotion ? { duration: 0.6, ease: 'easeOut' } : undefined}
                 >
                   <img
-                    src={img.url}
-                    alt={`${band.name} main image ${idx + 1}`}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full aspect-square object-cover"
+                    src={band.contentImages[0].url}
+                    alt={band.name}
+                    className="w-full h-full object-cover"
                   />
                 </motion.div>
-              ))}
+              )}
+
+              {/* Right: Band Info */}
+              <motion.div
+                className="space-y-6 text-white"
+                initial={!reducedMotion ? { opacity: 0, x: 50 } : undefined}
+                animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
+                transition={!reducedMotion ? { duration: 0.6, ease: 'easeOut', delay: 0.2 } : undefined}
+              >
+                {/* Band Name with Divider */}
+                <div>
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+                    {band.name}
+                  </h1>
+                  <div className="h-px w-full bg-gradient-to-r from-white to-transparent mb-6" />
+                </div>
+
+                {/* Description */}
+                {band.description && band.description.length > 0 && (
+                  <div className="prose prose-invert max-w-none text-lg text-gray-200 leading-relaxed">
+                    <PortableText
+                      value={band.description}
+                      components={{
+                        block: {
+                          normal: ({ children }) => (
+                            <p className="mb-4">{children}</p>
+                          ),
+                        },
+                        marks: {
+                          strong: ({ children }) => <strong>{children}</strong>,
+                          em: ({ children }) => <em>{children}</em>,
+                        },
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Musicians List */}
+                {band.members && band.members.length > 0 && (
+                  <ul className="space-y-2 text-lg text-gray-200">
+                    {band.members.map((member: any, idx: number) => (
+                      <li key={member._key || idx} className="flex items-center gap-2">
+                        <span className="text-gray-400">•</span>
+                        <span>{member.musician?.name || member.name} : {member.instrument}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </motion.div>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         <div className="sr-only">
           <p>Hero section with band name: {band.name}</p>
