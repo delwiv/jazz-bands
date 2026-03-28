@@ -9,8 +9,7 @@ import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { staggerContainerVariants } from '~/lib/animationVariants'
 import { getBandBySlug, getMusiciansByBandId } from '~/lib/queries'
 import type { MusiciansLoaderData } from '~/lib/routes.types'
-import { urlForImage } from '~/lib/sanity.client'
-import { sanityClient } from '~/lib/sanity.settings'
+import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -82,7 +81,7 @@ export default function MusiciansPage() {
                         transition={{ duration: 0.4 }}
                       >
                         <img
-                      src={urlForImage.image(musician.photo)
+                        src={urlForImage.image(musician.photo)
                         .width(800)
                         .height(800)
                         .fit('crop')

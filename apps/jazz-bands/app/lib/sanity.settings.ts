@@ -88,9 +88,9 @@ const baseConfig: ClientConfig = {
 export const sanityClient =
   typeof window === 'undefined'
     ? createClient({
-        ...baseConfig,
-        useCdn: false,
-      })
+      ...baseConfig,
+      useCdn: false,
+    })
     : (undefined as never) // Type guard for client-side
 
 /**
