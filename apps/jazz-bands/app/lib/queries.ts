@@ -13,7 +13,7 @@ export const getAllBands = `
     "heroImage": heroImage.asset->url,
     "mainImages": coalesce(mainImages, [])[] {
       _key,
-      "url": asset->url
+      asset
     }
   }
 `
@@ -29,29 +29,28 @@ export const getBandBySlug = `
     "backgroundImage": backgroundImage.asset->url,
     "contentImages": coalesce(contentImages, [])[] {
       _key,
-      "url": asset->url
+      asset
     },
     "images": coalesce(images, [])[] {
       _key,
-      "url": asset->url
+      asset,
+      metadata
     },
     "members": bandMembers[] {
       _key,
       sortOrder,
       instrument,
       bio,
-      "images": images[0].asset->url,
-      "photo": coalesce(images[0].asset->url, musician->images[0].asset->url),
+      "images": images[0].asset,
+        "photo": coalesce(images[0].asset, musician->images[0].asset),
       "musician": musician-> {
         _id,
         name,
         "slug": slug.current,
         bio,
         instrument,
-        "photo": images[0].asset->url,
-        "gallery": images[] {
-          "url": asset->url
-        }
+    "photo": images[0].asset,
+        "gallery": images[] { asset, metadata }
       }
     },
     tourDates,
@@ -82,8 +81,8 @@ export const getMusicianBySlug = `
     "slug": slug.current,
     bio,
     instrument,
-    "photo": images[0].asset->url,
-    "gallery": images[] { "url": asset->url },
+    "photo": images[0].asset,
+      "gallery": images[] { asset, metadata },
     "bands": bands[]-> {
       name,
       "slug": slug.current,
@@ -93,7 +92,7 @@ export const getMusicianBySlug = `
       _key,
       bio,
       instrument,
-      "image": image.asset->url,
+      "image": image.asset,
       "band": band-> {
         name,
         "slug": slug.current,
@@ -115,7 +114,7 @@ export const getMusiciansByBandId = `
     "slug": musician->slug.current,
     "bio": coalesce(bio, musician->bio),
     "instrument": coalesce(instrument, musician->instrument),
-    "photo": coalesce(images[0].asset->url, musician->images[0].asset->url)
+    "photo": coalesce(images[0].asset, musician->images[0].asset)
   } | order(sortOrder asc)
 `
 

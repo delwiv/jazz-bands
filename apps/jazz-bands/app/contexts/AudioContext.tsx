@@ -55,47 +55,40 @@ export function AudioProvider({
   initialPlaylist = [],
   initialPlayerState,
 }: AudioProviderProps) {
-const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
-     console.log('[AudioContext] currentTrack init:', {
-       hasInitialPlayerState: !!initialPlayerState,
-       hasInitialTrack: !!initialPlayerState?.currentTrack,
-       initialTrackComposer: initialPlayerState?.currentTrack?.composer,
-     })
-     
-     if (initialPlayerState?.currentTrack) {
-       console.log('[AudioContext] ➜ Returning initialPlayerState.currentTrack WITH composer:', initialPlayerState.currentTrack.composer)
-       return initialPlayerState.currentTrack
-     }
-     
-     if (typeof window === 'undefined') return null
-     
-     const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
-     if (!stored) return null
-     
-     try {
-       const parsed = JSON.parse(stored)
-       console.log('[AudioContext] localStorage parsed track:', { title: parsed.title, composer: parsed.composer, tracksWithAudio: initialPlaylist?.length })
-       
-       // Always prefer fresh data from Sanity (initialPlaylist) if available
-       // Find matching track in initialPlaylist and use that instead of localStorage cached data
-       if (initialPlaylist && initialPlaylist.length > 0) {
-         const matchingTrack = initialPlaylist.find(
-           t => t.title === parsed?.title || t._key === parsed?._key
-         )
-         if (matchingTrack) {
-           console.log('[AudioContext] ➜ Using FRESH track from Sanity playlist (has composer):', matchingTrack.composer)
-           return matchingTrack
-         }
-       }
-       
-       // Fallback to localStorage
-       console.log('[AudioContext] ➜ Falling back to localStorage track (no composer):', parsed.composer)
-       return parsed
-     } catch (e) {
-       console.warn('[AudioContext] Failed to parse localStorage currentTrack:', e)
-       return null
-     }
-   })
+  const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
+    if (initialPlayerState?.currentTrack) {
+      return initialPlayerState.currentTrack
+    }
+
+    if (typeof window === 'undefined') return null
+
+    const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
+    if (!stored) return null
+
+    try {
+      const parsed = JSON.parse(stored)
+
+      // Always prefer fresh data from Sanity (initialPlaylist) if available
+      // Find matching track in initialPlaylist and use that instead of localStorage cached data
+      if (initialPlaylist && initialPlaylist.length > 0) {
+        const matchingTrack = initialPlaylist.find(
+          (t) => t.title === parsed?.title || t._key === parsed?._key,
+        )
+        if (matchingTrack) {
+          return matchingTrack
+        }
+      }
+
+      // Fallback to localStorage
+      return parsed
+    } catch (e) {
+      console.warn(
+        '[AudioContext] Failed to parse localStorage currentTrack:',
+        e,
+      )
+      return null
+    }
+  })
   const [isPlaying, setIsPlaying] = useState(
     () => initialPlayerState?.isPlaying ?? false,
   )
@@ -111,29 +104,27 @@ const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
     const stored = localStorage.getItem(STORAGE_KEYS.playlist)
     return stored ? JSON.parse(stored) : []
   })
- const [queue, setQueue] = useState<Recording[]>(
-     () => {
-       // Always prefer initialPlayerState.queue (from Sanity with all latest fields)
-       if (initialPlayerState?.queue && initialPlayerState.queue.length > 0) {
-         return initialPlayerState.queue
-       }
-       // Fallback: restore from localStorage but with merged field updates
-       if (typeof window === 'undefined') return []
-       const storedQueue = localStorage.getItem(STORAGE_KEYS.queue)
-       if (!storedQueue) return []
-       try {
-         const parsed = JSON.parse(storedQueue)
-         // If we have initialPlaylist, use it to refresh all tracks with new fields
-         if (initialPlaylist && initialPlaylist.length > 0) {
-           return initialPlaylist.filter((r) => r.audioUrl)
-         }
-         return parsed
-       } catch (e) {
-         console.warn('[AudioContext] Failed to parse localStorage queue:', e)
-         return []
-       }
-     },
-   )
+  const [queue, setQueue] = useState<Recording[]>(() => {
+    // Always prefer initialPlayerState.queue (from Sanity with all latest fields)
+    if (initialPlayerState?.queue && initialPlayerState.queue.length > 0) {
+      return initialPlayerState.queue
+    }
+    // Fallback: restore from localStorage but with merged field updates
+    if (typeof window === 'undefined') return []
+    const storedQueue = localStorage.getItem(STORAGE_KEYS.queue)
+    if (!storedQueue) return []
+    try {
+      const parsed = JSON.parse(storedQueue)
+      // If we have initialPlaylist, use it to refresh all tracks with new fields
+      if (initialPlaylist && initialPlaylist.length > 0) {
+        return initialPlaylist.filter((r) => r.audioUrl)
+      }
+      return parsed
+    } catch (e) {
+      console.warn('[AudioContext] Failed to parse localStorage queue:', e)
+      return []
+    }
+  })
 
   const howlRef = useRef<Howl | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -294,10 +285,6 @@ const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.playlist, JSON.stringify(playlist))
-      console.log(
-        '[AudioContext] Playlist updated:',
-        playlist.map((t) => t.title),
-      )
     }
   }, [playlist])
 
@@ -305,20 +292,9 @@ const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    console.log(
-      '[AudioContext] Init effect: initialPlaylist count:',
-      initialPlaylist.length,
-    )
-
     if (initialPlaylist.length > 0) {
       const tracksWithAudio = initialPlaylist.filter(
         (r: Recording) => r.audioUrl,
-      )
-      console.log(
-        '[AudioContext] Setting queue from Sanity with',
-        tracksWithAudio.length,
-        'tracks:',
-        tracksWithAudio.map((t) => t.title),
       )
 
       // Always use Sanity order - never mix with localStorage
@@ -327,10 +303,6 @@ const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
       // Auto-play first track if no current track
       if (!currentTrack && tracksWithAudio.length > 0) {
         setTimeout(() => {
-          console.log(
-            '[AudioContext] Auto-playing first track:',
-            tracksWithAudio[0].title,
-          )
           playTrack(tracksWithAudio[0])
         }, 500)
       }

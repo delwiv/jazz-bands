@@ -7,6 +7,7 @@ import { Carousel } from '~/components/Carousel/Carousel'
 import { Layout } from '~/components/shared/Layout'
 import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
+import { urlForImage } from '~/lib/sanity.client'
 import type { Photo } from '~/lib/types'
 
 function MusicianStructuredData({
@@ -143,8 +144,11 @@ export default function MusicianDetail() {
    const { musician, band, origin } = useLoaderData<typeof loader>()
    const bio = musician.bio
 
-   // Photo gallery (include main photo + gallery images)
-   const gallery: Photo[] = [{ url: musician.photo }, ...musician.gallery]
+  // Photo gallery (include main photo + gallery images)
+    const gallery: Photo[] = [
+      { url: musician.photo ? urlForImage(musician.photo).width(3840).height(3840).fit("max").url() : '' },
+      ...musician.gallery.map(img => ({ url: img.asset ? urlForImage(img.asset).width(3840).height(3840).fit("max").url() : '' }))
+    ]
    
    // Carousel state
    const [carouselOpen, setCarouselOpen] = useState(false)

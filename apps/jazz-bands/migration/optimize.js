@@ -46,11 +46,11 @@ export const OPTIMIZATION_PRESETS = {
    */
   'sanity-source': {
     format: 'jpeg',
-    quality: 92,
-    maxWidth: 2048,
-    maxHeight: 2048,
-    maxSizeBytes: 2 * 1024 * 1024, // 2MB max after optimization
-    description: 'High-quality source image for Sanity CDN',
+    quality: 95,
+    maxWidth: 3840,  // 4K resolution
+    maxHeight: 3840, // 4K resolution
+    maxSizeBytes: 4 * 1024 * 1024, // 4MB max after optimization
+    description: 'High-quality source image (4K, quality 95) for Sanity CDN',
   },
   // Legacy presets kept for reference (not used in Sanity migration)
   thumbnail: {

@@ -22,8 +22,11 @@ export interface MusiciansLoaderData {
     musicianId?: string
     name: string
     slug: string
-    photo?: string
-    galleryImages?: Array<{ image?: string }>
+    photo?: {
+      _type: 'reference'
+      _ref: string
+    }
+    galleryImages?: Array<{ image?: { _type: 'reference'; _ref: string } }>
   }>
   baseUrl: string
 }
@@ -48,8 +51,17 @@ export interface MusicianSlugLoaderData {
     slug: string
     bio: Array<{ children?: Array<{ text?: string }> }>
     instrument: string
-    photo?: string
-    gallery: Array<{ url: string }>
+    photo?: {
+      _type: 'reference'
+      _ref: string
+    }
+    gallery: Array<{
+      asset: {
+        _type: 'reference'
+        _ref: string
+      }
+      metadata?: any
+    }>
     bands: Array<{
       name: string
       slug: string
@@ -59,7 +71,10 @@ export interface MusicianSlugLoaderData {
       _key: string
       bio?: Array<{ children?: Array<{ text?: string }> }>
       instrument?: string
-      image?: string
+      image?: {
+        _type: 'reference'
+        _ref: string
+      }
       band: {
         name: string
         slug: string

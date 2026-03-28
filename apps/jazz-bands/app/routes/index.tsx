@@ -22,6 +22,7 @@ import {
 import { BandHomeLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
+import { urlForImage } from '~/lib/sanity.client'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -72,10 +73,7 @@ export default function BandHome() {
    const isLoading = navigation.state === 'loading'
    const reducedMotion = useReducedMotion()
    
-   // Debug logging
-   if (typeof window !== 'undefined') {
-     console.log('band.contentImages:', band.contentImages)
-   }
+ // Debug logging removed
 
   // Hero parallax scroll effect
   const { scrollY } = useScroll()
@@ -180,33 +178,28 @@ export default function BandHome() {
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden w-full py-12 px-6">
           <div className="max-w-7xl w-full mx-auto">
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-              {/* Left: Main Image */}
-              {(() => {
-                const mainImage = band.contentImages?.[0]
-                if (!mainImage) {
-                  return null
-                }
-                const imageUrl = mainImage.url || (mainImage as any)?.asset?.url
-                if (!imageUrl) {
-                  console.warn('Main image has no valid URL:', mainImage)
-                  return null
-                }
-                return (
-                  <motion.div
-                    className="relative aspect-square md:aspect-auto md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden shadow-2xl"
-                    initial={!reducedMotion ? { opacity: 0, x: -50 } : undefined}
-                    animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
-                    transition={!reducedMotion ? { duration: 0.6, ease: 'easeOut' } : undefined}
-                  >
-                    <img
-                      src={imageUrl}
-                      alt={band.name}
-                      className="w-full h-full object-cover"
-                      loading="eager"
-                    />
-                  </motion.div>
-                )
-              })()}
+           {/* Left: Main Image */}
+               {(() => {
+                 const mainImage = band.contentImages?.[0]
+                 if (!mainImage?.asset) {
+                   return null
+                 }
+                 return (
+                   <motion.div
+                     className="relative aspect-square md:aspect-auto md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden shadow-2xl"
+                     initial={!reducedMotion ? { opacity: 0, x: -50 } : undefined}
+                     animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
+                     transition={!reducedMotion ? { duration: 0.6, ease: 'easeOut' } : undefined}
+                   >
+                     <img
+                       src={urlForImage(mainImage.asset).width(1200).height(1200).fit("crop").url()}
+                       alt={band.name}
+                       className="w-full h-full object-cover"
+                       loading="eager"
+                     />
+                   </motion.div>
+                 )
+               })()}
 
               {/* Right: Band Info */}
               <motion.div

@@ -15,6 +15,7 @@ import {
 import { GalleryLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
+import { urlForImage } from '~/lib/sanity.client'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -93,24 +94,28 @@ export default function GalleryPage() {
                     hover={false}
                   >
                     <motion.button
-                      onClick={() => openCarousel(index)}
-                      className="w-full text-left focus-ring"
-                      variants={galleryItemVariants}
-                      whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
-                      transition={{ duration: 0.3 }}
-                      aria-label={`View ${image.metadata?.caption || `${band.name} gallery image ${index + 1}`} in full size`}
-                    >
-                      <div className="relative w-full aspect-square overflow-hidden">
-                        <motion.img
-                          src={image.url}
-                          alt={image.metadata?.caption || `${band.name} gallery image ${index + 1}`}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-full object-cover"
-                          initial={!reducedMotion ? { opacity: 0 } : undefined}
-                          animate={!reducedMotion ? { opacity: 1 } : undefined}
-                          transition={{ duration: 0.4 }}
-                        />
+                       onClick={() => openCarousel(index)}
+                       className="w-full text-left focus-ring"
+                       variants={galleryItemVariants}
+                       whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
+                       transition={{ duration: 0.3 }}
+                       aria-label={`View ${image.metadata?.caption || `${band.name} gallery image ${index + 1}`} in full size`}
+                     >
+                       <div className="relative w-full aspect-square overflow-hidden">
+                         <motion.img
+                           src={
+                             image.asset
+                               ? urlForImage(image.asset).width(400).height(400).fit("crop").url()
+                               : ''
+                           }
+                           alt={image.metadata?.caption || `${band.name} gallery image ${index + 1}`}
+                           loading="lazy"
+                           decoding="async"
+                           className="w-full h-full object-cover"
+                           initial={!reducedMotion ? { opacity: 0 } : undefined}
+                           animate={!reducedMotion ? { opacity: 1 } : undefined}
+                           transition={{ duration: 0.4 }}
+                         />
                         <motion.div
                           className="absolute inset-0 bg-slate-900/0 flex items-center justify-center"
                           initial={!reducedMotion ? { opacity: 0 } : undefined}
@@ -163,16 +168,16 @@ export default function GalleryPage() {
           </div>
         </SectionWrapper>
 
-      <Carousel
-         key={selectedImageIndex}
-         isOpen={carouselOpen}
-         onClose={closeCarousel}
-         images={galleryImages.map((img) => ({
-           url: img.url,
-           caption: img.metadata?.caption,
-         }))}
-         initialIndex={selectedImageIndex}
-       />
+     <Carousel
+          key={selectedImageIndex}
+          isOpen={carouselOpen}
+          onClose={closeCarousel}
+          images={galleryImages.map((img) => ({
+            url: img.asset ? urlForImage(img.asset).width(3840).height(3840).fit("max").url() : '',
+            caption: img.metadata?.caption,
+          }))}
+          initialIndex={selectedImageIndex}
+        />
       </Layout>
     </>
   )

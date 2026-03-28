@@ -10,6 +10,7 @@ import { staggerContainerVariants } from '~/lib/animationVariants'
 import { MusiciansLoaderData } from '~/lib/routes.types'
 import { getBandBySlug, getMusiciansByBandId } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
+import { urlForImage } from '~/lib/sanity.client'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -70,21 +71,21 @@ export default function MusiciansPage() {
                     style={{ textDecoration: 'none' }}
                   >
                    <GlassCard className="rounded-xl overflow-hidden">
-                    {musician.photo && (
-                      <motion.div
-                        className="w-full h-64 overflow-hidden"
-                        whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
-                        transition={{ duration: 0.4 }}
-                      >
-                        <img
-                          src={musician.photo}
-                          alt={musician.name}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-full object-cover"
-                        />
-                      </motion.div>
-                    )}
+                     {musician.photo && (
+                       <motion.div
+                         className="w-full h-64 overflow-hidden"
+                         whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
+                         transition={{ duration: 0.4 }}
+                       >
+                         <img
+                           src={urlForImage(musician.photo).width(800).height(800).fit("crop").url()}
+                           alt={musician.name}
+                           loading="lazy"
+                           decoding="async"
+                           className="w-full h-full object-cover"
+                         />
+                       </motion.div>
+                     )}
 
                     <div className="p-6">
                       <h2 className="text-2xl font-bold mb-2 text-white">
