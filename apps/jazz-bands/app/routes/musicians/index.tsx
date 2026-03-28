@@ -1,13 +1,10 @@
-import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import { FormattedMessage } from 'react-intl'
-import { PortableText } from '@portabletext/react'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Layout } from '~/components/shared/Layout'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
 import { GlassCard } from '~/components/shared/GlassCard'
-import { Carousel } from '~/components/Carousel/Carousel'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { staggerContainerVariants } from '~/lib/animationVariants'
 import { MusiciansLoaderData } from '~/lib/routes.types'
@@ -49,50 +46,8 @@ export function meta({
 }
 
 export default function MusiciansPage() {
-  const { band, musicians, baseUrl } = useLoaderData<MusiciansLoaderData>()
-  const [expandedMusician, setExpandedMusician] = useState<string | null>(null)
-  const [carouselOpen, setCarouselOpen] = useState(false)
-  const [selectedMusicianId, setSelectedMusicianId] = useState<string | null>(null)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const reducedMotion = useReducedMotion()
-
-  const getMusicianImages = (musician: typeof musicians[number]) => {
-    const images: Array<{ url: string; caption?: string }> = []
-    
-    if (musician.photo) {
-      images.push({ url: musician.photo })
-    }
-    
-    if (musician.galleryImages && musician.galleryImages.length > 0) {
-      musician.galleryImages
-        .filter((img) => img.image)
-        .forEach((img) => {
-          if (img.image) {
-            images.push({
-              url: img.image,
-              caption: img.caption,
-            })
-          }
-        })
-    }
-    
-    return images
-  }
-
-  const openCarousel = (musicianId: string, index: number) => {
-    setSelectedMusicianId(musicianId)
-    setSelectedImageIndex(index)
-    setCarouselOpen(true)
-  }
-
-  const closeCarousel = () => {
-    setCarouselOpen(false)
-    setSelectedMusicianId(null)
-  }
-
-  const currentMusicianImages = selectedMusicianId
-    ? getMusicianImages(musicians.find((m) => m._id === selectedMusicianId)!)
-    : []
+   const { band, musicians, baseUrl } = useLoaderData<MusiciansLoaderData>()
+   const reducedMotion = useReducedMotion()
 
   return (
     <>
@@ -112,35 +67,21 @@ export default function MusiciansPage() {
                   key={musician._id}
                   className="rounded-xl overflow-hidden"
                 >
-{musician.photo && (
-                     <motion.button
-                       onClick={() => openCarousel(musician._id, 0)}
-                       className="w-full h-64 overflow-hidden focus-ring text-left"
-                       whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
-                       transition={{ duration: 0.4 }}
-                       aria-label={`View ${musician.name} photos in full size`}
-                     >
-                       <motion.img
-                         src={musician.photo}
-                         alt={musician.name}
-                         loading="lazy"
-                         decoding="async"
-                         className="w-full h-full object-cover"
-                       />
-                       <motion.div
-                         className="absolute inset-0 bg-slate-900/70 flex items-center justify-center"
-                         initial={!reducedMotion ? { opacity: 0 } : undefined}
-                         whileHover={!reducedMotion ? { opacity: 1 } : undefined}
-                         transition={{ duration: 0.3 }}
-                       >
-                      <div className="bg-white/[0.1] backdrop-blur-md border border-white/[0.2] px-4 py-2 rounded-lg">
-                          <span className="text-white text-sm font-medium">
-                            <FormattedMessage id="musicians.viewPhotos" />
-                          </span>
-                        </div>
-                       </motion.div>
-                     </motion.button>
-                   )}
+                    {musician.photo && (
+                      <motion.div
+                        className="w-full h-64 overflow-hidden"
+                        whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <img
+                          src={musician.photo}
+                          alt={musician.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover"
+                        />
+                      </motion.div>
+                    )}
 
                   <div className="p-6">
                     <h2 className="text-2xl font-bold mb-2 text-white">
@@ -157,148 +98,13 @@ export default function MusiciansPage() {
                       </p>
                     )}
 
-                    <motion.button
-                      onClick={() =>
-                        setExpandedMusician(
-                          expandedMusician === musician._id
-                            ? null
-                            : musician._id,
-                        )
-                      }
-                      className="focus-ring text-amber-400 hover:text-amber-300 hover:underline transition-colors"
-                      whileHover={!reducedMotion ? { scale: 1.05 } : undefined}
-                      whileTap={!reducedMotion ? { scale: 0.95 } : undefined}
-                         >
-                         {expandedMusician === musician._id ? (
-                           <FormattedMessage id="musicians.showLess" />
-                         ) : (
-                           <FormattedMessage id="musicians.readBio" />
-                         )}
-                       </motion.button>
-
-                    {!reducedMotion && (
-                       <AnimatePresence>
-                         {expandedMusician === musician._id && musician.bio && (
-                           <motion.div
-                             className="mt-4 prose prose-invert max-w-none bg-white/[0.04] backdrop-blur-sm border border-white/[0.05] rounded-lg p-4"
-                             initial={{ opacity: 0, height: 0 }}
-                             animate={{ opacity: 1, height: 'auto' }}
-                             exit={{ opacity: 0, height: 0 }}
-                             transition={{ duration: 0.3 }}
-                           >
-                             <PortableText
-                               value={musician.bio}
-                               components={{
-                                 block: {
-                                   normal: ({ children }) => (
-                                     <p className="text-gray-300 mb-2">
-                                       {children}
-                                     </p>
-                                   ),
-                                 },
-                                 marks: {
-                                   strong: ({ children }) => (
-                                     <strong>{children}</strong>
-                                   ),
-                                   em: ({ children }) => <em>{children}</em>,
-                                   link: ({ children, value }) => (
-                                     <a
-                                       href={value.href}
-                                       className="text-blue-400 hover:underline"
-                                     >
-                                       {children}
-                                     </a>
-                                   ),
-                                 },
-                               }}
-                             />
-                           </motion.div>
-                         )}
-                       </AnimatePresence>
-                     )}
-                     {reducedMotion && expandedMusician === musician._id && musician.bio && (
-                       <div className="mt-4 prose prose-invert max-w-none bg-white/[0.04] backdrop-blur-sm border border-white/[0.05] rounded-lg p-4">
-                         <PortableText
-                           value={musician.bio}
-                           components={{
-                             block: {
-                               normal: ({ children }) => (
-                                 <p className="text-gray-300 mb-2">{children}</p>
-                               ),
-                             },
-                             marks: {
-                               strong: ({ children }) => <strong>{children}</strong>,
-                               em: ({ children }) => <em>{children}</em>,
-                               link: ({ children, value }) => (
-                                 <a
-                                   href={value.href}
-                                   className="text-blue-400 hover:underline"
-                                 >
-                                   {children}
-                                 </a>
-                               ),
-                             },
-                           }}
-                         />
-                       </div>
-                     )}
-
-{musician.galleryImages &&
-                        musician.galleryImages.filter(img => img.image).length > 0 && (
-                         <motion.div
-                           className="mt-4 grid grid-cols-3 gap-2"
-                           initial={!reducedMotion ? { opacity: 0 } : undefined}
-                           animate={!reducedMotion ? { opacity: 1 } : undefined}
-                           transition={{ delay: 0.2 }}
-                         >
-                           {musician.galleryImages
-                             .slice(0, 3)
-                             .filter((img) => img.image)
-                             .map((img, idx) => (
-                               <motion.button
-                                 key={idx}
-                                 onClick={() => openCarousel(musician._id, idx + 1)}
-                                 className="relative w-full h-20 rounded-lg overflow-hidden focus-ring text-left"
-                                 whileHover={!reducedMotion ? { scale: 1.05, zIndex: 1 } : undefined}
-                                 transition={{ duration: 0.2 }}
-                                 aria-label={`View ${musician.name} photo ${idx + 1} in full size`}
-                               >
-                                 <img
-                                   src={img.image}
-                                   alt={img.caption || `${musician.name} photo ${idx + 1}`}
-                                   loading="lazy"
-                                   decoding="async"
-                                   className="w-full h-full object-cover pointer-events-none"
-                                 />
-                                 <motion.div
-                                   className="absolute inset-0 bg-slate-900/70 flex items-center justify-center"
-                                   initial={!reducedMotion ? { opacity: 0 } : undefined}
-                                   whileHover={!reducedMotion ? { opacity: 1 } : undefined}
-                                   transition={{ duration: 0.2 }}
-                                 >
-                                   <div className="bg-white/[0.1] backdrop-blur-md border border-white/[0.2] px-2 py-1 rounded">
-                                     <span className="text-white text-xs">+</span>
-                                   </div>
-                                 </motion.div>
-                               </motion.button>
-                             ))}
-                         </motion.div>
-                       )}
-                  </div>
-                 </GlassCard>
+                    </div>
+                  </GlassCard>
                 ))}
 </motion.div>
-           </div>
-         </SectionWrapper>
-
-      <Carousel
-          key={selectedMusicianId + ':' + selectedImageIndex}
-          isOpen={carouselOpen}
-          onClose={closeCarousel}
-          images={currentMusicianImages}
-          initialIndex={selectedImageIndex}
-        />
-       </Layout>
-     </>
-   )
+            </div>
+          </SectionWrapper>
+        </Layout>
+      </>
+    )
 }
