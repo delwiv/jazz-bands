@@ -42,19 +42,19 @@ function ensureKeys(doc) {
 function replaceRefs(doc, assetIdMap) {
   if (doc === null || typeof doc !== 'object') return doc
   
-  // Handle root-level _sanityAsset (direct file reference)
-  if (doc._sanityAsset) {
-    const match = doc._sanityAsset.match(/image@file:\/\/(.*$)/)
-    if (match && assetIdMap.has(match[1])) {
-      return {
-        _type: 'image',
-        asset: {
-          _type: 'reference',
-          _ref: assetIdMap.get(match[1])
-        }
-      }
-    }
-  }
+ // Handle root-level _sanityAsset (direct file reference - legacy format)
+   if (doc._sanityAsset && typeof doc._sanityAsset === 'string') {
+     const match = doc._sanityAsset.match(/image@file:\/\/(.*)$/)
+     if (match && assetIdMap.has(match[1])) {
+       return {
+         _type: 'image',
+         asset: {
+           _type: 'reference',
+           _ref: assetIdMap.get(match[1])
+         }
+       }
+     }
+   }
   
   if (doc._type === 'reference' && doc._ref && assetIdMap.has(doc._ref)) {
     return { ...doc, _ref: assetIdMap.get(doc._ref) }
@@ -125,11 +125,11 @@ async function main() {
       if (match) sanityAssetFiles.add(match[1])
     }
     
-    // Check contentImages array
+    // Check contentImages array (has asset wrapper)
     if (Array.isArray(doc.contentImages)) {
       for (const img of doc.contentImages) {
-        if (img._sanityAsset) {
-          const match = img._sanityAsset.match(/image@file:\/\/(.*$)/)
+        if (img.asset?._sanityAsset) {
+          const match = img.asset._sanityAsset.match(/image@file:\/\/(.*)$/)
           if (match) sanityAssetFiles.add(match[1])
         }
       }
