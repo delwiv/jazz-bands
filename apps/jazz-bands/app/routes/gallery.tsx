@@ -61,10 +61,10 @@ export default function GalleryPage() {
     setCarouselOpen(false)
   }
   
-  // Get gallery images from band's images field (gallery photos, posters, event photos)
-  const galleryImages = band.images?.filter(
-    (img) => img.url && img.url.length > 0
-  ) || []
+    // Get gallery images from band's images field (gallery photos, posters, event photos)
+    const galleryImages = band.images?.filter(
+      (img) => img.asset
+    ) || []
 
   return (
     <>
