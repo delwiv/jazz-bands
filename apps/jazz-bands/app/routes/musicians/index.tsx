@@ -63,12 +63,12 @@ export default function MusiciansPage() {
               animate="visible"
             >
               {musicians.map((musician) => (
-                 <Link
-                   key={musician._id}
-                   to={`/musicians/${musician.slug}`}
-                   className="focus-ring block"
-                   style={{ textDecoration: 'none' }}
-                 >
+<Link
+                    key={musician._id}
+                    to={`/musicians/${musician.slug}`}
+                    className="block cursor-pointer"
+                    style={{ textDecoration: 'none' }}
+                  >
                    <GlassCard className="rounded-xl overflow-hidden">
                     {musician.photo && (
                       <motion.div
