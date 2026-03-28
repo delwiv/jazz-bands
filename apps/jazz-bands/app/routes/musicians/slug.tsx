@@ -1,7 +1,9 @@
 import { ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { FormattedMessage } from 'react-intl'
 import { PortableText } from '@portabletext/react'
+import { Carousel } from '~/components/Carousel/Carousel'
 import { Layout } from '~/components/shared/Layout'
 import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
@@ -137,12 +139,25 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
 }
 
 export default function MusicianDetail() {
-  console.log('Musician detail')
-  const { musician, band, origin } = useLoaderData<typeof loader>()
-  const bio = musician.bio
+   console.log('Musician detail')
+   const { musician, band, origin } = useLoaderData<typeof loader>()
+   const bio = musician.bio
 
-  // Photo gallery (include main photo + gallery images)
-  const gallery: Photo[] = [{ url: musician.photo }, ...musician.gallery]
+   // Photo gallery (include main photo + gallery images)
+   const gallery: Photo[] = [{ url: musician.photo }, ...musician.gallery]
+   
+   // Carousel state
+   const [carouselOpen, setCarouselOpen] = useState(false)
+   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+   
+   const openCarousel = (index: number) => {
+     setSelectedImageIndex(index)
+     setCarouselOpen(true)
+   }
+   
+   const closeCarousel = () => {
+     setCarouselOpen(false)
+   }
 
   return (
     <Layout band={band}>
@@ -239,28 +254,30 @@ export default function MusicianDetail() {
               </div>
             </div>
 
-        {/* Gallery */}
-           {gallery.length > 1 && (
-             <div className="mt-8">
-               <h2 className="text-xl font-semibold text-white mb-4">
-                 <FormattedMessage id="musicians.gallery" />
-               </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {gallery.slice(1).map((photo, idx) => (
-                  <div
-                    key={idx}
-                    className="relative aspect-square rounded-lg overflow-hidden bg-gray-800"
-                  >
-                    <img
-                      src={photo.url}
-                      alt={`${musician.name} - Photo ${idx + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+       {/* Gallery */}
+            {gallery.length > 1 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-white mb-4">
+                  <FormattedMessage id="musicians.gallery" />
+                </h2>
+               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                 {gallery.map((photo, idx) => (
+                   <button
+                     key={idx}
+                     onClick={() => openCarousel(idx)}
+                     className="relative aspect-square rounded-lg overflow-hidden bg-gray-800 focus-ring text-left"
+                     aria-label={`View ${musician.name} photo ${idx + 1} in full size`}
+                   >
+                     <img
+                       src={photo.url}
+                       alt={`${musician.name} - Photo ${idx + 1}`}
+                       className="w-full h-full object-cover hover:scale-105 transition-transform pointer-events-none"
+                     />
+                   </button>
+                 ))}
+               </div>
+             </div>
+           )}
 
        {/* Band memberships */}
            {musician.bands && musician.bands.length > 0 && (
@@ -282,7 +299,14 @@ export default function MusicianDetail() {
           )}
         </div>
       </div>
-    </div>
-    </Layout>
-  )
+</div>
+       <Carousel
+         key={selectedImageIndex}
+         isOpen={carouselOpen}
+         onClose={closeCarousel}
+         images={gallery.map((img) => ({ url: img.url }))}
+         initialIndex={selectedImageIndex}
+       />
+     </Layout>
+   )
 }
