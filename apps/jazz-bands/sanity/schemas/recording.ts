@@ -34,6 +34,17 @@ export const recordingType = defineType({
       title: 'Année de Sortie',
       type: 'number',
     }),
+ defineField({
+    name: 'composers',
+    title: 'Compositeurs',
+    type: 'array',
+    of: [{ type: 'string' }],
+  }),
+    defineField({
+      name: 'trackNumber',
+      title: 'Numéro de piste',
+      type: 'number',
+    }),
     defineField({
       name: 'description',
       title: 'Description',

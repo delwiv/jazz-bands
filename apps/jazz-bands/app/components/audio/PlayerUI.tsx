@@ -105,11 +105,11 @@ function CompactBar({
           <p className="text-sm font-medium text-white truncate text-center">
             {currentTrack.title} ({currentSongNumber}/{songCount})
           </p>
-          {currentTrack.composer && (
-            <p className="text-xs text-gray-400 truncate text-center">
-              {currentTrack.composer}
-            </p>
-          )}
+{currentTrack.composers && currentTrack.composers.length > 0 && (
+             <p className="text-xs text-gray-400 truncate text-center">
+               {currentTrack.composers.join('; ')}
+             </p>
+           )}
           <div className="flex items-center gap-1 text-[10px] text-gray-300">
             <span>{formatTime(currentTime)}</span>
             <span>/</span>

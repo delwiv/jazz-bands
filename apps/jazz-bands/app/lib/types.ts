@@ -41,19 +41,20 @@ export interface SanityFile {
  * Recording object (embedded in band.document)
  */
 export interface Recording {
-  _id?: string // Sanity auto-generates _id for array items
   _key: string
   _type: 'recording'
   title: string
-  audio?: SanityFile
+  audio: {
+    _type: 'reference'
+    _ref: string
+  }
   duration?: number
   album?: string
   releaseYear?: number
-  composer?: string
+  composers?: string[]
   trackNumber?: number
   description?: string
-  audioUrl?: string // Direct CDN URL from GROQ
-  downloadEnabled?: boolean
+  downloadEnabled: boolean
 }
 
 /**
