@@ -116,7 +116,7 @@ export const getMusiciansByBandId = `
     "bio": coalesce(bio, musician->bio),
     "instrument": coalesce(instrument, musician->instrument),
     "photo": coalesce(images[0].asset->url, musician->images[0].asset->url),
-    "galleryImages": coalesce(images, musician->images)[] { "image": asset->url }
+    "galleryImages": coalesce(images, musician->images)[] { "image": asset->url, "caption": description || "" }
   } | order(sortOrder asc)
 `
 

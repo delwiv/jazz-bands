@@ -244,9 +244,7 @@ export default function MusiciansPage() {
                      )}
 
 {musician.galleryImages &&
-                       musician.galleryImages.length > 0 &&
-                       musician.galleryImages.some((img) => img.image).length >
-                       0 && (
+                        musician.galleryImages.filter(img => img.image).length > 0 && (
                          <motion.div
                            className="mt-4 grid grid-cols-3 gap-2"
                            initial={!reducedMotion ? { opacity: 0 } : undefined}
