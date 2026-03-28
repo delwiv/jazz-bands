@@ -31,6 +31,10 @@ export const getBandBySlug = `
       _key,
       "url": asset->url
     },
+    "images": coalesce(images, [])[] {
+      _key,
+      "url": asset->url
+    },
     "members": bandMembers[] {
       _key,
       sortOrder,

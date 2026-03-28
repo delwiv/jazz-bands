@@ -139,6 +139,11 @@ export interface Band {
     url: string
     metadata?: any
   }>
+  images?: Array<{
+    _key?: string
+    _type?: 'image'
+    url: string
+  }>
   members?: Array<{
     _type: 'reference'
     _ref: string
