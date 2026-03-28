@@ -144,10 +144,29 @@ export default function MusicianDetail() {
    const { musician, band, origin } = useLoaderData<typeof loader>()
    const bio = musician.bio
 
-  // Photo gallery (include main photo + gallery images)
+// Photo gallery (include main photo + gallery images)
     const gallery: Photo[] = [
-      { url: musician.photo ? urlForImage(musician.photo).width(3840).height(3840).fit("max").url() : '' },
-      ...musician.gallery.map(img => ({ url: img.asset ? urlForImage(img.asset).width(3840).height(3840).fit("max").url() : '' }))
+      {
+        url: musician.photo
+          ? urlForImage.image(musician.photo)
+              .width(3840)
+              .height(3840)
+              .fit("max")
+              .url()
+          : '',
+      },
+      ...musician.gallery.map(
+        (img) =>
+          ({
+            url: img.asset
+              ? urlForImage.image(img.asset)
+                  .width(3840)
+                  .height(3840)
+                  .fit("max")
+                  .url()
+              : '',
+          } as const),
+      ),
     ]
    
    // Carousel state

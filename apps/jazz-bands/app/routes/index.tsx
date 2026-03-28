@@ -21,8 +21,7 @@ import {
 } from '~/lib/animationVariants'
 import { BandHomeLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
-import { sanityClient } from '~/lib/sanity.settings'
-import { urlForImage } from '~/lib/sanity.client'
+import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -192,7 +191,11 @@ export default function BandHome() {
                      transition={!reducedMotion ? { duration: 0.6, ease: 'easeOut' } : undefined}
                    >
                      <img
-                       src={urlForImage(mainImage.asset).width(1200).height(1200).fit("crop").url()}
+                       src={urlForImage.image(mainImage.asset)
+                        .width(1200)
+                        .height(1200)
+                        .fit("crop")
+                        .url()}
                        alt={band.name}
                        className="w-full h-full object-cover"
                        loading="eager"

@@ -14,8 +14,7 @@ import {
 } from '~/lib/animationVariants'
 import { GalleryLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
-import { sanityClient } from '~/lib/sanity.settings'
-import { urlForImage } from '~/lib/sanity.client'
+import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -105,7 +104,11 @@ export default function GalleryPage() {
                          <motion.img
                            src={
                              image.asset
-                               ? urlForImage(image.asset).width(400).height(400).fit("crop").url()
+                               ? urlForImage.image(image.asset)
+                                .width(400)
+                                .height(400)
+                                .fit("crop")
+                                .url()
                                : ''
                            }
                            alt={image.metadata?.caption || `${band.name} gallery image ${index + 1}`}
@@ -173,7 +176,13 @@ export default function GalleryPage() {
           isOpen={carouselOpen}
           onClose={closeCarousel}
           images={galleryImages.map((img) => ({
-            url: img.asset ? urlForImage(img.asset).width(3840).height(3840).fit("max").url() : '',
+            url: img.asset
+              ? urlForImage.image(img.asset)
+                  .width(3840)
+                  .height(3840)
+                  .fit("max")
+                  .url()
+              : '',
             caption: img.metadata?.caption,
           }))}
           initialIndex={selectedImageIndex}
