@@ -95,20 +95,23 @@ export function Header({ band }: HeaderProps) {
          </button>
 
        {/* Desktop Navigation */}
-         <div className="flex gap-6 hidden md:flex">
-           <NavLink to="/" primaryColor={primaryColor}>
-             <FormattedMessage id="header.home" />
-           </NavLink>
-           <NavLink to="/musicians" primaryColor={primaryColor}>
-             <FormattedMessage id="header.musicians" />
-           </NavLink>
-           <NavLink to="/tour" primaryColor={primaryColor}>
-             <FormattedMessage id="header.tour" />
-           </NavLink>
-           <NavLink to="/contact" primaryColor={primaryColor}>
-             <FormattedMessage id="header.contact" />
-           </NavLink>
-         </div>
+          <div className="flex gap-6 hidden md:flex">
+            <NavLink to="/" primaryColor={primaryColor}>
+              <FormattedMessage id="header.home" />
+            </NavLink>
+            <NavLink to="/musicians" primaryColor={primaryColor}>
+              <FormattedMessage id="header.musicians" />
+            </NavLink>
+            <NavLink to="/tour" primaryColor={primaryColor}>
+              <FormattedMessage id="header.tour" />
+            </NavLink>
+            <NavLink to="/gallery" primaryColor={primaryColor}>
+              <FormattedMessage id="header.gallery" />
+            </NavLink>
+            <NavLink to="/contact" primaryColor={primaryColor}>
+              <FormattedMessage id="header.contact" />
+            </NavLink>
+          </div>
 
          {/* Mobile Navigation Dropdown */}
          <AnimatePresence>
@@ -121,35 +124,42 @@ export function Header({ band }: HeaderProps) {
                className="absolute top-full left-0 right-0 bg-slate-900/98 backdrop-blur-xl border-b border-white/10 shadow-xl md:hidden"
              >
                <div className="flex flex-col p-4 space-y-2">
-                 <Link
-                   to="/"
-                   className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
-                   onClick={() => setIsMenuOpen(false)}
-                 >
-                   <FormattedMessage id="header.home" />
-                 </Link>
-                 <Link
-                   to="/musicians"
-                   className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
-                   onClick={() => setIsMenuOpen(false)}
-                 >
-                   <FormattedMessage id="header.musicians" />
-                 </Link>
-                 <Link
-                   to="/tour"
-                   className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
-                   onClick={() => setIsMenuOpen(false)}
-                 >
-                   <FormattedMessage id="header.tour" />
-                 </Link>
-                 <Link
-                   to="/contact"
-                   className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
-                   onClick={() => setIsMenuOpen(false)}
-                 >
-                   <FormattedMessage id="header.contact" />
-                 </Link>
-               </div>
+                  <Link
+                    to="/"
+                    className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FormattedMessage id="header.home" />
+                  </Link>
+                  <Link
+                    to="/musicians"
+                    className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FormattedMessage id="header.musicians" />
+                  </Link>
+                  <Link
+                    to="/tour"
+                    className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FormattedMessage id="header.tour" />
+                  </Link>
+                  <Link
+                    to="/gallery"
+                    className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FormattedMessage id="header.gallery" />
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="focus-ring py-3 px-4 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FormattedMessage id="header.contact" />
+                  </Link>
+                </div>
              </motion.div>
            )}
          </AnimatePresence>

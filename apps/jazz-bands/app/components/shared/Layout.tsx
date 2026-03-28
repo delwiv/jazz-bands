@@ -20,12 +20,10 @@ export function Layout({ band, children }: LayoutProps) {
   // Use background image as fixed background if band has one
   const hasBackgroundImage = band.backgroundImage != null
 
-  console.log({ hasBackgroundImage, backgroundImage: band.backgroundImage })
-
   // If reduced motion is enabled, render children without animation wrapper
   if (reducedMotion) {
     return (
-      <div className="min-h-screen flex flex-col pb-[70px] md:pb-[82px] relative">
+      <div className="min-h-screen flex flex-col pb-17.5 md:pb-20.5 relative">
         {/* Simple fixed background - no gradient, no blur */}
         {hasBackgroundImage && (
           <div
@@ -37,7 +35,7 @@ export function Layout({ band, children }: LayoutProps) {
           />
         )}
         {!hasBackgroundImage && (
-          <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 z-0" />
+          <div className="fixed inset-0 bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 z-0" />
         )}
 
         <a
@@ -63,7 +61,7 @@ export function Layout({ band, children }: LayoutProps) {
 
   // Render with animations
   return (
-    <div className="min-h-screen flex flex-col pb-[70px] md:pb-[82px] relative">
+    <div className="min-h-screen flex flex-col pb-17.5 md:pb-20.5 relative">
       {/* Simple fixed background - no gradient, no blur */}
       {hasBackgroundImage && (
         <div
@@ -75,7 +73,7 @@ export function Layout({ band, children }: LayoutProps) {
         />
       )}
       {!hasBackgroundImage && (
-        <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 z-0" />
+        <div className="fixed inset-0 bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 z-0" />
       )}
 
       {/* Dark overlay for readability (no blur) */}

@@ -77,3 +77,9 @@ export interface TourSlugLoaderData {
   dateSlug: string
   baseUrl: string
 }
+
+/** Gallery page loader data */
+export interface GalleryLoaderData {
+  band: Band
+  baseUrl: string
+}
