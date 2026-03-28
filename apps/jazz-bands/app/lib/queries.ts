@@ -58,7 +58,7 @@ export const getBandBySlug = `
       duration,
       album,
       releaseYear,
-      composer,
+      composers,
       trackNumber,
       description,
       downloadEnabled,

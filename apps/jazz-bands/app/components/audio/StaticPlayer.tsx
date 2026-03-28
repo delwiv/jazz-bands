@@ -79,11 +79,11 @@ export function StaticPlayer({
                <h4 className="font-semibold text-white truncate">
                  {currentTrack.title}
                </h4>
-               {currentTrack.composer && (
-                 <p className="text-xs md:text-sm text-gray-400 truncate">
-                   {currentTrack.composer}
-                 </p>
-               )}
+{currentTrack.composers && currentTrack.composers.length > 0 && (
+                  <p className="text-xs md:text-sm text-gray-400 truncate">
+                    {currentTrack.composers.join('; ')}
+                  </p>
+                )}
              </div>
               </div>
 

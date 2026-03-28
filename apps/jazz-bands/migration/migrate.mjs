@@ -1317,16 +1317,17 @@ if (DRY_RUN) {
                    duration = metadata.format?.duration
                    album = metadata.common?.album
                    releaseYear = metadata.common?.year
-                   // Clean up composer: remove trailing semicolons from ID3 metadata
-                   let composerFromId3 = metadata.common?.composer
-                   console.log(`  [DEBUG] Raw ID3 composer: "${composerFromId3}"`)
-                   if (composerFromId3) {
-                     composerFromId3 = composerFromId3.replace(/;+\s*$/, '').trim()
-                     console.log(`  [DEBUG] Cleaned ID3 composer: "${composerFromId3}"`)
-                   }
-                   let composerFallback = composerFromId3
-                   composer = composerFallback
-                   trackNumber = metadata.common?.track?.no
+// Clean up composers: split by semicolon from ID3 metadata (e.g., "Composer1; Composer2;")
+                    let composerFromId3 = metadata.common?.composer
+                    if (composerFromId3) {
+                      composerFromId3 = composerFromId3
+                        .split(';')
+                        .map(c => c.trim())
+                        .filter(c => c.length > 0)
+                    }
+                    let composerFallback = composerFromId3.length > 0 ? composerFromId3 : null
+                    composer = composerFallback
+                    trackNumber = metadata.common?.track?.no
                  }
                } catch (metaError) {
                  console.warn(
@@ -1344,26 +1345,26 @@ if (DRY_RUN) {
                 }
               }
 
-// Extract clean song title and composer from filename
-               // Format: "01 - Title (Composer.ext" or "1 - Song Name (Author; .mp3"
-               const { title: cleanTitle, composer: composerFromFilename } = cleanAudioTitle(audioFile)
-               const recordingTitle = cleanTitle || audioFile.replace(/\.[^/.]+$/, '')
+// Extract clean song title and composer(s) from filename
+                // Format: "01 - Title (Composer1; Composer2.ext" or "1 - Song Name (Author; .mp3"
+                const { title: cleanTitle, composers: composersFromFilename } = cleanAudioTitle(audioFile)
+                const recordingTitle = cleanTitle || audioFile.replace(/\.[^/.]+$/, '')
+                
+                // Use ID3 composers first, fallback to filename
+                if (!composer && composersFromFilename) {
+                  composer = composersFromFilename
+                }
                
-               // Use ID3 composer first, fallback to filename
-               if (!composer && composerFromFilename) {
-                 composer = composerFromFilename
-               }
-               
-               const recording = {
-                 _key: `recording_${Date.now()}`,
-                 _type: 'recording',
-                 title: recordingTitle,
-                 downloadEnabled: true,
-                 duration,
-                 album,
-                 releaseYear,
-                 composer,
-                 trackNumber,
+const recording = {
+                  _key: `recording_${Date.now()}`,
+                  _type: 'recording',
+                  title: recordingTitle,
+                  downloadEnabled: true,
+                  duration,
+                  album,
+                  releaseYear,
+                  composers: composer,
+                  trackNumber,
                 audio: {
                   _type: 'file',
                   asset: await copyAssetToLocal(
@@ -1631,20 +1632,23 @@ async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets, o
 
 // Clean audio title from messy old format
 // "01 - Title (Composer.ext" -> "Title"
-// "1 - Song (Author; " -> { title: "Song", composer: "Author" }
+// "1 - Song (Author1; Author2; " -> { title: "Song", composers: ["Author1", "Author2"] }
 function cleanAudioTitle(filename) {
   let title = filename
-  let composer = null
+  let composers = null
   
   // Remove extension
   title = title.replace(/\.[^/.]+$/, '')
   
-  // Extract composer from filename: "01 - Title (Composer" -> composer = "Composer"
+  // Extract composer(s) from filename: "01 - Title (Composer1; Composer2" -> composers = ["Composer1", "Composer2"]
   // Pattern: text between ( and end of string (before .ext)
   const composerMatch = title.match(/\s*\((.+)$/)
   if (composerMatch && composerMatch[1]) {
-    // Clean up composer: remove trailing semicolon(s) and whitespace
-    composer = composerMatch[1].replace(/;+\s*$/, '').trim()
+    // Split by semicolon, trim whitespace, filter empty strings
+    composers = composerMatch[1]
+      .split(';')
+      .map(c => c.trim())
+      .filter(c => c.length > 0)
     // Remove composer part from title
     title = title.replace(/\s*\(.+$/, '')
   }
@@ -1655,7 +1659,7 @@ function cleanAudioTitle(filename) {
   // Trim whitespace
   title = title.trim()
   
-  return { title: title || null, composer }
+  return { title: title || null, composers }
 }
 
 // Generate descriptive filename for assets

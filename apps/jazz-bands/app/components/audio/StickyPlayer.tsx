@@ -93,9 +93,9 @@ function SortableTrack({
            >
              {track.title}
            </p>
-           {track.composer && (
-             <p className="text-sm text-gray-400 truncate">{track.composer}</p>
-           )}
+{track.composers && track.composers.length > 0 && (
+              <p className="text-sm text-gray-400 truncate">{track.composers.join('; ')}</p>
+            )}
           </div>
       </div>
       <span
@@ -189,10 +189,10 @@ interface IntegrationQueueProps {
           </button>
         </div>
 
-        {/* Hidden scrollbar via class */}
+        {/* Queue list - grows with content, scrolls when needed */}
         <div
           className={`overflow-y-auto scrollbar-hidden`}
-          style={{ maxHeight: '200px' }}
+          style={{ maxHeight: `calc(100vh - ${headerHeight + 120}px)` }}
         >
          {queue.length === 0 ? (
               <p className="text-center text-gray-300 py-4 text-sm">
@@ -307,11 +307,11 @@ export function StickyPlayer({
                  <h4 className="font-semibold text-white truncate">
                    {currentTrack.title}
                  </h4>
-                {currentTrack.composer && (
-                  <p className="text-xs md:text-sm text-gray-400 truncate">
-                    {currentTrack.composer}
-                  </p>
-                )}
+{currentTrack.composers && currentTrack.composers.length > 0 && (
+                   <p className="text-xs md:text-sm text-gray-400 truncate">
+                     {currentTrack.composers.join('; ')}
+                   </p>
+                 )}
                </div>
             </div>
 
