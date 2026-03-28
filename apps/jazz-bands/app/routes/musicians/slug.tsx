@@ -6,8 +6,7 @@ import { PortableText } from '@portabletext/react'
 import { Carousel } from '~/components/Carousel/Carousel'
 import { Layout } from '~/components/shared/Layout'
 import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
-import { sanityClient } from '~/lib/sanity.settings'
-import { urlForImage } from '~/lib/sanity.client'
+import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import type { Photo } from '~/lib/types'
 
 function MusicianStructuredData({
@@ -48,14 +47,14 @@ interface MusicianDetailResponse {
   slug: string
   bio: any[]
   instrument: string
-  photo: string
-  gallery: { url: string }[]
+  photo: { _type: 'reference'; _ref: string } | null
+  gallery: { asset: { _type: 'reference'; _ref: string }; metadata?: any }[]
   bands: { name: string; slug: string }[]
   bandOverrides?: Array<{
     _key: string
     bio?: any[]
     instrument?: string
-    image?: string
+    image?: { _type: 'reference'; _ref: string }
     band: { name: string; slug: string }
   }>
 }
@@ -88,7 +87,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let displayName = musician.name
   let bio = musician.bio
   let instrument = musician.instrument
-  let photo = musician.photo
+  let photo: { _type: 'reference'; _ref: string } | null = musician.photo
   let gallery = musician.gallery
 
   const override = musician.bandOverrides?.find(
@@ -99,6 +98,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     if (override.bio?.length > 0) bio = override.bio
     if (override.instrument) instrument = override.instrument
     if (override.image) photo = override.image
+  }
+
+  // Use first gallery image as photo if no main photo exists
+  if (!photo && gallery && gallery.length > 0) {
+    photo = gallery[0].asset
   }
 
   return {
@@ -114,73 +118,115 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
-  if (!data) return []
+   if (!data) return []
 
-  const musician = data.musician as MusicianDetailResponse
-  const title = `${musician.name} - ${musician.instrument || 'Musician'}${data.band ? ` | ${data.band.name}` : ''}`
-  const description =
-    musician.bio?.[0]?.children?.[0]?.text ||
-    `${musician.name}, ${musician.instrument || 'Musician'}`
+   const musician = data.musician as MusicianDetailResponse
+   const title = `${musician.name} - ${musician.instrument || 'Musician'}${data.band ? ` | ${data.band.name}` : ''}`
+   const description =
+     musician.bio?.[0]?.children?.[0]?.text ||
+     `${musician.name}, ${musician.instrument || 'Musician'}`
 
-  return [
-    { title },
-    { name: 'description', content: description },
-    // Open Graph
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-    { property: 'og:type', content: 'profile' },
-    { property: 'og:image', content: data.origin + musician.photo },
-    { property: 'og:site_name', content: data.band || 'Jazz Bands' },
-    // Twitter Card
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: title },
-    { name: 'twitter:description', content: description },
-    { name: 'twitter:image', content: data.origin + musician.photo },
-  ]
-}
+   // Build photo URL for SEO
+   const photoUrl = musician.photo && typeof musician.photo === 'object'
+     ? urlForImage.image(musician.photo)
+         .width(1200)
+         .height(630)
+         .fit("max")
+         .url()
+     : ''
+
+   return [
+     { title },
+     { name: 'description', content: description },
+     // Open Graph
+     { property: 'og:title', content: title },
+     { property: 'og:description', content: description },
+     { property: 'og:type', content: 'profile' },
+     { property: 'og:image', content: photoUrl },
+     { property: 'og:site_name', content: data.band || 'Jazz Bands' },
+     // Twitter Card
+     { name: 'twitter:card', content: 'summary_large_image' },
+     { name: 'twitter:title', content: title },
+     { name: 'twitter:description', content: description },
+     { name: 'twitter:image', content: photoUrl },
+   ]
+ }
 
 export default function MusicianDetail() {
-   console.log('Musician detail')
-   const { musician, band, origin } = useLoaderData<typeof loader>()
-   const bio = musician.bio
+     console.log('Musician detail')
+     const { musician, band, origin } = useLoaderData<typeof loader>()
+     const bio = musician.bio
 
-// Photo gallery (include main photo + gallery images)
-    const gallery: Photo[] = [
-      {
-        url: musician.photo
-          ? urlForImage.image(musician.photo)
-              .width(3840)
-              .height(3840)
-              .fit("max")
-              .url()
-          : '',
-      },
-      ...musician.gallery.map(
-        (img) =>
-          ({
-            url: img.asset
-              ? urlForImage.image(img.asset)
-                  .width(3840)
-                  .height(3840)
-                  .fit("max")
-                  .url()
-              : '',
-          } as const),
-      ),
-    ]
-   
-   // Carousel state
-   const [carouselOpen, setCarouselOpen] = useState(false)
-   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-   
-   const openCarousel = (index: number) => {
-     setSelectedImageIndex(index)
-     setCarouselOpen(true)
-   }
-   
-   const closeCarousel = () => {
-     setCarouselOpen(false)
-   }
+ // Photo gallery: main photo first (if distinct from gallery), then gallery images
+      const gallery: Photo[] = []
+      
+      // Track which images have been added to avoid duplicates
+      const addedImageIds = new Set<string>()
+      
+      // Add main photo if available and distinct from gallery
+      if (musician.photo && typeof musician.photo === 'object' && musician.photo._ref) {
+        gallery.push({
+          url: urlForImage.image(musician.photo)
+            .width(3840)
+            .height(3840)
+            .fit("max")
+            .url(),
+        })
+        addedImageIds.add(musician.photo._ref)
+      }
+      
+      // Add gallery images (skip if already added as main photo)
+      if (musician.gallery && Array.isArray(musician.gallery)) {
+        gallery.push(
+          ...musician.gallery
+            .filter((img): img is { asset: { _type: 'reference'; _ref: string }; metadata?: any } =>
+              img && img.asset && img.asset._ref && !addedImageIds.has(img.asset._ref)
+            )
+            .map((img) => {
+              if (img.asset._ref) {
+                addedImageIds.add(img.asset._ref)
+              }
+              return {
+                url: img.asset
+                  ? urlForImage.image(img.asset)
+                      .width(3840)
+                      .height(3840)
+                      .fit("max")
+                      .url()
+                  : '',
+              }
+            })
+        )
+      }
+      
+      // Build photo URLs
+      const coverPhotoUrl = musician.photo && typeof musician.photo === 'object'
+        ? urlForImage.image(musician.photo)
+            .width(1920)
+            .height(1080)
+            .fit("max")
+            .url()
+        : ''
+      const profilePhotoUrl = musician.photo && typeof musician.photo === 'object'
+        ? urlForImage.image(musician.photo)
+            .width(400)
+            .height(400)
+            .fit("crop")
+            .url()
+        : ''
+
+      // Carousel state
+     const [carouselOpen, setCarouselOpen] = useState(false)
+     const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+     
+     const openCarousel = (index: number) => {
+       setSelectedImageIndex(index)
+       setCarouselOpen(true)
+     }
+     
+     const closeCarousel = () => {
+       setCarouselOpen(false)
+     }
 
   return (
     <Layout band={band}>
@@ -188,31 +234,43 @@ export default function MusicianDetail() {
       <MusicianStructuredData musician={musician} band={band} origin={origin} />
 
       {/* Cover/Photo Section */}
-      <div className="relative h-80 md:h-96 bg-gray-800">
+      <div 
+        className="relative h-80 md:h-96 bg-gray-800 cursor-pointer"
+        onClick={() => gallery.length > 0 && openCarousel(0)}
+      >
         <img
-          src={musician.photo}
+          src={coverPhotoUrl}
           alt={musician.name}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
          <button
-           onClick={() => window.history.back()}
-           className="focus-ring absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
-         >
-           <ArrowLeft className="icon-md" />
-           <FormattedMessage id="musicians.backToMusicians" />
-         </button>
-      </div>
+            onClick={(e) => {
+              e.stopPropagation()
+              window.history.back()
+            }}
+            className="focus-ring absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
+          >
+            <ArrowLeft className="icon-md" />
+            <FormattedMessage id="musicians.backToMusicians" />
+          </button>
+       </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8 -mt-24 relative z-10">
-        <div className="bg-gray-900 rounded-lg p-6 shadow-2xl">
-          <div className="flex items-start gap-6">
-            <img
-              src={musician.photo}
-              alt={musician.name}
-              className="w-32 h-32 rounded-lg object-cover shadow-lg border-2 border-amber-500"
-            />
+       {/* Content */}
+       <div className="max-w-4xl mx-auto px-4 py-8 -mt-24 relative z-10">
+         <div className="bg-gray-900 rounded-lg p-6 shadow-2xl">
+           <div className="flex items-start gap-6">
+             <button
+               onClick={() => gallery.length > 0 && openCarousel(0)}
+               disabled={gallery.length === 0}
+               className={gallery.length > 0 ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}
+             >
+               <img
+                 src={profilePhotoUrl}
+                 alt={musician.name}
+                 className="w-32 h-32 rounded-lg object-cover shadow-lg border-2 border-amber-500"
+               />
+             </button>
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold text-white mb-2">
                 {musician.name}

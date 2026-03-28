@@ -268,32 +268,43 @@ export default function BandHome() {
             whileInView="visible"
             viewport={{ once: true, margin: '-100px' }}
           >
-            {band.members?.map((musician) => (
-              <motion.a
-                key={musician._key}
-                href={`/musicians/${musician.musician?.slug}`}
-                variants={itemVariants}
-                className="flex-none"
-              >
-                <GlassCard className="w-64 p-6 text-center hover:shadow-xl transition-shadow">
-                  {musician.photo && (
-                    <img
-                      src={musician.photo}
-                      alt={musician.musician?.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-40 h-40 mx-auto rounded-full object-cover mb-4 shadow-lg ring-2 ring-white/[0.1]"
-                    />
-                  )}
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {musician.musician?.name}
-                  </h3>
-                  {musician.instrument && (
-                    <Badge variant="default">{musician.instrument}</Badge>
-                  )}
-                </GlassCard>
-              </motion.a>
-            ))}
+            {band.members?.map((musician) => {
+              // Build photo URL from asset reference
+              const photoUrl = musician.photo && typeof musician.photo === 'object' && musician.photo._ref
+                ? urlForImage.image(musician.photo)
+                    .width(400)
+                    .height(400)
+                    .fit("crop")
+                    .url()
+                : ''
+
+              return (
+                <motion.a
+                  key={musician._key}
+                  href={`/musicians/${musician.musician?.slug}`}
+                  variants={itemVariants}
+                  className="flex-none"
+                >
+                  <GlassCard className="w-64 p-6 text-center hover:shadow-xl transition-shadow">
+                    {photoUrl && (
+                      <img
+                        src={photoUrl}
+                        alt={musician.musician?.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-40 h-40 mx-auto rounded-full object-cover mb-4 shadow-lg ring-2 ring-white/[0.1]"
+                      />
+                    )}
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      {musician.musician?.name}
+                    </h3>
+                    {musician.instrument && (
+                      <Badge variant="default">{musician.instrument}</Badge>
+                    )}
+                  </GlassCard>
+                </motion.a>
+              )
+            })}
           </motion.div>
 
          <div className="text-center mt-8">
