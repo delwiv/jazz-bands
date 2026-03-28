@@ -619,6 +619,31 @@ SANITY_API_WRITE_TOKEN=your-token-here
 SANITY_IMPORT_TOKEN=your-token-here
 ```
 
+### Gallery Images Migration (Updated March 2026)
+
+The migration now properly handles three types of images:
+
+1. **Background Images** (`backgroundImage` field): Fixed you `bg.jpg` or `background.jpg` from storage
+2. **Content Images** (`contentImages` field): Main page images like `remy.png` or `main.png`
+3. **Gallery Images** (`images` field): Group photos, posters, event photos (NEW: now migrated!)
+
+**What Changed**:
+- **Fixed `_key` missing warnings**: Changed `contentImages` from `_sanityAsset: "..."` shorthand to proper `asset: { _sanityAsset: "..." }` wrapper structure
+- **Gallery images now populated**: `scanBandImages()` function now called in `migrateBand()`, discovering 188+ images across all bands
+- **Proper asset references**: Gallery images use `asset: { _type: "reference", _ref: "..." }` pattern matching musician images
+
+**Verification**: Run `node migration/__tests__/verify-output.mjs` after extraction to validate NDJSON structure.
+
+**Results by Band**:
+| Band | Content Images | Gallery Images |
+|------|---------------|----------------|
+| boheme | 1 | 54 |
+| canto | 0 | 47 |
+| jazzola | 1 | 28 |
+| swing-family | 1 | 24 |
+| trio-rsh | 1 | 12 |
+| west-side-trio | 1 | 23 |
+
 ---
 
 ## 🤖 AI Agent Guidelines
