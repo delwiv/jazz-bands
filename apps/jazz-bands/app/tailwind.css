@@ -26,7 +26,7 @@ body {
 
 /* Glass card utilities for components */
 @utility glass-card {
-  @apply bg-white/[0.06] backdrop-blur-xl border border-white/[0.1] rounded-2xl shadow-lg;
+  @apply bg-white/[0.06] backdrop-blur-xl border border-white/[0.1] rounded-none shadow-lg;
 }
 
 @utility glass-card-hover {

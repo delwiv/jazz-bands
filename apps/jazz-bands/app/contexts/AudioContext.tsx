@@ -58,14 +58,20 @@ export function AudioProvider({
    // Track if we've already played the first track on initial load
    const hasPlayedFirstTrack = useRef(false)
 
-   const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
-     if (typeof window === 'undefined') return null
+const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
+       if (typeof window === 'undefined') return null
 
-     // For initial load: don't restore from localStorage to allow autoplay
-     // Only restore if we're returning from navigation (hasPlayedFirstTrack = true)
-     if (!hasPlayedFirstTrack.current) return null
+      // For initial load: use first track from initialPlaylist
+      // This prevents the player from disappearing during hydration
+      if (!hasPlayedFirstTrack.current) {
+        if (initialPlaylist && initialPlaylist.length > 0) {
+          const firstTrack = initialPlaylist.find((r: Recording) => r.audioUrl)
+          return firstTrack || null
+        }
+        return null
+      }
 
-     const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
+      const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
      if (!stored) return null
 
      try {
