@@ -67,12 +67,12 @@ export function meta({
 }
 
 export default function BandHome() {
-   const { band, baseUrl } = useLoaderData<BandHomeLoaderData>()
-   const navigation = useNavigation()
-   const isLoading = navigation.state === 'loading'
-   const reducedMotion = useReducedMotion()
-   
- // Debug logging removed
+  const { band, baseUrl } = useLoaderData<BandHomeLoaderData>()
+  const navigation = useNavigation()
+  const isLoading = navigation.state === 'loading'
+  const reducedMotion = useReducedMotion()
+
+  // Debug logging removed
 
   // Hero parallax scroll effect
   const { scrollY } = useScroll()
@@ -177,39 +177,49 @@ export default function BandHome() {
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden w-full py-12 px-6">
           <div className="max-w-7xl w-full mx-auto">
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-           {/* Left: Main Image */}
-               {(() => {
-                 const mainImage = band.contentImages?.[0]
-                 if (!mainImage?.asset) {
-                   return null
-                 }
-                 return (
-                   <motion.div
-                     className="relative aspect-square md:aspect-auto md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden shadow-2xl"
-                     initial={!reducedMotion ? { opacity: 0, x: -50 } : undefined}
-                     animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
-                     transition={!reducedMotion ? { duration: 0.6, ease: 'easeOut' } : undefined}
-                   >
-                     <img
-                       src={urlForImage.image(mainImage.asset)
+              {/* Left: Main Image */}
+              {(() => {
+                const mainImage = band.contentImages?.[0]
+                if (!mainImage?.asset) {
+                  return null
+                }
+                return (
+                  <motion.div
+                    className="relative aspect-auto md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden shadow-2xl"
+                    initial={
+                      !reducedMotion ? { opacity: 0, x: -50 } : undefined
+                    }
+                    animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
+                    transition={
+                      !reducedMotion
+                        ? { duration: 0.6, ease: 'easeOut' }
+                        : undefined
+                    }
+                  >
+                    <img
+                      src={urlForImage
+                        .image(mainImage.asset)
                         .width(1200)
-                        .height(1200)
-                        .fit("crop")
+                        .fit('max')
                         .url()}
-                       alt={band.name}
-                       className="w-full h-full object-cover"
-                       loading="eager"
-                     />
-                   </motion.div>
-                 )
-               })()}
+                      alt={band.name}
+                      className="w-full h-full object-contain"
+                      loading="eager"
+                    />
+                  </motion.div>
+                )
+              })()}
 
               {/* Right: Band Info */}
               <motion.div
                 className="space-y-6 text-white"
                 initial={!reducedMotion ? { opacity: 0, x: 50 } : undefined}
                 animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
-                transition={!reducedMotion ? { duration: 0.6, ease: 'easeOut', delay: 0.2 } : undefined}
+                transition={
+                  !reducedMotion
+                    ? { duration: 0.6, ease: 'easeOut', delay: 0.2 }
+                    : undefined
+                }
               >
                 {/* Band Name with Divider */}
                 <div>
@@ -243,9 +253,15 @@ export default function BandHome() {
                 {band.members && band.members.length > 0 && (
                   <ul className="space-y-2 text-lg text-gray-200">
                     {band.members.map((member: any, idx: number) => (
-                      <li key={member._key || idx} className="flex items-center gap-2">
+                      <li
+                        key={member._key || idx}
+                        className="flex items-center gap-2"
+                      >
                         <span className="text-gray-400">•</span>
-                        <span>{member.musician?.name || member.name} : {member.instrument}</span>
+                        <span>
+                          {member.musician?.name || member.name} :{' '}
+                          {member.instrument}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -259,8 +275,8 @@ export default function BandHome() {
           <p>Hero section with band name: {band.name}</p>
         </div>
 
-      {/* Musicians Section - Horizontal Scroll */}
-         <SectionWrapper title={<FormattedMessage id="home.ourMusicians" />}>
+        {/* Musicians Section - Horizontal Scroll */}
+        <SectionWrapper>
           <motion.div
             className="flex flex-wrap justify-center gap-6 md:gap-8 max-w-7xl mx-auto"
             variants={staggerContainerVariants}
@@ -270,13 +286,17 @@ export default function BandHome() {
           >
             {band.members?.map((musician) => {
               // Build photo URL from asset reference
-              const photoUrl = musician.photo && typeof musician.photo === 'object' && musician.photo._ref
-                ? urlForImage.image(musician.photo)
+              const photoUrl =
+                musician.photo &&
+                  typeof musician.photo === 'object' &&
+                  musician.photo._ref
+                  ? urlForImage
+                    .image(musician.photo)
                     .width(400)
                     .height(400)
-                    .fit("crop")
+                    .fit('crop')
                     .url()
-                : ''
+                  : ''
 
               return (
                 <motion.a
@@ -307,15 +327,15 @@ export default function BandHome() {
             })}
           </motion.div>
 
-         <div className="text-center mt-8">
-             <PrimaryButton href="/musicians">
-               <FormattedMessage id="home.viewAllMusicians" />
-             </PrimaryButton>
-           </div>
+          <div className="text-center mt-8">
+            <PrimaryButton href="/musicians">
+              <FormattedMessage id="home.viewAllMusicians" />
+            </PrimaryButton>
+          </div>
         </SectionWrapper>
 
         {/* Tour Dates Section with Scroll Animations */}
-         <SectionWrapper title={<FormattedMessage id="home.upcomingShows" />}>
+        <SectionWrapper title={<FormattedMessage id="home.upcomingShows" />}>
           {() => {
             const currentDate = new Date()
             currentDate.setHours(0, 0, 0, 0)
@@ -366,41 +386,41 @@ export default function BandHome() {
                               {date.region && `, ${date.region}`}
                             </p>
                           </div>
-                         <div className="flex flex-col gap-2">
-                             {date.soldOut && (
-                               <span className="bg-red-900/50 text-red-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-red-500/[0.3]">
-                                 <FormattedMessage id="home.soldOut" />
-                               </span>
-                             )}
-                             {isUpcoming && (
-                               <span className="bg-green-900/50 text-green-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-green-500/[0.3]">
-                                 <FormattedMessage id="home.upcoming" />
-                               </span>
-                             )}
-                           </div>
+                          <div className="flex flex-col gap-2">
+                            {date.soldOut && (
+                              <span className="bg-red-900/50 text-red-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-red-500/[0.3]">
+                                <FormattedMessage id="home.soldOut" />
+                              </span>
+                            )}
+                            {isUpcoming && (
+                              <span className="bg-green-900/50 text-green-200 px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-green-500/[0.3]">
+                                <FormattedMessage id="home.upcoming" />
+                              </span>
+                            )}
+                          </div>
                         </div>
-                       {date.ticketsUrl && (
-                           <PrimaryButton
-                             href={date.ticketsUrl}
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             className="mt-4"
-                           >
-                             <FormattedMessage id="home.getTickets" />
-                           </PrimaryButton>
-                         )}
+                        {date.ticketsUrl && (
+                          <PrimaryButton
+                            href={date.ticketsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-4"
+                          >
+                            <FormattedMessage id="home.getTickets" />
+                          </PrimaryButton>
+                        )}
                       </GlassCard>
                     </motion.div>
                   )
                 })}
 
-               {upcomingDates?.length && (
-                   <div className="text-center mt-8">
-                     <PrimaryButton href="/tour">
-                       <FormattedMessage id="home.viewAllShows" />
-                     </PrimaryButton>
-                   </div>
-                 )}
+                {upcomingDates?.length && (
+                  <div className="text-center mt-8">
+                    <PrimaryButton href="/tour">
+                      <FormattedMessage id="home.viewAllShows" />
+                    </PrimaryButton>
+                  </div>
+                )}
               </motion.div>
             )
           }}
