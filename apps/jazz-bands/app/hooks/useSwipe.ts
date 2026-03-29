@@ -39,13 +39,14 @@ export function useSwipe({
     if (!touchStart || !touchEnd) return
 
     const distance = touchStart - touchEnd
-    const isLeftSwipe = distance > minSwipeDistance
-    const isRightSwipe = distance < -minSwipeDistance
+    const isLeftSwipe = distance > minSwipeDistance  // Finger moved LEFT
+    const isRightSwipe = distance < -minSwipeDistance // Finger moved RIGHT
 
-    if (isLeftSwipe && onSwipeLeft) {
-      onSwipeLeft()
-    } else if (isRightSwipe && onSwipeRight) {
-      onSwipeRight()
+    // RIGHT swipe = next image, LEFT swipe = previous image (native gallery behavior)
+    if (isRightSwipe && onSwipeRight) {
+      onSwipeRight()  // User swiped RIGHT (forward) → show next image
+    } else if (isLeftSwipe && onSwipeLeft) {
+      onSwipeLeft()  // User swiped LEFT (backward) → show previous image
     }
 
     setTouchStart(null)
