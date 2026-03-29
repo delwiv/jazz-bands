@@ -25,8 +25,7 @@
     "allRightsReserved": "All rights reserved."
   },
   "home": {
-    "ourMusicians": "Our Musicians",
-    "upcomingShows": "Upcoming Shows",
+    "upcomingShows": "Upcoming Concerts",
     "viewAllMusicians": "View All Musicians →",
     "viewAllShows": "View All Shows →",
     "getTickets": "Get Tickets",
@@ -35,7 +34,7 @@
     "mainImageAlt": "{bandName} main image {index}"
   },
   "tour": {
-    "tourDates": "Tour Dates",
+    "tourDates": "Tour",
     "filterByRegion": "Filter by Region:",
     "filterByRegionAria": "Filter by region",
     "allRegions": "All Regions",
@@ -48,7 +47,7 @@
     "past": "Past"
   },
   "musicians": {
-    "ourMusicians": "Our Musicians",
+    "ourMusicians": "",
     "viewProfile": "View Profile",
     "viewPhotos": "View Photos",
     "readBio": "Read Bio",
@@ -94,7 +93,7 @@
     "single": "Single"
   },
   "gallery": {
-    "ourGallery": "Our Gallery",
+    "ourGallery": "Gallery",
     "noImages": "No images available at the moment",
     "comingSoon": "Gallery coming soon",
     "viewFullSize": "View Full Size"

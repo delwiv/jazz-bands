@@ -25,7 +25,7 @@ export function Layout({ band, children }: LayoutProps) {
     return (
       <div className="min-h-screen flex flex-col pb-17.5 md:pb-20.5 relative">
         {/* Simple fixed background - no gradient, no blur */}
-        {hasBackgroundImage && (
+        {hasBackgroundImage ? (
           <div
             className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
             style={{
@@ -33,8 +33,7 @@ export function Layout({ band, children }: LayoutProps) {
               backgroundPosition: 'center top',
             }}
           />
-        )}
-        {!hasBackgroundImage && (
+        ) : (
           <div className="fixed inset-0 bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 z-0" />
         )}
 
