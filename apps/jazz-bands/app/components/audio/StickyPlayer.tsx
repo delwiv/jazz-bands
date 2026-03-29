@@ -5,7 +5,6 @@ import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   ListMusic,
-  Minimize2,
   MoveHorizontal,
   Music,
   Pause,
@@ -248,10 +247,6 @@ export function StickyPlayer({
 
   const [isQueueOpen, setIsQueueOpen] = useState(false)
 
-  const toggleCompact = () => {
-    // Compact mode removed - expanded view is now default
-  }
-
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     seek(Number(e.target.value))
   }
@@ -413,15 +408,7 @@ export function StickyPlayer({
               <ListMusic className="w-4 h-4 md:w-5 md:h-5" />
             </button>
 
-            {/* Compact Toggle Button */}
-<button
-                onClick={toggleCompact}
-                className="focus-ring p-1.5 md:p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
-                aria-label={intl.formatMessage({ id: 'audioPlayer.collapsePlayer' })}
-              >
-              <Minimize2 className="w-4 h-4 md:w-5 md:h-5 text-gray-300" />
-            </button>
-          </div>
+         </div>
         </div>
       </div>
     </div>
