@@ -453,15 +453,18 @@ async function collectAllMusicians(client) {
  * @returns {Object} { globalMusicians: Map, overrides: Map, stats: Object }
  */
 async function deduplicateAndMergeMusicians(allMusicians) {
-  // Group musicians by normalized name + instrument
+  // Group musicians by normalized name ONLY (not instrument)
+  // This ensures musicians with same name but different instruments are merged
+  // Instrument differences will be handled via band-specific overrides
   const groups = new Map()
 
   for (const { musician, sourceBand } of allMusicians) {
     const normalized = normalizeMusicianName(musician.name)
     if (!normalized) continue
 
-    const instrument = musician.instrument?.toLowerCase().trim() || 'unknown'
-    const key = `${normalized}|${instrument}`
+    // KEY FIX: Use name only, not name|instrument
+    // This merges musicians like "Jacques Julienne" even if they play different instruments
+    const key = normalized
 
     if (!groups.has(key)) {
       groups.set(key, [])
@@ -505,16 +508,16 @@ async function deduplicateAndMergeMusicians(allMusicians) {
 
     // Found duplicates
     duplicateGroups++
-    if (DRY_RUN) {
-      console.log(
-        `   [DUPLICATE GROUP ${duplicateGroups}] Key: ${key}`,
-      )
-      candidates.forEach((c, i) => {
+  if (DRY_RUN) {
         console.log(
-          `     ${i + 1}. ${c.musician.name} (${c.musician.instrument}) from ${c.sourceBand} (ID: ${c.sourceId})`,
+          `   [DUPLICATE GROUP ${duplicateGroups}] Key: ${key}`,
         )
-      })
-    }
+        candidates.forEach((c, i) => {
+          console.log(
+            `     ${i + 1}. ${c.musician.name} (${c.musician.instrument || 'N/A'}) from ${c.sourceBand} (ID: ${c.sourceId})`,
+          )
+        })
+      }
 
     // Get storage base for the first band (used for image resolution checks)
     const firstBand = candidates[0].sourceBand
@@ -527,9 +530,8 @@ async function deduplicateAndMergeMusicians(allMusicians) {
     )
 
     // Use the normalized name from the key as the musician ID (not MongoDB ID)
-// key format is "normalized-name|instrument"
-const [normalizedName] = key.split('|')
-    const musicianId = `musician_${normalizedName}`
+    // Key format is now just "normalized-name" (not "name|instrument")
+    const musicianId = `musician_${key}`
     const sourceBands = candidates.map((c) => c.sourceBand)
 
     globalMusicians.set(musicianId, {
@@ -1666,7 +1668,7 @@ if (DRY_RUN) {
 
 // Copy assets to local directory for sanity import
 async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets, options = {}) {
-  const { assetType = 'generic', title = null } = options
+  const { assetType = 'generic', title = null, sourceDocId = null } = options
   const dirType = type === 'image' ? 'images' : 'audio'
   
   // Create destination directory
@@ -1685,7 +1687,10 @@ async function copyAssetToLocal(filePath, bandSlug, type = 'image', allAssets, o
   // Create asset document and return reference
   const displayName = generateAssetDisplayName(bandSlug, assetType, title, originalFileName)
   const relativePath = join('assets', bandSlug, dirType, fileName).replace(/\\/g, '/')
-  const assetId = createAssetDocument(type, relativePath, displayName, allAssets)
+  
+  // Generate sourceDocumentId for deduplication (use explicit ID or fallback to original filename)
+  const sourceDocumentId = sourceDocId || `${bandSlug}-${assetType}-${originalFileName.replace(/\.[^/.]+$/, '')}`
+  const assetId = createAssetDocument(type, relativePath, displayName, allAssets, sourceDocumentId)
 
   return {
     _type: 'reference',
@@ -1765,8 +1770,8 @@ function generateAssetDisplayName(bandSlug, assetType, title, originalFileName) 
   }
 }
 
-// Create asset document with proper ID
-function createAssetDocument(fileType, relativePath, displayName, allAssets) {
+// Create asset document with proper ID and source tracking
+function createAssetDocument(fileType, relativePath, displayName, allAssets, sourceDocumentId = null) {
   const assetId = `${fileType}-asset-${String(++assetCounter).padStart(6, '0')}`
   const assetDoc = {
     _id: assetId,
@@ -1775,6 +1780,7 @@ function createAssetDocument(fileType, relativePath, displayName, allAssets) {
     extension: relativePath.split('.').pop(),
     mimeType: fileType === 'image' ? 'image/jpeg' : 'audio/mp3',
     path: relativePath,  // Path for import script to upload
+    sourceDocumentId: sourceDocumentId || assetId,  // For deduplication in import
   }
   allAssets.push(assetDoc)
   return assetId

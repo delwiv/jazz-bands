@@ -65,34 +65,34 @@ function CompactBar({
     >
       <div className="flex items-center justify-between px-3 py-2 max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
-<button
-                onClick={onPrev}
-                className="focus-ring p-1.5 hover:bg-gray-700 rounded transition-colors"
-                aria-label="Previous track"
-                disabled={!onPrev}
-              >
+          <button
+            onClick={onPrev}
+            className="focus-ring p-1.5 hover:bg-gray-700 rounded transition-colors"
+            aria-label="Previous track"
+            disabled={!onPrev}
+          >
             <SkipBack className="w-4 h-4 text-gray-300" />
           </button>
-<button
-                onClick={onTogglePlay}
-                className="focus-ring p-1.5 bg-white hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
-                aria-label={isPlaying ? 'Pause' : 'Play'}
-                disabled={!onTogglePlay}
-              >
+          <button
+            onClick={onTogglePlay}
+            className="focus-ring p-1.5 bg-white hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+            disabled={!onTogglePlay}
+          >
             {isPlaying ? (
               <Pause className="w-4 h-4 text-gray-900" />
             ) : (
               <Play className="w-4 h-4 text-gray-900" />
             )}
           </button>
-<button
-                onClick={onNext}
-                className="focus-ring p-1.5 hover:bg-gray-700 rounded transition-colors"
-                aria-label={
-                  isOnLastTrack ? 'Loop back to first track' : 'Next track'
-                }
-                disabled={!onNext}
-              >
+          <button
+            onClick={onNext}
+            className="focus-ring p-1.5 hover:bg-gray-700 rounded transition-colors"
+            aria-label={
+              isOnLastTrack ? 'Loop back to first track' : 'Next track'
+            }
+            disabled={!onNext}
+          >
             {isOnLastTrack ? (
               <RotateCw className="w-4 h-4 text-amber-400" />
             ) : (
@@ -105,11 +105,11 @@ function CompactBar({
           <p className="text-sm font-medium text-white truncate text-center">
             {currentTrack.title} ({currentSongNumber}/{songCount})
           </p>
-{currentTrack.composers && currentTrack.composers.length > 0 && (
-             <p className="text-xs text-gray-400 truncate text-center">
-               {currentTrack.composers.join('; ')}
-             </p>
-           )}
+          {currentTrack.composers && currentTrack.composers.length > 0 && (
+            <p className="text-xs text-gray-400 truncate text-center">
+              {currentTrack.composers.join('; ')}
+            </p>
+          )}
           <div className="flex items-center gap-1 text-[10px] text-gray-300">
             <span>{formatTime(currentTime)}</span>
             <span>/</span>
@@ -118,25 +118,24 @@ function CompactBar({
         </div>
 
         <div className="flex items-center gap-2">
-<button
-                onClick={onToggleQueue}
-                className={`focus-ring p-1.5 rounded transition-colors ${
-                  isQueueOpen
-                    ? 'bg-amber-500 text-white'
-                    : 'hover:bg-gray-700 text-gray-300'
-                }`}
-                aria-label="Toggle queue"
-                aria-expanded={isQueueOpen}
-                disabled={!onToggleQueue}
-              >
+          <button
+            onClick={onToggleQueue}
+            className={`focus-ring p-1.5 rounded transition-colors ${isQueueOpen
+                ? 'bg-amber-500 text-white'
+                : 'hover:bg-gray-700 text-gray-300'
+              }`}
+            aria-label="Toggle queue"
+            aria-expanded={isQueueOpen}
+            disabled={!onToggleQueue}
+          >
             <ListMusic className="w-4 h-4" />
           </button>
-<button
-                onClick={onToggleCompact}
-                className="focus-ring p-1.5 hover:bg-gray-700 rounded transition-colors"
-                aria-label="Expand player"
-                disabled={!onToggleCompact}
-              >
+          <button
+            onClick={onToggleCompact}
+            className="focus-ring p-1.5 hover:bg-gray-700 rounded transition-colors"
+            aria-label="Expand player"
+            disabled={!onToggleCompact}
+          >
             <Maximize2 className="w-4 h-4 text-gray-300" />
           </button>
         </div>
