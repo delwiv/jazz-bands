@@ -80,37 +80,57 @@ function replaceRefs(doc, assetIdMap) {
 }
 
 async function main() {
-  const content = readFileSync(IMPORT_FILE, 'utf-8')
-  const docs = content.trim().split('\n').map(line => JSON.parse(line))
-  
-  const fixedDocs = docs.map(ensureKeys)
-  const assetDocs = fixedDocs.filter(d => d._type?.includes('Asset'))
-  const regularDocs = fixedDocs.filter(d => !assetDocs.includes(d))
-  
-  const assetIdMap = new Map()
-  
-  // Upload predefined assets
-  if (assetDocs.length > 0) {
-    console.log('Uploading', assetDocs.length, 'assets...')
-    for (const doc of assetDocs) {
-      try {
-        const { createReadStream } = await import('fs')
-        const assetPath = join(OUTPUT_DIR, doc.path)
-        const ext = doc.extension || 'jpeg'
-        const mimeTypes = { jpeg: 'image/jpeg', jpg: 'image/jpeg', png: 'image/png', mp3: 'audio/mpeg' }
-        const stream = createReadStream(assetPath)
-        const result = await client.assets.upload(
-          doc._type === 'sanity.imageAsset' ? 'image' : 'file',
-          stream,
-          { filename: doc.path.split('/').pop(), contentType: mimeTypes[ext] }
-        )
-        assetIdMap.set(doc._id, result._id)
-      } catch (error) {
-        console.error('Upload error:', doc._id)
-      }
-    }
-    console.log('Uploaded', assetIdMap.size, 'assets')
-  }
+   const content = readFileSync(IMPORT_FILE, 'utf-8')
+   const docs = content.trim().split('\n').map(line => JSON.parse(line))
+   
+   const fixedDocs = docs.map(ensureKeys)
+   const assetDocs = fixedDocs.filter(d => d._type?.includes('Asset'))
+   const regularDocs = fixedDocs.filter(d => !assetDocs.includes(d))
+   
+   const assetIdMap = new Map()
+   
+   // Upload predefined assets (with reuse of existing assets)
+   if (assetDocs.length > 0) {
+     console.log('Processing', assetDocs.length, 'assets...')
+     let uploadedCount = 0
+     let reusedCount = 0
+     
+     for (const doc of assetDocs) {
+       try {
+         // Check if this asset already exists using originalFilename
+         const assetType = doc._type === 'sanity.imageAsset' ? 'image' : 'file'
+         const originalFilename = doc.path.split('/').pop()
+         const existingQuery = `*[_type == "sanity.${assetType}Asset" && originalFilename == "${originalFilename}"]`
+         const existingAssets = await client.fetch(existingQuery)
+         
+         if (existingAssets && existingAssets.length > 0) {
+           // Asset already exists, reuse it
+           const existingAsset = existingAssets[0]
+           assetIdMap.set(doc._id, existingAsset._id)
+           assetIdMap.set(doc.path, existingAsset._id)
+           reusedCount++
+           console.log(`  ✓ Reused: ${originalFilename}`)
+         } else {
+           // Upload new asset
+           const { createReadStream } = await import('fs')
+           const assetPath = join(OUTPUT_DIR, doc.path)
+           const ext = doc.extension || 'jpeg'
+           const mimeTypes = { jpeg: 'image/jpeg', jpg: 'image/jpeg', png: 'image/png', mp3: 'audio/mpeg' }
+           const stream = createReadStream(assetPath)
+           const result = await client.assets.upload(assetType, stream, { 
+             filename: originalFilename, 
+             contentType: mimeTypes[ext]
+           })
+           assetIdMap.set(doc._id, result._id)
+           uploadedCount++
+           console.log(`  ✶ Uploaded: ${originalFilename}`)
+         }
+       } catch (error) {
+         console.error('Upload error:', doc._id, '-', error.message)
+       }
+     }
+     console.log(`✓ Assets: ${uploadedCount} uploaded, ${reusedCount} reused`)
+   }
   
   // Handle _sanityAsset paths (direct file references)
   console.log('Processing _sanityAsset references...')
@@ -136,25 +156,41 @@ async function main() {
     }
   }
   
-  if (sanityAssetFiles.size > 0) {
-    console.log('Uploading', sanityAssetFiles.size, '_sanityAsset file(s)...')
-    for (const [idx, filePath] of Array.from(sanityAssetFiles).entries()) {
-      try {
-        const { createReadStream } = await import('fs')
-        const ext = filePath.split('.').pop() || 'jpeg'
-        const mimeTypes = { jpeg: 'image/jpeg', jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' }
-        const stream = createReadStream(filePath)
-        const result = await client.assets.upload('image', stream, {
-          filename: filePath.split('/').pop(),
-          contentType: mimeTypes[ext] || 'image/jpeg'
-        })
-        assetIdMap.set(filePath, result._id)
-        console.log('  [' + (idx+1) + '/' + sanityAssetFiles.size + '] Uploaded ' + result._id)
-      } catch (error) {
-        console.error('  Upload error for ' + filePath + ':', error.message)
-      }
-    }
-  }
+ if (sanityAssetFiles.size > 0) {
+     console.log('Processing', sanityAssetFiles.size, '_sanityAsset file(s)...')
+     let sanityUploaded = 0
+     let sanityReused = 0
+     
+     for (const [idx, filePath] of Array.from(sanityAssetFiles).entries()) {
+       try {
+         const ext = filePath.split('.').pop() || 'jpeg'
+         const originalFilename = filePath.split('/').pop()
+         
+         // Check if asset exists by originalFilename
+         const existingAssets = await client.fetch(`*[_type == "sanity.imageAsset" && originalFilename == "${originalFilename}"]`)
+         
+         if (existingAssets && existingAssets.length > 0) {
+           assetIdMap.set(filePath, existingAssets[0]._id)
+           sanityReused++
+           console.log(`  ✓ Reused: ${originalFilename}`)
+         } else {
+           const { createReadStream } = await import('fs')
+           const mimeTypes = { jpeg: 'image/jpeg', jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' }
+           const stream = createReadStream(filePath)
+           const result = await client.assets.upload('image', stream, {
+             filename: originalFilename,
+             contentType: mimeTypes[ext] || 'image/jpeg'
+           })
+           assetIdMap.set(filePath, result._id)
+           sanityUploaded++
+           console.log(`  ✶ Uploaded: ${originalFilename}`)
+         }
+       } catch (error) {
+         console.error('  Upload error for ' + filePath + ':', error.message)
+       }
+     }
+     console.log(`✓ Sanity assets: ${sanityUploaded} uploaded, ${sanityReused} reused`)
+   }
   
   console.log('')
   
