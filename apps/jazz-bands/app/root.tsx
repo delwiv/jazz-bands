@@ -39,20 +39,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
   }
 
-  const initialTrack = recordings.length > 0 ? recordings[0] : null
+   const initialTrack = recordings.length > 0 ? recordings[0] : null
 
-  return {
-    bandSlug,
-    origin,
-    recordings,
-    initialPlayerState: {
-      currentTrack: initialTrack,
-      queue: recordings,
-      isPlaying: false,
-      currentTime: 0,
-      duration: initialTrack?.duration || 0,
-    },
-  }
+   return {
+     bandSlug,
+     origin,
+     recordings,
+     initialTrack,
+   }
 }
 
 export function meta({ data }: Route.MetaArgs) {
@@ -63,7 +57,7 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export default function App() {
-  const { bandSlug, recordings, initialPlayerState } = useLoaderData()
+   const { bandSlug, recordings, initialTrack } = useLoaderData<Route>()
 
   return (
     <html lang="fr">
@@ -75,12 +69,11 @@ export default function App() {
         <I18nProvider>
           <AudioProvider
             initialPlaylist={recordings || []}
-            initialPlayerState={initialPlayerState}
           >
             <Outlet />
             <StickyPlayer
-              initialTrack={initialPlayerState.currentTrack}
-              initialQueue={initialPlayerState.queue}
+              initialTrack={initialTrack}
+              initialQueue={recordings || []}
             />
           </AudioProvider>
         </I18nProvider>
