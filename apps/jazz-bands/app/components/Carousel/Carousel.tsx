@@ -164,25 +164,27 @@ export function Carousel({
           </>
         )}
 
-        <div 
-      className="w-full h-full flex items-center justify-center"
-      {...(reducedMotion ? {} : swipeHandlers)}
-    >
-      {/* Edge gradient indicators */}
-      {!isSingleImage && !reducedMotion && (
-        <>
+       <div
+          className="w-full h-full flex items-center justify-center"
+          // DISABLED: {...(reducedMotion ? {} : swipeHandlers)}
+        >
+        {/* Edge gradient indicators - DISABLED */}
+          {/*
+          DISABLED: {!isSingleImage && !reducedMotion && (
+          <>
           <motion.div
             style={{ opacity: useTransform(dragX, [-150, -50, 0], [1, 1, 0]) }}
             className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-slate-900/70 to-transparent pointer-events-none z-10"
-          />
+            />
           <motion.div
             style={{ opacity: useTransform(dragX, [0, 50, 150], [0, 1, 1]) }}
             className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-slate-900/70 to-transparent pointer-events-none z-10"
-          />
-        </>
-      )}
+            />
+          </>
+          )}
+          */}
 
-      <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
           className="w-full h-full flex items-center justify-center"
@@ -190,11 +192,15 @@ export function Carousel({
           initial="initial"
           animate="animate"
           exit="exit"
-          drag={!reducedMotion && !isSingleImage ? "x" : false}
-          dragElastic={0.3}  // Reduced snap-back for better control
-          dragMomentum={false}
-          onDragEnd={!reducedMotion && !isSingleImage ? handleDragEnd : undefined}
-          style={{ x: dragX, opacity, scale, touchAction: 'none' }}  // Prevent scroll-jacking
+          // DISABLED: drag={!reducedMotion && !isSingleImage ? "x" : false}
+          // DISABLED: dragElastic={0.3}  // Disabled swipe for now
+          // DISABLED: dragMomentum={false}
+          // DISABLED: onDragEnd={!reducedMotion && !isSingleImage ? handleDragEnd : undefined}
+          style={{
+            // DISABLED: x: dragX,
+            // DISABLED: opacity,
+            // DISABLED: scale,
+          }}
         >
           <img
             src={currentImage.url}
