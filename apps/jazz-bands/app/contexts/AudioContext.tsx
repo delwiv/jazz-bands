@@ -51,53 +51,49 @@ const STORAGE_KEYS = {
 }
 
 export function AudioProvider({
-  children,
-  initialPlaylist = [],
-  initialPlayerState,
-}: AudioProviderProps) {
-  const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
-    if (initialPlayerState?.currentTrack) {
-      return initialPlayerState.currentTrack
-    }
+   children,
+   initialPlaylist = [],
+   initialPlayerState,
+ }: AudioProviderProps) {
+   // Track if we've already played the first track on initial load
+   const hasPlayedFirstTrack = useRef(false)
 
-    if (typeof window === 'undefined') return null
+   const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
+     if (typeof window === 'undefined') return null
 
-    const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
-    if (!stored) return null
+     // For initial load: don't restore from localStorage to allow autoplay
+     // Only restore if we're returning from navigation (hasPlayedFirstTrack = true)
+     if (!hasPlayedFirstTrack.current) return null
 
-    try {
-      const parsed = JSON.parse(stored)
+     const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
+     if (!stored) return null
 
-      // Always prefer fresh data from Sanity (initialPlaylist) if available
-      // Find matching track in initialPlaylist and use that instead of localStorage cached data
-      if (initialPlaylist && initialPlaylist.length > 0) {
-        const matchingTrack = initialPlaylist.find(
-          (t) => t.title === parsed?.title || t._key === parsed?._key,
-        )
-        if (matchingTrack) {
-          return matchingTrack
-        }
-      }
+     try {
+       const parsed = JSON.parse(stored)
 
-      // Fallback to localStorage
-      return parsed
-    } catch (e) {
-      console.warn(
-        '[AudioContext] Failed to parse localStorage currentTrack:',
-        e,
-      )
-      return null
-    }
-  })
-  const [isPlaying, setIsPlaying] = useState(
-    () => initialPlayerState?.isPlaying ?? false,
-  )
-  const [currentTime, setCurrentTime] = useState(
-    () => initialPlayerState?.currentTime ?? 0,
-  )
-  const [duration, setDuration] = useState(
-    () => initialPlayerState?.duration ?? 0,
-  )
+       // Always prefer fresh data from Sanity (initialPlaylist) if available
+       if (initialPlaylist && initialPlaylist.length > 0) {
+         const matchingTrack = initialPlaylist.find(
+           (t) => t.title === parsed?.title || t._key === parsed?._key,
+         )
+         if (matchingTrack) {
+           return matchingTrack
+         }
+       }
+
+       // Fallback to localStorage
+       return parsed
+     } catch (e) {
+       console.warn(
+         '[AudioContext] Failed to parse localStorage currentTrack:',
+         e,
+       )
+       return null
+     }
+   })
+const [isPlaying, setIsPlaying] = useState(false)
+   const [currentTime, setCurrentTime] = useState(0)
+   const [duration, setDuration] = useState(0)
   const [volume, setVolumeState] = useState(1)
   const [playlist, setPlaylist] = useState<Recording[]>(() => {
     if (typeof window === 'undefined') return []
@@ -300,14 +296,15 @@ export function AudioProvider({
       // Always use Sanity order - never mix with localStorage
       setQueue(tracksWithAudio)
 
-      // Auto-play first track if no current track
-      if (!currentTrack && tracksWithAudio.length > 0) {
+      // Auto-play first track on initial page load
+      if (!hasPlayedFirstTrack.current && tracksWithAudio.length > 0) {
+        hasPlayedFirstTrack.current = true
         setTimeout(() => {
           playTrack(tracksWithAudio[0])
         }, 500)
       }
     }
-  }, [initialPlaylist, currentTrack, playTrack])
+  }, [initialPlaylist, playTrack])
 
   useEffect(() => {
     if (isPlaying && howlRef.current) {
