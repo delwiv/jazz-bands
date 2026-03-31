@@ -1,5 +1,35 @@
-include:
-  - docker-compose.base.yml
+# Anchors for repeated config
+x-band-common: &band-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  networks:
+    - jazzbands-net
+  restart: always
+  environment:
+    - SANITY_STUDIO_PROJECT_ID
+    - SANITY_STUDIO_DATASET
+    - SANITY_STUDIO_API_READ_TOKEN
+    - SANITY_STUDIO_API_WRITE_TOKEN
+    - NODE_ENV=production
+  deploy:
+    resources:
+      limits:
+        memory: 256M
+      reservations:
+        memory: 128M
+  labels:
+    - "traefik.enable=true"
+    - "traefik.docker.network=jazzbands-net"
+    - "traefik.http.routers.${BAND_SLUG}.entrypoints=websecure"
+    - "traefik.http.routers.${BAND_SLUG}.tls.certresolver=letsencrypt"
+
+volumes:
+  traefik-certs:
+
+networks:
+  jazzbands-net:
+    driver: bridge
 
 services:
   traefik:
@@ -28,88 +58,79 @@ services:
           memory: 128M
 
   boheme:
-    extends:
-      service: common
-      file: docker-compose.base.yml
+    <<: *band-common
+    container_name: boheme-ssr
     build:
       args:
         BAND_SLUG: boheme
-    container_name: boheme-ssr
     environment:
       - PORT=3001
       - BAND_SLUG=boheme
     labels:
       - "traefik.http.routers.boheme.rule=Host(`boheme.jazzbands.com`)"
+      - "traefik.http.services.boheme.loadbalancer.server.port=3001"
 
   canto:
-    extends:
-      service: common
-      file: docker-compose.base.yml
+    <<: *band-common
+    container_name: canto-ssr
     build:
       args:
         BAND_SLUG: canto
-    container_name: canto-ssr
     environment:
       - PORT=3002
       - BAND_SLUG=canto
     labels:
       - "traefik.http.routers.canto.rule=Host(`canto.jazzbands.com`)"
+      - "traefik.http.services.canto.loadbalancer.server.port=3002"
 
   jazzola:
-    extends:
-      service: common
-      file: docker-compose.base.yml
+    <<: *band-common
+    container_name: jazzola-ssr
     build:
       args:
         BAND_SLUG: jazzola
-    container_name: jazzola-ssr
     environment:
       - PORT=3003
       - BAND_SLUG=jazzola
     labels:
       - "traefik.http.routers.jazzola.rule=Host(`jazzola.jazzbands.com`)"
+      - "traefik.http.services.jazzola.loadbalancer.server.port=3003"
 
   swing-family:
-    extends:
-      service: common
-      file: docker-compose.base.yml
+    <<: *band-common
+    container_name: swing-family-ssr
     build:
       args:
         BAND_SLUG: swing-family
-    container_name: swing-family-ssr
     environment:
       - PORT=3004
       - BAND_SLUG=swing-family
     labels:
       - "traefik.http.routers.swing-family.rule=Host(`swing-family.jazzbands.com`)"
+      - "traefik.http.services.swing-family.loadbalancer.server.port=3004"
 
   trio-rsh:
-    extends:
-      service: common
-      file: docker-compose.base.yml
+    <<: *band-common
+    container_name: trio-rsh-ssr
     build:
       args:
         BAND_SLUG: trio-rsh
-    container_name: trio-rsh-ssr
     environment:
       - PORT=3005
       - BAND_SLUG=trio-rsh
     labels:
       - "traefik.http.routers.trio-rsh.rule=Host(`trio-rsh.jazzbands.com`)"
+      - "traefik.http.services.trio-rsh.loadbalancer.server.port=3005"
 
   west-side-trio:
-    extends:
-      service: common
-      file: docker-compose.base.yml
+    <<: *band-common
+    container_name: west-side-trio-ssr
     build:
       args:
         BAND_SLUG: west-side-trio
-    container_name: west-side-trio-ssr
     environment:
       - PORT=3006
       - BAND_SLUG=west-side-trio
     labels:
       - "traefik.http.routers.west-side-trio.rule=Host(`west-side-trio.jazzbands.com`)"
-
-volumes:
-  traefik-certs:
+      - "traefik.http.services.west-side-trio.loadbalancer.server.port=3006"

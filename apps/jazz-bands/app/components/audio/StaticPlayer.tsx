@@ -1,6 +1,7 @@
 import { FormattedMessage, useIntl } from 'react-intl'
 import {
   ListMusic,
+  MoreVertical,
   Music,
   Pause,
   Play,
@@ -52,7 +53,18 @@ export function StaticPlayer({
     playPause: intl.formatMessage({ id: isPlaying ? 'audioPlayer.paused' : 'audioPlayer.readyToPlay' }),
     nextTrack: intl.formatMessage({ id: isOnLastTrack ? 'audioPlayer.loopToFirst' : 'audioPlayer.nextTrack' }),
     toggleQueue: intl.formatMessage({ id: 'audioPlayer.toggleQueue' }),
+    queue: intl.formatMessage({ id: 'audioPlayer.queue' }),
   }
+
+  // Placeholder queue items for SSR
+  const placeholderQueue: Recording[] = Array.from({ length: 4 }).map((_, i) => ({
+    _key: `placeholder-${i}`,
+    _type: 'recording' as const,
+    title: '',
+    audio: { _type: 'reference' as const, _ref: `audio-${i}` },
+    duration: 0,
+    downloadEnabled: false,
+  }))
 
   return (
     <div
@@ -168,19 +180,50 @@ export function StaticPlayer({
 
 {/* Queue Button */}
 <button
-                 className="p-1.5 md:p-2 hover:bg-gray-700 transition-colors flex-shrink-0"
-                 aria-label={ariaLabels.toggleQueue}
-                 aria-disabled="true"
-               >
-                 <ListMusic
-                   className="w-4 h-4 md:w-5 md:h-5 text-gray-300"
-                   aria-hidden="true"
-                 />
-               </button>
+                className="p-1.5 md:p-2 hover:bg-gray-700 transition-colors flex-shrink-0"
+                aria-label={ariaLabels.toggleQueue}
+                aria-disabled="true"
+              >
+                <ListMusic
+                  className="w-4 h-4 md:w-5 md:h-5 text-gray-300"
+                  aria-hidden="true"
+                />
+              </button>
+             </div>
+           </div>
+
+           {/* Queue Skeleton Section */}
+           <div
+            className="mt-3 pt-3 border-t border-gray-700/50"
+            aria-label={ariaLabels.queue}
+          >
+            <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <FormattedMessage id="audioPlayer.queue" defaultMessage="Queue" />
+            </h5>
+            <div className="space-y-1.5">
+              {placeholderQueue.map((track) => (
+                <div
+                  key={track._key}
+                  className="flex items-center justify-between rounded-lg p-3 bg-gray-800/50 opacity-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <MoreVertical
+                      className="w-4 h-4 text-gray-600 shrink-0 cursor-default"
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm text-gray-500 truncate max-w-[120px] md:max-w-[200px]">
+                      Track title
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-600 shrink-0">
+                    {formatTime(track.duration)}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+         </div>
+       </div>
+     </div>
+   )
+ }

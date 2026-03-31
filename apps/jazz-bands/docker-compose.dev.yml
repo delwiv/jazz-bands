@@ -1,4 +1,4 @@
-# Anchors for repeated config blocks
+# Anchors for repeated config
 x-band-common: &band-common
   build:
     context: .
@@ -23,6 +23,10 @@ volumes:
   build_vol:
   vite_cache:
 
+networks:
+  jazzbands-net:
+    driver: bridge
+
 services:
   traefik:
     image: traefik:latest
@@ -43,81 +47,71 @@ services:
   boheme:
     <<: *band-common
     container_name: boheme-dev
-    ports:
-      - "3001:5173"
     environment:
       BAND_SLUG: boheme
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
+      - "traefik.http.routers.boheme-dev.entrypoints=web"
       - "traefik.http.routers.boheme-dev.rule=Host(`boheme.jazz.wildredbeard.tech`)"
       - "traefik.http.services.boheme-dev.loadbalancer.server.port=5173"
 
   canto:
     <<: *band-common
     container_name: canto-dev
-    ports:
-      - "3002:5173"
     environment:
       BAND_SLUG: canto
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
+      - "traefik.http.routers.canto-dev.entrypoints=web"
       - "traefik.http.routers.canto-dev.rule=Host(`canto.jazz.wildredbeard.tech`)"
       - "traefik.http.services.canto-dev.loadbalancer.server.port=5173"
 
   jazzola:
     <<: *band-common
     container_name: jazzola-dev
-    ports:
-      - "3003:5173"
     environment:
       BAND_SLUG: jazzola
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
+      - "traefik.http.routers.jazzola-dev.entrypoints=web"
       - "traefik.http.routers.jazzola-dev.rule=Host(`jazzola.jazz.wildredbeard.tech`)"
       - "traefik.http.services.jazzola-dev.loadbalancer.server.port=5173"
 
   swing-family:
     <<: *band-common
     container_name: swing-family-dev
-    ports:
-      - "3004:5173"
     environment:
       BAND_SLUG: swing-family
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
+      - "traefik.http.routers.swing-family-dev.entrypoints=web"
       - "traefik.http.routers.swing-family-dev.rule=Host(`swing-family.jazz.wildredbeard.tech`)"
       - "traefik.http.services.swing-family-dev.loadbalancer.server.port=5173"
 
   trio-rsh:
     <<: *band-common
     container_name: trio-rsh-dev
-    ports:
-      - "3005:5173"
     environment:
       BAND_SLUG: trio-rsh
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
+      - "traefik.http.routers.trio-rsh-dev.entrypoints=web"
       - "traefik.http.routers.trio-rsh-dev.rule=Host(`trio-rsh.jazz.wildredbeard.tech`)"
       - "traefik.http.services.trio-rsh-dev.loadbalancer.server.port=5173"
 
   west-side-trio:
     <<: *band-common
     container_name: west-side-trio-dev
-    ports:
-      - "3006:5173"
     environment:
       BAND_SLUG: west-side-trio
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
+      - "traefik.http.routers.west-side-trio-dev.entrypoints=web"
       - "traefik.http.routers.west-side-trio-dev.rule=Host(`west-side-trio.jazz.wildredbeard.tech`)"
       - "traefik.http.services.west-side-trio-dev.loadbalancer.server.port=5173"
-
-networks:
-  jazzbands-net:
-    driver: bridge

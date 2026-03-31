@@ -71,10 +71,13 @@ export default function App() {
             initialPlaylist={recordings || []}
           >
             <Outlet />
-            <StickyPlayer
-              initialTrack={initialTrack}
-              initialQueue={recordings || []}
-            />
+            {/* Mobile player: hidden on desktop to avoid SSR flash */}
+            <div className="lg:hidden">
+              <StickyPlayer
+                initialTrack={initialTrack}
+                initialQueue={recordings || []}
+              />
+            </div>
           </AudioProvider>
         </I18nProvider>
         <ScrollRestoration />
