@@ -260,11 +260,13 @@ const [isPlaying, setIsPlaying] = useState(false)
     setCurrentTime(time)
   }, [])
 
-  const setVolume = useCallback((value: number) => {
-    const clampedValue = Math.max(0, Math.min(1, value))
-    setVolumeState(clampedValue)
-    howlRef.current?.volume(clampedValue)
-  }, [])
+ const setVolume = useCallback((value: number) => {
+		const clampedValue = Math.max(0, Math.min(1, value))
+		// Only update if meaningfully different (avoid excessive calls)
+		if (Math.abs(clampedValue - volume) < 0.02) return
+		setVolumeState(clampedValue)
+		howlRef.current?.volume(clampedValue)
+	}, [volume])
 
   const addToQueue = useCallback((track: Recording) => {
     setQueue((prev) => {
