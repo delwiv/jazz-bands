@@ -3,11 +3,11 @@ import { FormattedMessage, useIntl } from 'react-intl'
 import { motion } from 'framer-motion'
 import { BandStructuredData } from '~/components/StructuredData'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
-import { Layout } from '~/components/shared/Layout'
+import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { ContactLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
-import { sanityClient } from '~/lib/sanity.settings'
+import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -27,7 +27,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
-  return { band, baseUrl }
+  // Transform band images to GalleryImage format for SSR
+  const galleryImages = band.images?.filter((img: typeof band.images[number]) => img.asset).map((img: typeof band.images[number], idx: number) => ({
+    src: img.asset
+      ? urlForImage.image(img.asset).width(3840).height(3840).fit('max').url()
+      : '',
+    alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+  })) || []
+
+  return { band, baseUrl, galleryImages }
 }
 
 export function meta({
@@ -39,10 +47,10 @@ export function meta({
   return buildBandMeta(loaderData.band, loaderData.baseUrl, 'contact')
 }
 
- export default function ContactPage() {
-    const { band, baseUrl } = useLoaderData<ContactLoaderData>()
-    const reducedMotion = useReducedMotion()
-    const intl = useIntl()
+export default function ContactPage() {
+  const { band, baseUrl, galleryImages } = useLoaderData<ContactLoaderData>()
+  const reducedMotion = useReducedMotion()
+  const intl = useIntl()
 
   // Brand color mapping for social icons
   const socialColors: Record<string, string> = {
@@ -56,7 +64,12 @@ export function meta({
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
-      <Layout band={band}>
+      <TwoColumnLayout
+        band={band}
+        images={galleryImages}
+        initialTrack={band.recordings?.[0] || null}
+        initialQueue={band.recordings || []}
+      >
         <SectionWrapper title={<FormattedMessage id="contact.contact" />} className="py-8">
           <div className="max-w-3xl mx-auto">
 
@@ -135,7 +148,7 @@ export function meta({
             </div>
           </div>
         </SectionWrapper>
-      </Layout>
+      </TwoColumnLayout>
     </>
   )
 }

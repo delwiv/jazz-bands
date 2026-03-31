@@ -5,10 +5,17 @@
 
 import type { Band } from '~/lib/types'
 
+/** Gallery image format used by SlideshowPreview */
+export interface GalleryImage {
+  src: string
+  alt: string
+}
+
 /** Home page loader data */
 export interface BandHomeLoaderData {
   band: Band
   baseUrl: string
+  galleryImages: GalleryImage[]
 }
 
 /** Musicians page loader data */
@@ -29,18 +36,28 @@ export interface MusiciansLoaderData {
     galleryImages?: Array<{ image?: { _type: 'reference'; _ref: string } }>
   }>
   baseUrl: string
+  galleryImages: GalleryImage[]
 }
 
 /** Tour page loader data */
 export interface TourLoaderData {
   band: Band
   baseUrl: string
+  galleryImages: GalleryImage[]
 }
 
 /** Contact page loader data */
 export interface ContactLoaderData {
   band: Band
   baseUrl: string
+  galleryImages: GalleryImage[]
+}
+
+/** Music detail page loader data */
+export interface MusicLoaderData {
+  band: Band
+  baseUrl: string
+  galleryImages: GalleryImage[]
 }
 
 /** Musician detail page loader data */
@@ -84,6 +101,7 @@ export interface MusicianSlugLoaderData {
   } | null
   band?: Band
   baseUrl?: string
+  galleryImages?: GalleryImage[]
 }
 
 /** Tour date detail page loader data */
@@ -91,10 +109,12 @@ export interface TourSlugLoaderData {
   band: Band
   dateSlug: string
   baseUrl: string
+  galleryImages: GalleryImage[]
 }
 
 /** Gallery page loader data */
 export interface GalleryLoaderData {
   band: Band
   baseUrl: string
+  galleryImages: GalleryImage[]
 }

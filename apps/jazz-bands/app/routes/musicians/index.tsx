@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl'
 import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { GlassCard } from '~/components/shared/GlassCard'
-import { Layout } from '~/components/shared/Layout'
+import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { staggerContainerVariants } from '~/lib/animationVariants'
@@ -33,7 +33,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
-  return { band, musicians, baseUrl }
+  // Transform band images to GalleryImage format for SSR
+  const galleryImages = band.images?.filter((img: typeof band.images[number]) => img.asset).map((img: typeof band.images[number], idx: number) => ({
+    src: img.asset
+      ? urlForImage.image(img.asset).width(3840).height(3840).fit('max').url()
+      : '',
+    alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+  })) || []
+
+  return { band, musicians, baseUrl, galleryImages }
 }
 
 export function meta({
@@ -46,13 +54,18 @@ export function meta({
 }
 
 export default function MusiciansPage() {
-  const { band, musicians, baseUrl } = useLoaderData<MusiciansLoaderData>()
+  const { band, musicians, baseUrl, galleryImages } = useLoaderData<MusiciansLoaderData>()
   const reducedMotion = useReducedMotion()
 
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
-      <Layout band={band}>
+      <TwoColumnLayout
+        band={band}
+        images={galleryImages}
+        initialTrack={band.recordings?.[0] || null}
+        initialQueue={band.recordings || []}
+      >
         <SectionWrapper
           title={<FormattedMessage id="musicians.ourMusicians" />}
           className="py-8"
@@ -110,7 +123,7 @@ export default function MusiciansPage() {
             </motion.div>
           </div>
         </SectionWrapper>
-      </Layout>
+      </TwoColumnLayout>
     </>
   )
 }

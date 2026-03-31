@@ -7,7 +7,7 @@ import {
 import { FormattedMessage } from 'react-intl'
 import { PortableText } from '@portabletext/react'
 import { BandStructuredData } from '~/components/StructuredData'
-import { Layout } from '~/components/shared/Layout'
+import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { Skeleton } from '~/components/shared/Skeleton'
 import { Badge } from '~/components/shared/Badge'
 import { GlassCard } from '~/components/shared/GlassCard'
@@ -41,7 +41,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
-  return { band, baseUrl }
+  // Transform band images to GalleryImage format for SSR
+  const galleryImages = band.images?.filter((img: typeof band.images[number]) => img.asset).map((img: typeof band.images[number], idx: number) => ({
+    src: img.asset
+      ? urlForImage.image(img.asset).width(3840).height(3840).fit('max').url()
+      : '',
+    alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+  })) || []
+
+  return { band, baseUrl, galleryImages }
 }
 
 export function meta({
@@ -67,12 +75,10 @@ export function meta({
 }
 
 export default function BandHome() {
-  const { band, baseUrl } = useLoaderData<BandHomeLoaderData>()
+  const { band, baseUrl, galleryImages } = useLoaderData<BandHomeLoaderData>()
   const navigation = useNavigation()
   const isLoading = navigation.state === 'loading'
   const reducedMotion = useReducedMotion()
-
-  // Debug logging removed
 
   // Hero parallax scroll effect
   const { scrollY } = useScroll()
@@ -82,7 +88,12 @@ export default function BandHome() {
 
   if (isLoading) {
     return (
-      <Layout band={band}>
+      <TwoColumnLayout
+        band={band}
+        images={galleryImages || []}
+        initialTrack={band.recordings?.[0] || null}
+        initialQueue={band.recordings || []}
+      >
         {/* Hero Section Skeleton */}
         <section className="relative h-96 flex items-center justify-center bg-slate-900">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950" />
@@ -165,14 +176,19 @@ export default function BandHome() {
             </div>
           </div>
         </section>
-      </Layout>
+      </TwoColumnLayout>
     )
   }
 
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
-      <Layout band={band}>
+      <TwoColumnLayout
+        band={band}
+        images={galleryImages || []}
+        initialTrack={band.recordings?.[0] || null}
+        initialQueue={band.recordings || []}
+      >
         {/* Home Section - Side by side like legacy */}
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden w-full py-12 px-6">
           <div className="max-w-7xl w-full mx-auto">
@@ -425,7 +441,7 @@ export default function BandHome() {
             )
           }}
         </SectionWrapper>
-      </Layout>
+      </TwoColumnLayout>
     </>
   )
 }

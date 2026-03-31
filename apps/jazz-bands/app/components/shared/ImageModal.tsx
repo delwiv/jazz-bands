@@ -1,0 +1,214 @@
+import { useState, useCallback, useEffect } from 'react'
+import { motion, AnimatePresence, useTransform, useMotionValue } from 'framer-motion'
+
+import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { useSwipe } from '~/hooks/useSwipe'
+import { useKeyPress } from '~/hooks/useKeyPress'
+import { buttonVariants } from '~/lib/animationVariants'
+
+export interface Image {
+  src: string
+  alt: string
+}
+
+export interface ImageModalProps {
+  images: Image[]
+  initialIndex: number
+  isOpen: boolean
+  onClose: () => void
+}
+
+export function ImageModal({
+  isOpen,
+  onClose,
+  images,
+  initialIndex,
+}: ImageModalProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex)
+  const reducedMotion = useReducedMotion()
+
+  const updateIndex = useCallback(
+    (index: number) => {
+      setCurrentIndex((index + images.length) % images.length)
+    },
+    [images.length],
+  )
+
+  const nextImage = useCallback(() => {
+    updateIndex(currentIndex + 1)
+  }, [currentIndex, updateIndex])
+
+  const prevImage = useCallback(() => {
+    updateIndex(currentIndex - 1)
+  }, [currentIndex, updateIndex])
+
+  useKeyPress({
+    keys: ['Escape', 'ArrowLeft', 'ArrowRight'],
+    onKeyPress: (key) => {
+      if (key === 'Escape') onClose()
+      else if (key === 'ArrowLeft') prevImage()
+      else if (key === 'ArrowRight') nextImage()
+    },
+    enabled: isOpen,
+  })
+
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: prevImage,
+    onSwipeRight: nextImage,
+    threshold: 50,
+  })
+
+  if (!images.length) return null
+
+  const currentImage = images[currentIndex]
+  const isSingleImage = images.length === 1
+
+  const dragX = useMotionValue(0)
+  const opacity = useTransform(dragX, [-100, 0, 100], [0.5, 1, 0.5])
+  const scale = useTransform(dragX, [-100, 0, 100], [0.95, 1, 0.95])
+
+  const slideVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, transition: { duration: 0.3 } },
+  }
+
+  const handleDragEnd = useCallback(
+    (e: any, info: any) => {
+      const offset = info?.point?.offset || { x: 0 }
+      const velocity = info?.point?.velocity || { x: 0 }
+
+      const SWIPE_THRESHOLD = 50 // px
+      const VELOCITY_THRESHOLD = 200 // px/s
+
+      if (velocity.x > VELOCITY_THRESHOLD) {
+        nextImage()
+      } else if (velocity.x < -VELOCITY_THRESHOLD) {
+        prevImage()
+      } else if (offset.x < -SWIPE_THRESHOLD) {
+        prevImage()
+      } else if (offset.x > SWIPE_THRESHOLD) {
+        nextImage()
+      } else {
+        dragX.set(0)
+      }
+    },
+    [nextImage, prevImage, dragX],
+  )
+
+  useEffect(() => {
+    dragX.set(0)
+  }, [currentIndex, dragX])
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-lg pb-[100px]"
+          // DISABLED: {...(reducedMotion ? {} : swipeHandlers)}
+        >
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-20 glass-card p-2 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
+            aria-label="Close modal"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+
+          {!isSingleImage && (
+            <>
+              <button
+                onClick={prevImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 glass-card p-3 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
+                aria-label="Previous image"
+              >
+                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                  <ChevronLeft className="w-6 h-6 text-white" />
+                </motion.div>
+              </button>
+
+              <button
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 glass-card p-3 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
+                aria-label="Next image"
+              >
+                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                  <ChevronRight className="w-6 h-6 text-white" />
+                </motion.div>
+              </button>
+            </>
+          )}
+
+          <div className="w-full h-full flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                className="w-full h-full flex items-center justify-center"
+                variants={reducedMotion ? undefined : slideVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                style={{
+                  // DISABLED: drag/swipe
+                  // x: dragX,
+                  // opacity,
+                  // scale,
+                }}
+              >
+                <img
+                  src={currentImage.src}
+                  alt={currentImage.alt}
+                  className="w-full h-full object-contain pointer-events-none"
+                  loading="eager"
+                  draggable={false}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {currentImage.alt && (
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-slate-900/90 to-transparent"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <p className="text-white text-center text-lg">
+                {currentImage.alt}
+              </p>
+            </motion.div>
+          )}
+
+          {!isSingleImage && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+              <div className="glass-card px-4 py-2 rounded-full border border-white/20">
+                <span className="text-white text-sm font-medium">
+                  {currentIndex + 1} / {images.length}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {!isSingleImage && (
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all focus-ring ${
+                    index === currentIndex
+                      ? 'bg-white w-4'
+                      : 'bg-white/40 hover:bg-white/60'
+                  }`}
+                  aria-label={`Go to image ${index + 1}`}
+                  aria-current={index === currentIndex ? 'true' : undefined}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </AnimatePresence>
+  )
+}

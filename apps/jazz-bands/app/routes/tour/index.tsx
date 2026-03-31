@@ -7,7 +7,7 @@ import {
   EventStructuredData,
 } from '~/components/StructuredData'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
-import { Layout } from '~/components/shared/Layout'
+import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
 import { Badge } from '~/components/shared/Badge'
@@ -19,7 +19,7 @@ import {
 import { TourLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
 import { TourDate } from '~/lib/types'
-import { sanityClient } from '~/lib/sanity.settings'
+import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -38,7 +38,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
-  return { band, baseUrl }
+  // Transform band images to GalleryImage format for SSR
+  const galleryImages = band.images?.filter((img: typeof band.images[number]) => img.asset).map((img: typeof band.images[number], idx: number) => ({
+    src: img.asset
+      ? urlForImage.image(img.asset).width(3840).height(3840).fit('max').url()
+      : '',
+    alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+  })) || []
+
+  return { band, baseUrl, galleryImages }
 }
 
 export function meta({
@@ -51,11 +59,11 @@ export function meta({
 }
 
   export default function TourPage() {
-   const { band, baseUrl } = useLoaderData<TourLoaderData>()
-   const [filterRegion, setFilterRegion] = useState<string>('')
-   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-   const reducedMotion = useReducedMotion()
-   const intl = useIntl()
+    const { band, baseUrl, galleryImages } = useLoaderData<TourLoaderData>()
+    const [filterRegion, setFilterRegion] = useState<string>('')
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const reducedMotion = useReducedMotion()
+    const intl = useIntl()
 
   const regions = Array.from(
     new Set(band.tourDates?.map((d: TourDate) => d.region).filter(Boolean)),
@@ -130,7 +138,7 @@ export function meta({
     return date >= today ? 'upcoming' : 'past'
   }
 
-  return (
+return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       {upcomingDates.map((date: any, idx: number) => (
@@ -141,8 +149,13 @@ export function meta({
           baseUrl={baseUrl}
         />
       ))}
-   <Layout band={band}>
-          <SectionWrapper title={<FormattedMessage id="tour.tourDates" />} className="py-8">
+    <TwoColumnLayout
+        band={band}
+        images={galleryImages}
+        initialTrack={band.recordings?.[0] || null}
+        initialQueue={band.recordings || []}
+      >
+        <SectionWrapper title={<FormattedMessage id="tour.tourDates" />} className="py-8">
           <div className="container-max">
 
            {regions.length > 0 && (
@@ -395,9 +408,9 @@ export function meta({
                 })}
                </div>
              )}
-           </div>
-         </SectionWrapper>
-       </Layout>
-     </>
-   )
+</div>
+          </SectionWrapper>
+      </TwoColumnLayout>
+    </>
+  )
 }
