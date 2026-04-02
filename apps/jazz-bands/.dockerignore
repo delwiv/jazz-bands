@@ -1,0 +1,48 @@
+# Dependencies
+node_modules
+
+# Build outputs
+build
+dist
+**/build
+**/dist
+
+# Vite cache
+.vite
+**/.vite
+
+# React Router generated types
+.react-router
+
+# Migration (not needed in containers)
+migration/output
+migration/assets
+
+# Environment files (use .env.example or mounted .env)
+.env
+.env.*
+*.local
+
+# Editor files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation (agent-generated)
+AGENTS.md
+CHANGES.md
+
+# Tests (optional - include if you test in containers)
+__tests__
+*.test.*
+*.spec.*

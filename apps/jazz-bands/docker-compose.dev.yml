@@ -16,12 +16,9 @@ x-band-common: &band-common
     - ./package-lock.json:/app/package-lock.json
     - ./node_modules:/app/node_modules
     - ./.env:/app/.env
-    - build_vol:/app/build
-    - vite_cache:/app/.vite
 
 volumes:
-  build_vol:
-  vite_cache:
+  {}
 
 networks:
   jazzbands-net:
