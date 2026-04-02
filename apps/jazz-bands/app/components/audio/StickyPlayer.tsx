@@ -473,9 +473,11 @@ function ExpandedPlayer({
             aria-label={ariaLabels.nextTrack}
             disabled={isDisabled}
           >
-            <RotateCw
-              className={`w-6 h-6 ${isOnLastTrack ? 'text-amber-400' : 'text-gray-300'}`}
-            />
+            {isOnLastTrack ? (
+              <RotateCw className="w-6 h-6 text-amber-400" />
+            ) : (
+              <SkipForward className="w-6 h-6 text-gray-300" />
+            )}
           </button>
         </div>
 
