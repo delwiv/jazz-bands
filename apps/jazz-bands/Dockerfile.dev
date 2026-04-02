@@ -1,6 +1,12 @@
+# Development Dockerfile for Jazz Bands platform
+# Usage: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -f Dockerfile.dev -t jazz-bands-dev .
 FROM node:24-slim
 
 WORKDIR /app
+
+# Change ownership of /app to node user (UID:GID 1000:1000, matches host)
+# This prevents permission issues with mounted volumes
+RUN chown -R node:node /app
 
 # Expose port (Vite dev server runs on 5173 by default)
 EXPOSE 5173
@@ -9,4 +15,8 @@ EXPOSE 5173
 # Note: Sanity Studio runs OUTSIDE Docker via npm run dev:studio
 ENV NODE_ENV=development
 ENV PORT=3000
+
+# Switch to non-root user (node:node, UID:GID 1000:1000)
+USER node
+
 CMD ["npm", "run", "dev:app"]

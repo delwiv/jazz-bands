@@ -24,9 +24,11 @@ RUN npm run build
 # Stage 2: Production (minimal runtime)
 FROM node:24-slim AS runner
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+# Create non-root user for security (use UID/GID from host if provided for volume mount compatibility)
+ARG UID=1001
+ARG GID=1001
+RUN addgroup -g ${GID} -S nodejs && \
+    adduser -S nodejs -u ${UID}
 
 WORKDIR /app
 
