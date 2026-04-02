@@ -33,6 +33,7 @@ import { useAudio } from '~/contexts/AudioContext'
 import { useIsHydrated } from '~/hooks/useIsHydrated'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import type { Recording } from '~/lib/types'
+import { CompactMobilePlayer } from './CompactMobilePlayer'
 
 interface StickyPlayerProps {
   initialTrack: Recording | null
@@ -665,23 +666,23 @@ export function StickyPlayer({
           )}
         </AnimatePresence>
 
-        <ExpandedPlayer
+        <CompactMobilePlayer
           currentTrack={track}
           currentTime={mergedTime}
           duration={mergedDuration}
           isPlaying={mergedPlaying}
-          volume={mergedVolume}
           currentSongIndex={currentSongIndex}
           songCount={songCount}
+          isQueueOpen={isQueueOpen}
           onSeek={isHydrated ? seek : undefined}
           onSeekMouseDown={handleSeekMouseDown}
           onSeekMouseUp={handleSeekMouseUp}
-          onVolumeChange={isHydrated ? setVolumeHandler : undefined}
-          onVolumeMouseDown={handleVolumeMouseDown}
-          onVolumeMouseUp={handleVolumeMouseUp}
           onTogglePlay={isHydrated ? togglePlay : undefined}
           onPrev={isHydrated ? prev : undefined}
           onNext={isHydrated ? next : undefined}
+          onToggleQueue={
+            isHydrated ? () => setIsQueueOpen(!isQueueOpen) : undefined
+          }
           isDragging={isDragging}
           dragValue={dragValue}
           intl={intl}
