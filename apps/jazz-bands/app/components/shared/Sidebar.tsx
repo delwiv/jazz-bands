@@ -1,7 +1,7 @@
 import type { Recording } from '~/lib/types'
+import { StickyPlayer } from '../audio/StickyPlayer'
 import type { Image } from './ImageModal'
 import { SlideshowPreview } from './SlideshowPreview'
-import { StickyPlayer } from '../audio/StickyPlayer'
 
 export interface SidebarProps {
   initialTrack: Recording | null

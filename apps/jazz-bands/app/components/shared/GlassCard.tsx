@@ -1,12 +1,12 @@
-import { motion } from 'framer-motion';
-import { cardHoverVariants } from '~/lib/animationVariants';
-import { useReducedMotion } from '~/hooks/useReducedMotion';
+import { motion } from 'framer-motion'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { cardHoverVariants } from '~/lib/animationVariants'
 
 interface GlassCardProps {
-  children: React.ReactNode;
-  hover?: boolean;
-  onClick?: () => void;
-  className?: string;
+  children: React.ReactNode
+  hover?: boolean
+  onClick?: () => void
+  className?: string
 }
 
 export function GlassCard({
@@ -15,8 +15,8 @@ export function GlassCard({
   onClick,
   className = '',
 }: GlassCardProps) {
-  const isReducedMotion = useReducedMotion();
-  const hasHover = hover && !isReducedMotion;
+  const isReducedMotion = useReducedMotion()
+  const hasHover = hover && !isReducedMotion
 
   return (
     <motion.div
@@ -33,5 +33,5 @@ export function GlassCard({
     >
       {children}
     </motion.div>
-  );
+  )
 }

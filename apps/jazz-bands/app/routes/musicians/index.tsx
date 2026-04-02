@@ -3,8 +3,8 @@ import { FormattedMessage } from 'react-intl'
 import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { GlassCard } from '~/components/shared/GlassCard'
-import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
+import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { staggerContainerVariants } from '~/lib/animationVariants'
 import { getBandBySlug, getMusiciansByBandId } from '~/lib/queries'
@@ -34,12 +34,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const baseUrl = `${url.protocol}//${url.host}`
 
   // Transform band images to GalleryImage format for SSR
-  const galleryImages = band.images?.filter((img: typeof band.images[number]) => img.asset).map((img: typeof band.images[number], idx: number) => ({
-    src: img.asset
-      ? urlForImage.image(img.asset).width(3840).height(3840).fit('max').url()
-      : '',
-    alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
-  })) || []
+  const galleryImages =
+    band.images
+      ?.filter((img: (typeof band.images)[number]) => img.asset)
+      .map((img: (typeof band.images)[number], idx: number) => ({
+        src: img.asset
+          ? urlForImage
+              .image(img.asset)
+              .width(3840)
+              .height(3840)
+              .fit('max')
+              .url()
+          : '',
+        alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+      })) || []
 
   return { band, musicians, baseUrl, galleryImages }
 }
@@ -54,7 +62,8 @@ export function meta({
 }
 
 export default function MusiciansPage() {
-  const { band, musicians, baseUrl, galleryImages } = useLoaderData<MusiciansLoaderData>()
+  const { band, musicians, baseUrl, galleryImages } =
+    useLoaderData<MusiciansLoaderData>()
   const reducedMotion = useReducedMotion()
 
   return (
@@ -94,11 +103,12 @@ export default function MusiciansPage() {
                         transition={{ duration: 0.4 }}
                       >
                         <img
-                        src={urlForImage.image(musician.photo)
-                        .width(800)
-                        .height(800)
-                        .fit('crop')
-                        .url()}
+                          src={urlForImage
+                            .image(musician.photo)
+                            .width(800)
+                            .height(800)
+                            .fit('crop')
+                            .url()}
                           alt={musician.name}
                           loading="lazy"
                           decoding="async"

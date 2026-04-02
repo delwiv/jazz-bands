@@ -1,8 +1,11 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { modalOverlayVariants, modalContentVariants } from '~/lib/animationVariants'
-import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { useKeyPress } from '~/hooks/useKeyPress'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
+import {
+  modalContentVariants,
+  modalOverlayVariants,
+} from '~/lib/animationVariants'
 
 interface ModalProps {
   isOpen: boolean

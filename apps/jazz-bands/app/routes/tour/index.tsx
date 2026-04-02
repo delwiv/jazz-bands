@@ -1,25 +1,25 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
-import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import { FormattedMessage, useIntl } from 'react-intl'
+import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import {
   BandStructuredData,
   EventStructuredData,
 } from '~/components/StructuredData'
-import { SectionWrapper } from '~/components/shared/SectionWrapper'
-import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
+import { Badge } from '~/components/shared/Badge'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
-import { Badge } from '~/components/shared/Badge'
+import { SectionWrapper } from '~/components/shared/SectionWrapper'
+import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import {
   cardHoverVariants,
   staggerContainerVariants,
 } from '~/lib/animationVariants'
-import { TourLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
-import { TourDate } from '~/lib/types'
+import type { TourLoaderData } from '~/lib/routes.types'
 import { sanityClient, urlForImage } from '~/lib/sanity.settings'
+import type { TourDate } from '~/lib/types'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -39,12 +39,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const baseUrl = `${url.protocol}//${url.host}`
 
   // Transform band images to GalleryImage format for SSR
-  const galleryImages = band.images?.filter((img: typeof band.images[number]) => img.asset).map((img: typeof band.images[number], idx: number) => ({
-    src: img.asset
-      ? urlForImage.image(img.asset).width(3840).height(3840).fit('max').url()
-      : '',
-    alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
-  })) || []
+  const galleryImages =
+    band.images
+      ?.filter((img: (typeof band.images)[number]) => img.asset)
+      .map((img: (typeof band.images)[number], idx: number) => ({
+        src: img.asset
+          ? urlForImage
+              .image(img.asset)
+              .width(3840)
+              .height(3840)
+              .fit('max')
+              .url()
+          : '',
+        alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+      })) || []
 
   return { band, baseUrl, galleryImages }
 }
@@ -58,12 +66,12 @@ export function meta({
   return buildBandMeta(loaderData.band, loaderData.baseUrl, 'tour')
 }
 
-  export default function TourPage() {
-    const { band, baseUrl, galleryImages } = useLoaderData<TourLoaderData>()
-    const [filterRegion, setFilterRegion] = useState<string>('')
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-    const reducedMotion = useReducedMotion()
-    const intl = useIntl()
+export default function TourPage() {
+  const { band, baseUrl, galleryImages } = useLoaderData<TourLoaderData>()
+  const [filterRegion, setFilterRegion] = useState<string>('')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const reducedMotion = useReducedMotion()
+  const intl = useIntl()
 
   const regions = Array.from(
     new Set(band.tourDates?.map((d: TourDate) => d.region).filter(Boolean)),
@@ -97,8 +105,8 @@ export function meta({
     const date = new Date(dateStr)
 
     if (date <= next14Days) {
-       return intl.formatMessage({ id: 'tour.next14Days' })
-     }
+      return intl.formatMessage({ id: 'tour.next14Days' })
+    }
 
     const groupStart = getNextGroupDate(today)
     const groups: string[] = [groupStart]
@@ -121,11 +129,11 @@ export function meta({
     {},
   )
 
-    const next14DaysKey = intl.formatMessage({ id: 'tour.next14Days' })
-     const sortedGroups = Object.entries(groupedDates).sort((a, b) => {
-       if (a[0] === next14DaysKey) return -1
-       if (b[0] === next14DaysKey) return 1
-       return a[0].localeCompare(b[0])
+  const next14DaysKey = intl.formatMessage({ id: 'tour.next14Days' })
+  const sortedGroups = Object.entries(groupedDates).sort((a, b) => {
+    if (a[0] === next14DaysKey) return -1
+    if (b[0] === next14DaysKey) return 1
+    return a[0].localeCompare(b[0])
   })
 
   const formatDateBadge = (
@@ -138,7 +146,7 @@ export function meta({
     return date >= today ? 'upcoming' : 'past'
   }
 
-return (
+  return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       {upcomingDates.map((date: any, idx: number) => (
@@ -149,29 +157,33 @@ return (
           baseUrl={baseUrl}
         />
       ))}
-    <TwoColumnLayout
+      <TwoColumnLayout
         band={band}
         images={galleryImages}
         initialTrack={band.recordings?.[0] || null}
         initialQueue={band.recordings || []}
       >
-        <SectionWrapper title={<FormattedMessage id="tour.tourDates" />} className="py-8">
+        <SectionWrapper
+          title={<FormattedMessage id="tour.tourDates" />}
+          className="py-8"
+        >
           <div className="container-max">
-
-           {regions.length > 0 && (
-               <div className="mb-8 text-center">
-                 <label className="mr-4 font-semibold text-gray-300">
-                   <FormattedMessage id="tour.filterByRegion" />
-                 </label>
-                 <div className="inline-block relative">
-<button
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="focus-ring bg-slate-900/90 backdrop-blur-xl border border-white/[0.1] text-white px-4 py-2 rounded-lg hover:bg-slate-800/90 transition"
-                      aria-label={intl.formatMessage({ id: 'tour.filterByRegionAria' })}
-                      aria-expanded={isDropdownOpen}
-                    >
-                     {filterRegion || <FormattedMessage id="tour.allRegions" />}
-                   </button>
+            {regions.length > 0 && (
+              <div className="mb-8 text-center">
+                <label className="mr-4 font-semibold text-gray-300">
+                  <FormattedMessage id="tour.filterByRegion" />
+                </label>
+                <div className="inline-block relative">
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="focus-ring bg-slate-900/90 backdrop-blur-xl border border-white/[0.1] text-white px-4 py-2 rounded-lg hover:bg-slate-800/90 transition"
+                    aria-label={intl.formatMessage({
+                      id: 'tour.filterByRegionAria',
+                    })}
+                    aria-expanded={isDropdownOpen}
+                  >
+                    {filterRegion || <FormattedMessage id="tour.allRegions" />}
+                  </button>
                   {!reducedMotion && isDropdownOpen && (
                     <AnimatePresence>
                       <motion.div
@@ -182,15 +194,15 @@ return (
                         className="absolute top-full mt-2 left-0 bg-slate-900/90 backdrop-blur-xl border border-white/[0.1] rounded-lg overflow-hidden z-50 min-w-[200px]"
                         onClick={(e) => e.stopPropagation()}
                       >
-                     <button
-                           onClick={() => {
-                             setFilterRegion('')
-                             setIsDropdownOpen(false)
-                           }}
-                           className="focus-ring w-full text-left px-4 py-2 text-white hover:bg-white/[0.06] transition"
-                         >
-                           <FormattedMessage id="tour.allRegions" />
-                         </button>
+                        <button
+                          onClick={() => {
+                            setFilterRegion('')
+                            setIsDropdownOpen(false)
+                          }}
+                          className="focus-ring w-full text-left px-4 py-2 text-white hover:bg-white/[0.06] transition"
+                        >
+                          <FormattedMessage id="tour.allRegions" />
+                        </button>
                         {regions.map((region) => (
                           <button
                             key={region}
@@ -238,11 +250,11 @@ return (
               </div>
             )}
 
-          {upcomingDates.length === 0 ? (
-               <p className="text-center text-gray-300">
-                 <FormattedMessage id="tour.noUpcomingShows" />
-               </p>
-             ) : (
+            {upcomingDates.length === 0 ? (
+              <p className="text-center text-gray-300">
+                <FormattedMessage id="tour.noUpcomingShows" />
+              </p>
+            ) : (
               <div className="space-y-8">
                 {sortedGroups.map(([group, dates]: [string, TourDate[]]) => {
                   const renderTourCard = (date: TourDate) => (
@@ -271,50 +283,50 @@ return (
                       </div>
 
                       <div className="flex gap-4 flex-wrap justify-center md:justify-end">
-               <Badge
-                           variant={
-                             date.soldOut
-                               ? 'warning'
-                               : formatDateBadge(date.date) === 'upcoming'
-                                 ? 'success'
-                                 : 'default'
-                           }
-                         >
-                           {date.soldOut ? (
-                             <FormattedMessage id="tour.soldOut" />
-                           ) : formatDateBadge(date.date) === 'upcoming' ? (
-                             <FormattedMessage id="tour.upcoming" />
-                           ) : (
-                             <FormattedMessage id="tour.past" />
-                           )}
-                         </Badge>
+                        <Badge
+                          variant={
+                            date.soldOut
+                              ? 'warning'
+                              : formatDateBadge(date.date) === 'upcoming'
+                                ? 'success'
+                                : 'default'
+                          }
+                        >
+                          {date.soldOut ? (
+                            <FormattedMessage id="tour.soldOut" />
+                          ) : formatDateBadge(date.date) === 'upcoming' ? (
+                            <FormattedMessage id="tour.upcoming" />
+                          ) : (
+                            <FormattedMessage id="tour.past" />
+                          )}
+                        </Badge>
 
-                         {date.soldOut || !date.ticketsUrl ? null : (
-                           <PrimaryButton
-                             href={date.ticketsUrl}
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             className="!py-2"
-                             onClick={(e) => e.stopPropagation()}
-                           >
-                             <FormattedMessage id="tour.getTickets" />
-                           </PrimaryButton>
-                         )}
-                         {!date.ticketsUrl && !date.soldOut && (
-                           <Badge variant="default" className="!px-6 !py-2">
-                             <FormattedMessage id="tour.ticketsTBA" />
-                           </Badge>
-                         )}
+                        {date.soldOut || !date.ticketsUrl ? null : (
+                          <PrimaryButton
+                            href={date.ticketsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="!py-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FormattedMessage id="tour.getTickets" />
+                          </PrimaryButton>
+                        )}
+                        {!date.ticketsUrl && !date.soldOut && (
+                          <Badge variant="default" className="!px-6 !py-2">
+                            <FormattedMessage id="tour.ticketsTBA" />
+                          </Badge>
+                        )}
                       </div>
                     </GlassCard>
                   )
 
                   const renderAnimatedTourCard = (date: TourDate) => (
-                     <Link
-                       key={date._key || date.slug}
-                       to={`/tour/${date.slug || date._key}`}
-                       className="block"
-                     >
+                    <Link
+                      key={date._key || date.slug}
+                      to={`/tour/${date.slug || date._key}`}
+                      className="block"
+                    >
                       <GlassCard className="rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                           <p className="text-2xl font-bold text-amber-400">
@@ -406,10 +418,10 @@ return (
                     </div>
                   )
                 })}
-               </div>
-             )}
-</div>
-          </SectionWrapper>
+              </div>
+            )}
+          </div>
+        </SectionWrapper>
       </TwoColumnLayout>
     </>
   )

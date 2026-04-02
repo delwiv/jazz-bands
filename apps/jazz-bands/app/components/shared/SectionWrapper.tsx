@@ -1,14 +1,14 @@
-import { motion } from 'framer-motion';
-import type { ReactNode } from 'react';
-import { fadeUpVariants } from '~/lib/animationVariants';
-import { useReducedMotion } from '~/hooks/useReducedMotion';
+import { motion } from 'framer-motion'
+import type { ReactNode } from 'react'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { fadeUpVariants } from '~/lib/animationVariants'
 
 interface SectionWrapperProps {
-  children: React.ReactNode;
-  title?: ReactNode;
-  gradient?: 'default' | 'accent' | 'custom';
-  className?: string;
-  id?: string;
+  children: React.ReactNode
+  title?: ReactNode
+  gradient?: 'default' | 'accent' | 'custom'
+  className?: string
+  id?: string
 }
 
 export function SectionWrapper({
@@ -18,25 +18,25 @@ export function SectionWrapper({
   className = '',
   id,
 }: SectionWrapperProps) {
-  const isReducedMotion = useReducedMotion();
+  const isReducedMotion = useReducedMotion()
 
-     // Glass effect for consistent appearance
-    const glassClasses =
-      'bg-slate-950/60 backdrop-blur-sm border border-white/5 rounded-3xl p-6 md:p-10'
+  // Glass effect for consistent appearance
+  const glassClasses =
+    'bg-slate-950/60 backdrop-blur-sm border border-white/5 rounded-3xl p-6 md:p-10'
 
-    const gradients = {
-      default: '',
-      accent: '',
-      custom: '',
-    }
+  const gradients = {
+    default: '',
+    accent: '',
+    custom: '',
+  }
 
-    return (
-      <section
-        id={id}
-        className={`section-base ${gradients[gradient]} ${glassClasses} ${className}`}
-        aria-labelledby={title ? 'title' : undefined}
-      >
-        <div className="container-max">
+  return (
+    <section
+      id={id}
+      className={`section-base ${gradients[gradient]} ${glassClasses} ${className}`}
+      aria-labelledby={title ? 'title' : undefined}
+    >
+      <div className="container-max">
         {title && (
           <motion.h2
             id="title"
@@ -53,5 +53,5 @@ export function SectionWrapper({
         {children}
       </div>
     </section>
-  );
+  )
 }

@@ -51,55 +51,55 @@ const STORAGE_KEYS = {
 }
 
 export function AudioProvider({
-   children,
-   initialPlaylist = [],
-   initialPlayerState,
- }: AudioProviderProps) {
-   // Track if we've already played the first track on initial load
-   const hasPlayedFirstTrack = useRef(false)
+  children,
+  initialPlaylist = [],
+  initialPlayerState,
+}: AudioProviderProps) {
+  // Track if we've already played the first track on initial load
+  const hasPlayedFirstTrack = useRef(false)
 
-const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
-       if (typeof window === 'undefined') return null
+  const [currentTrack, setCurrentTrack] = useState<Recording | null>(() => {
+    if (typeof window === 'undefined') return null
 
-      // For initial load: use first track from initialPlaylist
-      // This prevents the player from disappearing during hydration
-      if (!hasPlayedFirstTrack.current) {
-        if (initialPlaylist && initialPlaylist.length > 0) {
-          const firstTrack = initialPlaylist.find((r: Recording) => r.audioUrl)
-          return firstTrack || null
+    // For initial load: use first track from initialPlaylist
+    // This prevents the player from disappearing during hydration
+    if (!hasPlayedFirstTrack.current) {
+      if (initialPlaylist && initialPlaylist.length > 0) {
+        const firstTrack = initialPlaylist.find((r: Recording) => r.audioUrl)
+        return firstTrack || null
+      }
+      return null
+    }
+
+    const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
+    if (!stored) return null
+
+    try {
+      const parsed = JSON.parse(stored)
+
+      // Always prefer fresh data from Sanity (initialPlaylist) if available
+      if (initialPlaylist && initialPlaylist.length > 0) {
+        const matchingTrack = initialPlaylist.find(
+          (t) => t.title === parsed?.title || t._key === parsed?._key,
+        )
+        if (matchingTrack) {
+          return matchingTrack
         }
-        return null
       }
 
-      const stored = localStorage.getItem(STORAGE_KEYS.currentTrack)
-     if (!stored) return null
-
-     try {
-       const parsed = JSON.parse(stored)
-
-       // Always prefer fresh data from Sanity (initialPlaylist) if available
-       if (initialPlaylist && initialPlaylist.length > 0) {
-         const matchingTrack = initialPlaylist.find(
-           (t) => t.title === parsed?.title || t._key === parsed?._key,
-         )
-         if (matchingTrack) {
-           return matchingTrack
-         }
-       }
-
-       // Fallback to localStorage
-       return parsed
-     } catch (e) {
-       console.warn(
-         '[AudioContext] Failed to parse localStorage currentTrack:',
-         e,
-       )
-       return null
-     }
-   })
-const [isPlaying, setIsPlaying] = useState(false)
-   const [currentTime, setCurrentTime] = useState(0)
-   const [duration, setDuration] = useState(0)
+      // Fallback to localStorage
+      return parsed
+    } catch (e) {
+      console.warn(
+        '[AudioContext] Failed to parse localStorage currentTrack:',
+        e,
+      )
+      return null
+    }
+  })
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
   const [volume, setVolumeState] = useState(1)
   const [playlist, setPlaylist] = useState<Recording[]>(() => {
     if (typeof window === 'undefined') return []
@@ -260,13 +260,16 @@ const [isPlaying, setIsPlaying] = useState(false)
     setCurrentTime(time)
   }, [])
 
- const setVolume = useCallback((value: number) => {
-		const clampedValue = Math.max(0, Math.min(1, value))
-		// Only update if meaningfully different (avoid excessive calls)
-		if (Math.abs(clampedValue - volume) < 0.02) return
-		setVolumeState(clampedValue)
-		howlRef.current?.volume(clampedValue)
-	}, [volume])
+  const setVolume = useCallback(
+    (value: number) => {
+      const clampedValue = Math.max(0, Math.min(1, value))
+      // Only update if meaningfully different (avoid excessive calls)
+      if (Math.abs(clampedValue - volume) < 0.02) return
+      setVolumeState(clampedValue)
+      howlRef.current?.volume(clampedValue)
+    },
+    [volume],
+  )
 
   const addToQueue = useCallback((track: Recording) => {
     setQueue((prev) => {

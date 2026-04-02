@@ -1,10 +1,14 @@
-import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence, useTransform, useMotionValue } from 'framer-motion'
-
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useTransform,
+} from 'framer-motion'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { useKeyPress } from '~/hooks/useKeyPress'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { useSwipe } from '~/hooks/useSwipe'
-import { useKeyPress } from '~/hooks/useKeyPress'
 import { buttonVariants } from '~/lib/animationVariants'
 
 export interface Image {
@@ -123,7 +127,11 @@ export function ImageModal({
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-20 glass-card p-3 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
                 aria-label="Previous image"
               >
-                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                <motion.div
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                >
                   <ChevronLeft className="w-6 h-6 text-white" />
                 </motion.div>
               </button>
@@ -133,7 +141,11 @@ export function ImageModal({
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-20 glass-card p-3 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
                 aria-label="Next image"
               >
-                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                <motion.div
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                >
                   <ChevronRight className="w-6 h-6 text-white" />
                 </motion.div>
               </button>
@@ -149,12 +161,14 @@ export function ImageModal({
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                style={{
-                  // DISABLED: drag/swipe
-                  // x: dragX,
-                  // opacity,
-                  // scale,
-                }}
+                style={
+                  {
+                    // DISABLED: drag/swipe
+                    // x: dragX,
+                    // opacity,
+                    // scale,
+                  }
+                }
               >
                 <img
                   src={currentImage.src}

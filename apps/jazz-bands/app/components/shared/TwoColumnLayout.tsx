@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import type { ReactNode } from 'react'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { pageVariants } from '~/lib/animationVariants'
 import type { Band, Recording } from '~/lib/types'
-import type { Image } from './ImageModal'
 import { Footer } from './Footer'
 import { Header } from './Header'
+import type { Image } from './ImageModal'
 import { Sidebar } from './Sidebar'
 
 export interface TwoColumnLayoutProps {
@@ -72,37 +72,37 @@ export function TwoColumnLayout({
       </a>
 
       <div className="relative z-10 flex flex-col h-screen">
-         <Header band={band} />
+        <Header band={band} />
 
-         <div className="relative flex flex-1 lg:flex-row overflow-hidden">
-           {/* Main content area - scrolls on both desktop and mobile */}
-           <main
-             id="main-content"
-             className="flex-1 overflow-y-auto px-3 md:px-6 pb-12 lg:pr-[350px]"
-             style={{
-               scrollbarGutter: 'stable'
-             }}
-           >
-             {renderChildren()}
+        <div className="relative flex flex-1 lg:flex-row overflow-hidden">
+          {/* Main content area - scrolls on both desktop and mobile */}
+          <main
+            id="main-content"
+            className="flex-1 overflow-y-auto px-3 md:px-6 pb-12 lg:pr-[350px]"
+            style={{
+              scrollbarGutter: 'stable',
+            }}
+          >
+            {renderChildren()}
 
-             {/* Footer inside scrollable main area */}
-             <div className="pt-4">
-               <Footer band={band} />
-             </div>
-           </main>
+            {/* Footer inside scrollable main area */}
+            <div className="pt-4">
+              <Footer band={band} />
+            </div>
+          </main>
 
-           {/* Sidebar - fixed on desktop, hidden on mobile */}
-           <div className="hidden lg:flex lg:flex-col lg:w-87.5 lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:border-l lg:border-white/10 lg:bg-white/[0.02] lg:backdrop-blur-sm lg:z-20">
-             <div className="flex flex-col h-full overflow-y-auto scrollbar-hidden">
-               <Sidebar
-                 initialTrack={initialTrack}
-                 initialQueue={initialQueue}
-                 images={images}
-               />
-             </div>
-           </div>
-         </div>
-       </div>
+          {/* Sidebar - fixed on desktop, hidden on mobile */}
+          <div className="hidden lg:flex lg:flex-col lg:w-87.5 lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:border-l lg:border-white/10 lg:bg-white/[0.02] lg:backdrop-blur-sm lg:z-20">
+            <div className="flex flex-col h-full overflow-y-auto scrollbar-hidden">
+              <Sidebar
+                initialTrack={initialTrack}
+                initialQueue={initialQueue}
+                images={images}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
