@@ -1,12 +1,17 @@
-import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence, useTransform, useMotionValue } from 'framer-motion'
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useTransform,
+} from 'framer-motion'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { FormattedMessage } from 'react-intl'
 import { Modal } from '~/components/Modal/Modal'
+import { useKeyPress } from '~/hooks/useKeyPress'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { useSwipe } from '~/hooks/useSwipe'
-import { useKeyPress } from '~/hooks/useKeyPress'
 import { buttonVariants } from '~/lib/animationVariants'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface CarouselImage {
   url: string
@@ -32,9 +37,7 @@ export function Carousel({
 
   const updateIndex = useCallback(
     (index: number) => {
-      setCurrentIndex(
-        (index + images.length) % images.length,
-      )
+      setCurrentIndex((index + images.length) % images.length)
     },
     [images.length],
   )
@@ -58,65 +61,65 @@ export function Carousel({
   })
 
   // Swipe handlers for fallback touch detection (RIGHT forward, LEFT backward)
- const swipeHandlers = useSwipe({
-    onSwipeLeft: prevImage,   // LEFT swipe → previous image
-    onSwipeRight: nextImage,  // RIGHT swipe → next image
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: prevImage, // LEFT swipe → previous image
+    onSwipeRight: nextImage, // RIGHT swipe → next image
     threshold: 50,
   })
 
   if (!images.length) return null
 
- const currentImage = images[currentIndex]
- const isSingleImage = images.length === 1
+  const currentImage = images[currentIndex]
+  const isSingleImage = images.length === 1
 
- // Framer-motion drag state
- const dragX = useMotionValue(0)
- const opacity = useTransform(dragX, [-100, 0, 100], [0.5, 1, 0.5])
- const scale = useTransform(dragX, [-100, 0, 100], [0.95, 1, 0.95])
+  // Framer-motion drag state
+  const dragX = useMotionValue(0)
+  const opacity = useTransform(dragX, [-100, 0, 100], [0.5, 1, 0.5])
+  const scale = useTransform(dragX, [-100, 0, 100], [0.95, 1, 0.95])
 
- // Slide variants for animation (no x translation to avoid conflict with drag)
- const slideVariants = {
-   initial: { opacity: 0 },
-   animate: { opacity: 1, transition: { duration: 0.3 } },
-   exit: { opacity: 0, transition: { duration: 0.3 } },
- }
+  // Slide variants for animation (no x translation to avoid conflict with drag)
+  const slideVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, transition: { duration: 0.3 } },
+  }
 
- // Drag end handler with flick detection and circular navigation
- const handleDragEnd = useCallback(
-   (e: any, info: any) => {
-     // Safely extract offset and velocity from info.point
-     const offset = info?.point?.offset || { x: 0 }
-     const velocity = info?.point?.velocity || { x: 0 }
-     
-     const SWIPE_THRESHOLD = 50  // Minimum distance (px)
-     const VELOCITY_THRESHOLD = 200  // Minimum velocity (px/s)
-     
-     // Flick detection: fast swipe regardless of distance
-     // Positive velocity = flick RIGHT (forward), Negative velocity = flick LEFT (backward)
-     if (velocity.x > VELOCITY_THRESHOLD) {
-       nextImage()  // Flick RIGHT → next image
-     } else if (velocity.x < -VELOCITY_THRESHOLD) {
-       prevImage()  // Flick LEFT → previous image
-     } 
-     // Distance-based navigation
-     // Negative offset = dragged LEFT, Positive offset = dragged RIGHT
-     else if (offset.x < -SWIPE_THRESHOLD) {
-       prevImage()  // Dragged LEFT → previous image
-     } else if (offset.x > SWIPE_THRESHOLD) {
-       nextImage()  // Dragged RIGHT → next image
-     }
-     // Small drag: snap back to center
-     else {
-       dragX.set(0)
-     }
-   },
-   [nextImage, prevImage, dragX],
- )
+  // Drag end handler with flick detection and circular navigation
+  const handleDragEnd = useCallback(
+    (e: any, info: any) => {
+      // Safely extract offset and velocity from info.point
+      const offset = info?.point?.offset || { x: 0 }
+      const velocity = info?.point?.velocity || { x: 0 }
 
-// Reset drag position when image changes
- useEffect(() => {
-   dragX.set(0)
-}, [currentIndex, dragX])
+      const SWIPE_THRESHOLD = 50 // Minimum distance (px)
+      const VELOCITY_THRESHOLD = 200 // Minimum velocity (px/s)
+
+      // Flick detection: fast swipe regardless of distance
+      // Positive velocity = flick RIGHT (forward), Negative velocity = flick LEFT (backward)
+      if (velocity.x > VELOCITY_THRESHOLD) {
+        nextImage() // Flick RIGHT → next image
+      } else if (velocity.x < -VELOCITY_THRESHOLD) {
+        prevImage() // Flick LEFT → previous image
+      }
+      // Distance-based navigation
+      // Negative offset = dragged LEFT, Positive offset = dragged RIGHT
+      else if (offset.x < -SWIPE_THRESHOLD) {
+        prevImage() // Dragged LEFT → previous image
+      } else if (offset.x > SWIPE_THRESHOLD) {
+        nextImage() // Dragged RIGHT → next image
+      }
+      // Small drag: snap back to center
+      else {
+        dragX.set(0)
+      }
+    },
+    [nextImage, prevImage, dragX],
+  )
+
+  // Reset drag position when image changes
+  useEffect(() => {
+    dragX.set(0)
+  }, [currentIndex, dragX])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -134,41 +137,41 @@ export function Carousel({
 
         {!isSingleImage && (
           <>
-<button
-               onClick={prevImage}
-               className="absolute left-4 top-1/2 -translate-y-1/2 z-20 glass-card p-3 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
-               aria-label="Previous image"
-             >
-         <motion.div
-          variants={buttonVariants}
-          whileHover="hover"
-          whileTap="tap"
-        >
-          <ChevronLeft className="w-6 h-6 text-white" />
-        </motion.div>
+            <button
+              onClick={prevImage}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 glass-card p-3 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
+              aria-label="Previous image"
+            >
+              <motion.div
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </motion.div>
             </button>
 
-<button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 glass-card p-3 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
-                aria-label="Next image"
+            <button
+              onClick={nextImage}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 glass-card p-3 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
+              aria-label="Next image"
+            >
+              <motion.div
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
               >
-<motion.div
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-          >
-            <ChevronRight className="w-6 h-6 text-white" />
-          </motion.div>
+                <ChevronRight className="w-6 h-6 text-white" />
+              </motion.div>
             </button>
           </>
         )}
 
-       <div
+        <div
           className="w-full h-full flex items-center justify-center"
           // DISABLED: {...(reducedMotion ? {} : swipeHandlers)}
         >
-        {/* Edge gradient indicators - DISABLED */}
+          {/* Edge gradient indicators - DISABLED */}
           {/*
           DISABLED: {!isSingleImage && !reducedMotion && (
           <>
@@ -185,33 +188,38 @@ export function Carousel({
           */}
 
           <AnimatePresence mode="wait">
-        <motion.div
-          key={currentIndex}
-          className="w-full h-full flex items-center justify-center"
-          variants={reducedMotion ? undefined : slideVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          // DISABLED: drag={!reducedMotion && !isSingleImage ? "x" : false}
-          // DISABLED: dragElastic={0.3}  // Disabled swipe for now
-          // DISABLED: dragMomentum={false}
-          // DISABLED: onDragEnd={!reducedMotion && !isSingleImage ? handleDragEnd : undefined}
-          style={{
-            // DISABLED: x: dragX,
-            // DISABLED: opacity,
-            // DISABLED: scale,
-          }}
-        >
-          <img
-            src={currentImage.url}
-            alt={currentImage.caption || `Image ${currentIndex + 1} of ${images.length}`}
-            className="w-full h-full object-contain pointer-events-none"
-            loading="eager"
-            draggable={false}
-          />
-        </motion.div>
-      </AnimatePresence>
-    </div>
+            <motion.div
+              key={currentIndex}
+              className="w-full h-full flex items-center justify-center"
+              variants={reducedMotion ? undefined : slideVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              // DISABLED: drag={!reducedMotion && !isSingleImage ? "x" : false}
+              // DISABLED: dragElastic={0.3}  // Disabled swipe for now
+              // DISABLED: dragMomentum={false}
+              // DISABLED: onDragEnd={!reducedMotion && !isSingleImage ? handleDragEnd : undefined}
+              style={
+                {
+                  // DISABLED: x: dragX,
+                  // DISABLED: opacity,
+                  // DISABLED: scale,
+                }
+              }
+            >
+              <img
+                src={currentImage.url}
+                alt={
+                  currentImage.caption ||
+                  `Image ${currentIndex + 1} of ${images.length}`
+                }
+                className="w-full h-full object-contain pointer-events-none"
+                loading="eager"
+                draggable={false}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         {currentImage.caption && (
           <motion.div

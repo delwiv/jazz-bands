@@ -1,5 +1,5 @@
-import type { FunctionComponent } from 'react'
 import { AlertTriangle, RotateCcw } from 'lucide-react'
+import type { FunctionComponent } from 'react'
 
 interface ErrorBoundaryProps {
   error: unknown
@@ -38,10 +38,10 @@ export const ErrorBoundary: FunctionComponent<ErrorBoundaryProps> = ({
         </div>
 
         {resetErrorBoundaries && (
-<button
-                onClick={resetErrorBoundaries}
-                className="focus-ring inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-red-600 hover:to-orange-600 transition-all duration-200 transform hover:-translate-y-0.5"
-              >
+          <button
+            onClick={resetErrorBoundaries}
+            className="focus-ring inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-red-600 hover:to-orange-600 transition-all duration-200 transform hover:-translate-y-0.5"
+          >
             <RotateCcw className="w-5 h-5" />
             Retry
           </button>

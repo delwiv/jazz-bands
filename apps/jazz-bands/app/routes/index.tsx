@@ -1,26 +1,26 @@
+import { PortableText } from '@portabletext/react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { FormattedMessage } from 'react-intl'
 import {
   type LoaderFunctionArgs,
   useLoaderData,
   useNavigation,
 } from 'react-router'
-import { FormattedMessage } from 'react-intl'
-import { PortableText } from '@portabletext/react'
 import { BandStructuredData } from '~/components/StructuredData'
-import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
-import { Skeleton } from '~/components/shared/Skeleton'
 import { Badge } from '~/components/shared/Badge'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
+import { Skeleton } from '~/components/shared/Skeleton'
+import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import {
+  cardHoverVariants,
   itemVariants,
   staggerContainerVariants,
-  cardHoverVariants,
 } from '~/lib/animationVariants'
-import { BandHomeLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
+import type { BandHomeLoaderData } from '~/lib/routes.types'
 import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
@@ -42,12 +42,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const baseUrl = `${url.protocol}//${url.host}`
 
   // Transform band images to GalleryImage format for SSR
-  const galleryImages = band.images?.filter((img: typeof band.images[number]) => img.asset).map((img: typeof band.images[number], idx: number) => ({
-    src: img.asset
-      ? urlForImage.image(img.asset).width(3840).height(3840).fit('max').url()
-      : '',
-    alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
-  })) || []
+  const galleryImages =
+    band.images
+      ?.filter((img: (typeof band.images)[number]) => img.asset)
+      .map((img: (typeof band.images)[number], idx: number) => ({
+        src: img.asset
+          ? urlForImage
+              .image(img.asset)
+              .width(3840)
+              .height(3840)
+              .fit('max')
+              .url()
+          : '',
+        alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+      })) || []
 
   return { band, baseUrl, galleryImages }
 }
@@ -304,14 +312,14 @@ export default function BandHome() {
               // Build photo URL from asset reference
               const photoUrl =
                 musician.photo &&
-                  typeof musician.photo === 'object' &&
-                  musician.photo._ref
+                typeof musician.photo === 'object' &&
+                musician.photo._ref
                   ? urlForImage
-                    .image(musician.photo)
-                    .width(400)
-                    .height(400)
-                    .fit('crop')
-                    .url()
+                      .image(musician.photo)
+                      .width(400)
+                      .height(400)
+                      .fit('crop')
+                      .url()
                   : ''
 
               return (

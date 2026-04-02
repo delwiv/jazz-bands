@@ -9,7 +9,11 @@ interface UseKeyPressProps {
 /**
  * Hook to listen for specific keyboard keys
  */
-export function useKeyPress({ keys, onKeyPress, enabled = true }: UseKeyPressProps) {
+export function useKeyPress({
+  keys,
+  onKeyPress,
+  enabled = true,
+}: UseKeyPressProps) {
   useEffect(() => {
     if (!enabled) return
 

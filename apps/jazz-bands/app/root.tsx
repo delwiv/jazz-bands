@@ -1,3 +1,5 @@
+import { AlertTriangle, Home } from 'lucide-react'
+import { FormattedMessage } from 'react-intl'
 import {
   Links,
   Meta,
@@ -7,8 +9,6 @@ import {
   useLoaderData,
   useRouteError,
 } from 'react-router'
-import { FormattedMessage } from 'react-intl'
-import { AlertTriangle, Home } from 'lucide-react'
 import type { Route } from './+types/root'
 import { StickyPlayer } from './components/audio/StickyPlayer'
 import { AudioProvider } from './contexts/AudioContext'
@@ -39,14 +39,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
   }
 
-   const initialTrack = recordings.length > 0 ? recordings[0] : null
+  const initialTrack = recordings.length > 0 ? recordings[0] : null
 
-   return {
-     bandSlug,
-     origin,
-     recordings,
-     initialTrack,
-   }
+  return {
+    bandSlug,
+    origin,
+    recordings,
+    initialTrack,
+  }
 }
 
 export function meta({ data }: Route.MetaArgs) {
@@ -57,7 +57,7 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export default function App() {
-   const { bandSlug, recordings, initialTrack } = useLoaderData<Route>()
+  const { bandSlug, recordings, initialTrack } = useLoaderData<Route>()
 
   return (
     <html lang="fr">
@@ -67,9 +67,7 @@ export default function App() {
       </head>
       <body>
         <I18nProvider>
-          <AudioProvider
-            initialPlaylist={recordings || []}
-          >
+          <AudioProvider initialPlaylist={recordings || []}>
             <Outlet />
             {/* Mobile player: hidden on desktop to avoid SSR flash */}
             <div className="lg:hidden">
