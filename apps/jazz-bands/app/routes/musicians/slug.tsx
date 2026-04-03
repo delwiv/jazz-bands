@@ -268,11 +268,22 @@ export default function MusicianDetail() {
    {/* Content */}
          <div className="px-6">
             <div className="flex items-start gap-6">
-              <img
-                src={profilePhotoUrl}
-                alt={musician.name}
-                className="w-32 h-32 rounded-lg object-cover shadow-lg border-2 border-amber-500"
-              />
+              <button
+                type="button"
+                onClick={() => gallery.length > 0 && openGallery(0, gallery)}
+                disabled={gallery.length === 0}
+                className={
+                  gallery.length > 0
+                    ? 'cursor-pointer hover:opacity-80 transition-opacity'
+                    : ''
+                }
+              >
+                <img
+                  src={profilePhotoUrl}
+                  alt={musician.name}
+                  className="w-32 h-32 rounded-lg object-cover shadow-lg border-2 border-amber-500"
+                />
+              </button>
               <div className="flex-1 min-w-0">
                <h1 className="text-3xl font-bold text-white mb-2">
                  {musician.name}
