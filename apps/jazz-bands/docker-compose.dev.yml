@@ -9,6 +9,7 @@ x-band-common: &band-common
     - .env
   volumes:
     - ./app:/app/app
+    - ./public:/app/public
     - ./vite.config.ts:/app/vite.config.ts
     - ./react-router.config.ts:/app/react-router.config.ts
     - ./tsconfig.json:/app/tsconfig.json

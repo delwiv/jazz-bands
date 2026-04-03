@@ -26,9 +26,8 @@ function NavLink({ to, children, primaryColor }: NavLinkProps) {
     return (
       <Link
         to={to}
-        className={`focus-ring hover:opacity-80 relative px-1 ${
-          isActive ? 'text-white' : 'text-gray-300'
-        }`}
+        className={`focus-ring hover:opacity-80 relative px-1 ${isActive ? 'text-white' : 'text-gray-300'
+          }`}
       >
         {children}
         {isActive && (
@@ -68,8 +67,8 @@ export function Header({ band }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="bg-white/[0.06] backdrop-blur-xl border-b border-white/[0.1] py-4 px-3 md:px-6 sticky top-0 z-50">
-      <nav className="max-w-7xl mx-auto flex items-center justify-between">
+    <header className="bg-white/[0.06] backdrop-blur-xl border-b border-white/[0.1] py-4 flex w-full h-20 md:px-6 sticky top-0 z-50">
+      <nav className="max-w-7xl flex items-center justify-between w-full">
         <Link
           to="/"
           className="focus-ring text-2xl font-bold text-white"
@@ -114,8 +113,8 @@ export function Header({ band }: HeaderProps) {
         </div>
 
         {/* Mobile Navigation Dropdown */}
-        <AnimatePresence>
-          {isMenuOpen && (
+        {isMenuOpen && (
+          <AnimatePresence>
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -161,8 +160,8 @@ export function Header({ band }: HeaderProps) {
                 </Link>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
       </nav>
     </header>
   )
