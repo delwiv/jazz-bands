@@ -3,13 +3,7 @@
  * Eliminates need for 'as any' casts in useLoaderData()
  */
 
-import type { Band } from '~/lib/types'
-
-/** Gallery image format used by SlideshowPreview */
-export interface GalleryImage {
-  src: string
-  alt: string
-}
+import type { Band, GalleryImage } from '~/lib/types'
 
 /** Home page loader data */
 export interface BandHomeLoaderData {

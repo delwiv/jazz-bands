@@ -218,3 +218,13 @@ export interface ContentService {
 export interface Photo {
   url: string
 }
+
+/**
+ * Unified gallery image interface
+ * Used across ImageViewer, ImagePreview, and ThumbnailGrid components
+ */
+export interface GalleryImage {
+  src: string
+  alt: string
+  caption?: string
+}
