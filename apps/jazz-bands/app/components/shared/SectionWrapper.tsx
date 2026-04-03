@@ -22,7 +22,7 @@ export function SectionWrapper({
 
   // Glass effect for consistent appearance
   const glassClasses =
-    'bg-slate-950/60 backdrop-blur-sm border border-white/5 rounded-3xl p-6 md:p-10'
+    'glass-card border border-white/5 rounded-3xl p-6 md:p-10'
 
   const gradients = {
     default: '',

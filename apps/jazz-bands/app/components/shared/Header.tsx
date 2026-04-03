@@ -67,7 +67,7 @@ export function Header({ band }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="bg-white/[0.06] backdrop-blur-xl border-b border-white/[0.1] py-4 flex w-full h-20 md:px-6 sticky top-0 z-50">
+    <header className="glass-card border-b border-white/[0.1] py-4 flex w-full h-16 md:px-6 sticky top-0 z-50">
       <nav className="max-w-7xl flex items-center justify-between w-full">
         <Link
           to="/"

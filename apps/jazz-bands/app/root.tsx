@@ -31,7 +31,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   let band = null
   let recordings = []
   let galleryImages: { src: string; alt: string }[] = []
-  
+
   if (bandSlug) {
     try {
       band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
@@ -45,13 +45,14 @@ export async function loader({ request }: Route.LoaderArgs) {
           .map((img: (typeof band.images)[number], idx: number) => ({
             src: img.asset
               ? urlForImage
-                .image(img.asset)
-                .width(3840)
-                .height(3840)
-                .fit('max')
-                .url()
+                  .image(img.asset)
+                  .width(3840)
+                  .height(3840)
+                  .fit('max')
+                  .url()
               : '',
-            alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+            alt:
+              img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
           })) || []
     } catch (error) {
       console.error('Failed to fetch band data:', error)

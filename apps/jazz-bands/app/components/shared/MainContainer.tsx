@@ -1,5 +1,5 @@
-import React from 'react'
 import { motion } from 'framer-motion'
+import React from 'react'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 
 interface MainContainerProps {
@@ -11,7 +11,7 @@ export function MainContainer({ children }: MainContainerProps) {
   const childrenArray = React.Children.toArray(children)
 
   return (
-    <div className="flex flex-col gap-6 px-4 pb-16 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-12 px-4 max-w-7xl mx-auto">
       {childrenArray.map((child, index) => {
         if (!React.isValidElement(child)) {
           return child

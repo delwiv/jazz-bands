@@ -33,6 +33,19 @@
     "upcoming": "À venir",
     "mainImageAlt": "Image principale {bandName} {index}"
   },
+  "musicians": {
+    "ourMusicians": "Musiciens",
+    "viewProfile": "Voir le profil",
+    "viewPhotos": "Voir les photos",
+    "readBio": "Lire la biographie",
+    "showLess": "Afficher moins",
+    "backToMusicians": "Retour aux musiciens",
+    "biography": "Biographie",
+    "noBiographyAvailable": "Aucune biographie disponible.",
+    "gallery": "Galerie",
+    "bandMemberships": "Appartenance aux groupes",
+    "memberOf": "Membre de"
+  },
   "tour": {
     "tourDates": "Tournée",
     "filterByRegion": "Filtrer par région :",
@@ -45,19 +58,6 @@
     "soldOut": "Complet",
     "upcoming": "À venir",
     "past": "Passé"
-  },
-  "musicians": {
-    "ourMusicians": "",
-    "viewProfile": "Voir le profil",
-    "viewPhotos": "Voir les photos",
-    "readBio": "Lire la bio",
-    "showLess": "Voir moins",
-    "backToMusicians": "Retour aux musiciens",
-    "biography": "Biographie",
-    "noBiographyAvailable": "Aucune biographie disponible.",
-    "gallery": "Galerie",
-    "bandMemberships": "Appartenances aux groupes",
-    "memberOf": "Membre de"
   },
   "contact": {
     "contact": "Contact",

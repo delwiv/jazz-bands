@@ -12,10 +12,7 @@ export function GlassSection({
   id?: string
 }) {
   return (
-    <section
-      id={id}
-      className={`relative glass-card ${className}`}
-    >
+    <section id={id} className={`relative glass-card ${className}`}>
       <div
         className={`max-w-7xl mx-auto px-3 py-16 md:py-24 ${childrenClassName}`}
       >

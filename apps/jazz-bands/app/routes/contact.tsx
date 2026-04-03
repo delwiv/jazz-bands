@@ -55,10 +55,7 @@ export default function ContactPage() {
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <MainContainer>
-        <SectionWrapper
-          title={<FormattedMessage id="contact.contact" />}
-          className="py-8"
-        >
+        <SectionWrapper title={<FormattedMessage id="contact.contact" />}>
           <div className="max-w-3xl mx-auto">
             {/* Glass Contact Card */}
             <div className="glass-card shadow-2xl p-10">

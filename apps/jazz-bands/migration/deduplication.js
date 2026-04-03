@@ -349,6 +349,7 @@ function biosAreEqual(bio1, bio2) {
 /**
  * Converts HTML description to Sanity Portable Text block format
  * Preserves paragraph structure and rich formatting (bold, italic, links, headings, lists)
+ * Removes empty blocks (paragraphs with no text content)
  */
 export function htmlToSanityBlock(html) {
   if (!html || typeof html !== 'string') return [];
@@ -362,12 +363,25 @@ export function htmlToSanityBlock(html) {
     // e.g., "N&#xe9;" → "Né"
     const decodedHtml = he.decode(trimmed);
     
-    const blocks = htmlToPortableText(decodedHtml, {
+    let blocks = htmlToPortableText(decodedHtml, {
       schema: htmlToPortableText.defaultSchema,
       parseHtml: (root) => new JSDOM(root).window.document,
     });
     
-    return blocks || [];
+    // Filter out empty blocks (blocks with no text content in children)
+    // Also removes blocks that only contain <br> tags (common in MongoDB HTML)
+    blocks = blocks?.filter(block => {
+      if (!block.children || block.children.length === 0) return false;
+      
+      // Check if any child has non-empty text
+      const hasText = block.children.some(child => child.text && child.text.trim().length > 0);
+      if (hasText) return true;
+      
+      // Block has no text content → it's empty (e.g., only <br> tags or whitespace)
+      return false;
+    }) || [];
+    
+    return blocks;
   } catch (error) {
     console.warn(`HTML conversion failed:`, error.message);
     // Fallback: return empty array

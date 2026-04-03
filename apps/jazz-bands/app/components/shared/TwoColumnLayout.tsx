@@ -74,11 +74,11 @@ export function TwoColumnLayout({
       <div className="relative z-10 flex flex-col h-screen">
         <Header band={band} />
 
-        <div className="flex relative lg:flex-row ">
+        <div className="flex relative lg:flex-row">
           {/* Main content area - scrolls on both desktop and mobile */}
           <main
             id="main-content"
-            className="flex-1 pb-12 "
+            className="flex-1 min-h-[calc(100dvh-5rem)] grid items-stretch justify-stretch pt-6 gap-8"
             style={{
               scrollbarGutter: 'stable',
             }}
@@ -86,13 +86,13 @@ export function TwoColumnLayout({
             {renderChildren()}
 
             {/* Footer inside scrollable main area */}
-            <div className="pt-4">
+            <div className="justify-self-end items-end flex w-full pt-8 px-4">
               <Footer band={band} />
             </div>
           </main>
 
           {/* Sidebar - fixed on desktop, hidden on mobile */}
-          <div className="hidden lg:flex lg:h-[calc(100dvh-5rem)] lg:w-1/4 3xl:w-1/5 lg:flex-col lg:sticky lg:right-0 lg:top-20 lg:bottom-0 lg:border-l lg:border-white/10  lg:backdrop-blur-sm lg:z-20">
+          <div className="hidden lg:flex lg:h-[calc(100dvh-4rem)] lg:w-1/4 3xl:w-1/5 lg:flex-col lg:sticky lg:right-0 lg:top-16 lg:bottom-0 lg:border-l lg:border-white/10  lg:backdrop-blur-sm lg:z-20">
             <div className="flex flex-col h-full overflow-y-auto scrollbar-hidden">
               <Sidebar
                 initialTrack={initialTrack}
