@@ -16,9 +16,7 @@ export function Sidebar({ initialTrack, initialQueue, images }: SidebarProps) {
       <div className="overflow-y-auto scrollbar-hidden">
         <SlideshowPreview images={images} />
       </div>
-      <div className="bg-slate-900/95 backdrop-blur-sm">
-        <StickyPlayer initialTrack={initialTrack} initialQueue={initialQueue} />
-      </div>
+      <StickyPlayer initialTrack={initialTrack} initialQueue={initialQueue} />
 
       {/* Slideshow scrolls below */}
     </div>

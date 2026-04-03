@@ -9,7 +9,7 @@ export function Footer({ band }: FooterProps) {
   const secondaryColor = band.branding?.secondaryColor || '#dc2626'
 
   return (
-    <footer className="relative bg-slate-950/85 backdrop-blur-md border-t border-white/15 py-12">
+    <footer className="relative glass-card border-t py-12 rounded-t-lg">
       <div className="max-w-7xl mx-auto px-3 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h3

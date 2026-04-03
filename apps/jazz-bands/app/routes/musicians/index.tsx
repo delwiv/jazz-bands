@@ -50,61 +50,56 @@ export default function MusiciansPage() {
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
-      <SectionWrapper
-        title={<FormattedMessage id="musicians.ourMusicians" />}
-        className="py-8"
-      >
-        <div className="container-max">
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={staggerContainerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {musicians.map((musician) => (
-              <Link
-                key={musician._id}
-                to={`/musicians/${musician.slug}`}
-                className="block cursor-pointer"
-                style={{ textDecoration: 'none' }}
-              >
-                <GlassCard className="rounded-xl overflow-hidden">
-                  {musician.photo && (
-                    <motion.div
-                      className="w-full h-64 overflow-hidden"
-                      whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <img
-                        src={urlForImage
-                          .image(musician.photo)
-                          .width(800)
-                          .height(800)
-                          .fit('crop')
-                          .url()}
-                        alt={musician.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover"
-                      />
-                    </motion.div>
-                  )}
+      <SectionWrapper title={<FormattedMessage id="musicians.ourMusicians" />}>
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={staggerContainerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {musicians.map((musician) => (
+            <Link
+              key={musician._id}
+              to={`/musicians/${musician.slug}`}
+              className="block cursor-pointer"
+              style={{ textDecoration: 'none' }}
+            >
+              <GlassCard className="rounded-xl overflow-hidden">
+                {musician.photo && (
+                  <motion.div
+                    className="w-full h-64 overflow-hidden"
+                    whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <img
+                      src={urlForImage
+                        .image(musician.photo)
+                        .width(800)
+                        .height(800)
+                        .fit('crop')
+                        .url()}
+                      alt={musician.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
+                  </motion.div>
+                )}
 
-                  <div className="p-6">
-                    <h2 className="text-2xl font-bold mb-2 text-white">
-                      {musician.name}
-                    </h2>
-                    {musician.instrument && (
-                      <p className="text-gray-300 font-semibold">
-                        {musician.instrument}
-                      </p>
-                    )}
-                  </div>
-                </GlassCard>
-              </Link>
-            ))}
-          </motion.div>
-        </div>
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold mb-2 text-white">
+                    {musician.name}
+                  </h2>
+                  {musician.instrument && (
+                    <p className="text-gray-300 font-semibold">
+                      {musician.instrument}
+                    </p>
+                  )}
+                </div>
+              </GlassCard>
+            </Link>
+          ))}
+        </motion.div>
       </SectionWrapper>
     </>
   )
