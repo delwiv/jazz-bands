@@ -14,7 +14,7 @@ export function GlassSection({
   return (
     <section
       id={id}
-      className={`relative bg-slate-950/70 backdrop-blur-sm border-y border-white/10 ${className}`}
+      className={`relative glass-card ${className}`}
     >
       <div
         className={`max-w-7xl mx-auto px-3 py-16 md:py-24 ${childrenClassName}`}

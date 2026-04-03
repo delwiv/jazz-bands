@@ -11,11 +11,12 @@ import {
 } from 'react-router'
 import type { Route } from './+types/root'
 import { StickyPlayer } from './components/audio/StickyPlayer'
+import { TwoColumnLayout } from './components/shared/TwoColumnLayout'
 import { AudioProvider } from './contexts/AudioContext'
 import { I18nProvider } from './i18n/I18nProvider'
 import './tailwind.css'
 import { getBandBySlug } from './lib/queries'
-import { sanityClient } from './lib/sanity.settings'
+import { sanityClient, urlForImage } from './lib/sanity.settings'
 
 export async function loader({ request }: Route.LoaderArgs) {
   const bandSlug = process.env.BAND_SLUG
@@ -26,16 +27,34 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const origin = new URL(request.url).origin
 
-  // Fetch band data for auto-queue functionality
+  // Fetch full band data for layout
+  let band = null
   let recordings = []
+  let galleryImages: { src: string; alt: string }[] = []
+  
   if (bandSlug) {
     try {
-      const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
+      band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
       if (band?.recordings) {
         recordings = band.recordings.filter((r: any) => r.audioUrl)
       }
+      // Transform band images to gallery format
+      galleryImages =
+        band.images
+          ?.filter((img: (typeof band.images)[number]) => img.asset)
+          .map((img: (typeof band.images)[number], idx: number) => ({
+            src: img.asset
+              ? urlForImage
+                .image(img.asset)
+                .width(3840)
+                .height(3840)
+                .fit('max')
+                .url()
+              : '',
+            alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+          })) || []
     } catch (error) {
-      console.error('Failed to fetch band recordings:', error)
+      console.error('Failed to fetch band data:', error)
     }
   }
 
@@ -44,8 +63,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   return {
     bandSlug,
     origin,
+    band,
     recordings,
     initialTrack,
+    galleryImages,
   }
 }
 
@@ -53,11 +74,37 @@ export function meta({ data }: Route.MetaArgs) {
   return [
     { title: data?.bandSlug ? `${data.bandSlug} - Jazz Band` : 'Jazz Bands' },
     { name: 'description', content: 'Jazz band website' },
+    {
+      tagName: 'link',
+      rel: 'apple-touch-icon',
+      sizes: '180x180',
+      href: '/apple-touch-icon.png',
+    },
+    {
+      tagName: 'link',
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '32x32',
+      href: '/favicon-32x32.png',
+    },
+    {
+      tagName: 'link',
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '16x16',
+      href: '/favicon-16x16.png',
+    },
+    {
+      tagName: 'link',
+      rel: 'manifest',
+      href: '/site.webmanifest',
+    },
   ]
 }
 
 export default function App() {
-  const { bandSlug, recordings, initialTrack } = useLoaderData<Route>()
+  const { bandSlug, band, recordings, initialTrack, galleryImages } =
+    useLoaderData<Route>()
 
   return (
     <html lang="fr">
@@ -68,7 +115,18 @@ export default function App() {
       <body>
         <I18nProvider>
           <AudioProvider initialPlaylist={recordings || []}>
-            <Outlet />
+            {band ? (
+              <TwoColumnLayout
+                band={band}
+                images={galleryImages}
+                initialTrack={initialTrack}
+                initialQueue={recordings}
+              >
+                <Outlet />
+              </TwoColumnLayout>
+            ) : (
+              <Outlet />
+            )}
             {/* Mobile player: hidden on desktop to avoid SSR flash */}
             <div className="lg:hidden">
               <StickyPlayer

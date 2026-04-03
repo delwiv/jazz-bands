@@ -8,9 +8,9 @@ import {
 } from '~/components/StructuredData'
 import { Badge } from '~/components/shared/Badge'
 import { GlassCard } from '~/components/shared/GlassCard'
+import { MainContainer } from '~/components/shared/MainContainer'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
-import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import {
   cardHoverVariants,
@@ -38,23 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
-  // Transform band images to GalleryImage format for SSR
-  const galleryImages =
-    band.images
-      ?.filter((img: (typeof band.images)[number]) => img.asset)
-      .map((img: (typeof band.images)[number], idx: number) => ({
-        src: img.asset
-          ? urlForImage
-              .image(img.asset)
-              .width(3840)
-              .height(3840)
-              .fit('max')
-              .url()
-          : '',
-        alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
-      })) || []
-
-  return { band, baseUrl, galleryImages }
+  return { band, baseUrl }
 }
 
 export function meta({
@@ -67,7 +51,7 @@ export function meta({
 }
 
 export default function TourPage() {
-  const { band, baseUrl, galleryImages } = useLoaderData<TourLoaderData>()
+  const { band, baseUrl } = useLoaderData<TourLoaderData>()
   const [filterRegion, setFilterRegion] = useState<string>('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const reducedMotion = useReducedMotion()
@@ -82,22 +66,18 @@ export default function TourPage() {
     : band.tourDates || []
 
   const upcomingDates = filteredDates
-    // .filter((d: TourDate) => new Date(d.date) > new Date())
     .sort(
       (a: TourDate, b: TourDate) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime(), // Descending order (newest first)
+        new Date(b.date).getTime() - new Date(a.date).getTime(),
     )
 
-  // Date grouping logic
   const groupAgeDays = 7
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const next14Days = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000)
 
   const getNextGroupDate = (startDate: Date): string => {
-    const groupStart = new Date(
-      startDate.getTime() + groupAgeDays * 24 * 60 * 60 * 1000,
-    )
+    const groupStart = new Date(startDate.getTime() + groupAgeDays * 24 * 60 * 60 * 1000)
     return groupStart.toISOString().split('T')[0]
   }
 
@@ -136,9 +116,7 @@ export default function TourPage() {
     return a[0].localeCompare(b[0])
   })
 
-  const formatDateBadge = (
-    dateStr: string,
-  ): 'soldOut' | 'upcoming' | 'past' => {
+  const formatDateBadge = (dateStr: string): 'soldOut' | 'upcoming' | 'past' => {
     if (!dateStr) return 'past'
     const date = new Date(dateStr)
     const today = new Date()
@@ -157,12 +135,7 @@ export default function TourPage() {
           baseUrl={baseUrl}
         />
       ))}
-      <TwoColumnLayout
-        band={band}
-        images={galleryImages}
-        initialTrack={band.recordings?.[0] || null}
-        initialQueue={band.recordings || []}
-      >
+      <MainContainer>
         <SectionWrapper
           title={<FormattedMessage id="tour.tourDates" />}
           className="py-8"
@@ -422,7 +395,7 @@ export default function TourPage() {
             )}
           </div>
         </SectionWrapper>
-      </TwoColumnLayout>
+      </MainContainer>
     </>
   )
 }
