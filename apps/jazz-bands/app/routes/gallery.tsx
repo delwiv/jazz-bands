@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { FormattedMessage } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { GlassCard } from '~/components/shared/GlassCard'
-import { ImageModal } from '~/components/shared/ImageModal'
 import { MainContainer } from '~/components/shared/MainContainer'
+import { ThumbnailGrid } from '~/components/Gallery/ThumbnailGrid'
+import { useImageGallery } from '~/contexts/ImageGalleryContext'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import {
   galleryItemVariants,
@@ -45,152 +45,54 @@ export function meta({
 }
 
 export default function GalleryPage() {
-  const { band, baseUrl } = useLoaderData<GalleryLoaderData>()
-  const reducedMotion = useReducedMotion()
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+    const { band, baseUrl } = useLoaderData<GalleryLoaderData>()
+    const reducedMotion = useReducedMotion()
+    const { open } = useImageGallery()
 
-  const openModal = (index: number) => {
-    setSelectedImageIndex(index)
-    setModalOpen(true)
-  }
+    const galleryImages =
+      band.images
+        ?.filter((img: (typeof band.images)[number]) => img.asset)
+        .map((img: (typeof band.images)[number], idx: number) => ({
+          src: img.asset
+            ? urlForImage
+                .image(img.asset)
+                .width(3840)
+                .height(3840)
+                .fit('max')
+                .url()
+            : '',
+          alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
+        })) || []
 
-  const closeModal = () => {
-    setModalOpen(false)
-  }
-
-  const galleryImages =
-    band.images
-      ?.filter((img: (typeof band.images)[number]) => img.asset)
-      .map((img: (typeof band.images)[number], idx: number) => ({
-        src: img.asset
-          ? urlForImage
-              .image(img.asset)
-              .width(3840)
-              .height(3840)
-              .fit('max')
-              .url()
-          : '',
-        alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
-      })) || []
-
-  return (
-    <>
-      <BandStructuredData band={band as any} baseUrl={baseUrl} />
-      <MainContainer
-        variant="glass"
-        title={
-          <span>
-            <FormattedMessage id="gallery.ourGallery" />
-          </span>
-        }
-      >
-        {band.images?.length ? (
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {band.images.map((image, index) => (
-              <GlassCard
-                key={image._key || index}
-                className="rounded-xl overflow-hidden"
-                hover={false}
-              >
-                <motion.button
-                  onClick={() => openModal(index)}
-                  className="w-full text-left focus-ring"
-                  variants={galleryItemVariants}
-                  whileHover={!reducedMotion ? { scale: 1.02 } : undefined}
-                  transition={{ duration: 0.3 }}
-                  aria-label={`View ${image.metadata?.caption || `${band.name} gallery image ${index + 1}`} in full size`}
-                >
-                  <div className="relative w-full aspect-square overflow-hidden">
-                    <motion.img
-                      src={
-                        image.asset
-                          ? urlForImage
-                              .image(image.asset)
-                              .width(400)
-                              .height(400)
-                              .fit('crop')
-                              .url()
-                          : ''
-                      }
-                      alt={
-                        image.metadata?.caption ||
-                        `${band.name} gallery image ${index + 1}`
-                      }
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover"
-                      initial={!reducedMotion ? { opacity: 0 } : undefined}
-                      animate={!reducedMotion ? { opacity: 1 } : undefined}
-                      transition={{ duration: 0.4 }}
-                    />
-                    <motion.div
-                      className="absolute inset-0 bg-slate-900/0 flex items-center justify-center"
-                      initial={!reducedMotion ? { opacity: 0 } : undefined}
-                      whileHover={!reducedMotion ? { opacity: 1 } : undefined}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <motion.div
-                        className="glass-card px-4 py-2 rounded-lg border border-white/20"
-                        initial={
-                          !reducedMotion
-                            ? { scale: 0.8, opacity: 0 }
-                            : undefined
-                        }
-                        whileHover={
-                          !reducedMotion ? { scale: 1, opacity: 1 } : undefined
-                        }
-                        transition={{ delay: 0.1, duration: 0.2 }}
-                      >
-                        <span className="text-white text-sm font-medium">
-                          <FormattedMessage id="gallery.viewFullSize" />
-                        </span>
-                      </motion.div>
-                    </motion.div>
-                  </div>
-                </motion.button>
-                {image.metadata?.caption && (
-                  <motion.div
-                    className="p-3"
-                    initial={!reducedMotion ? { opacity: 0, y: 10 } : undefined}
-                    animate={!reducedMotion ? { opacity: 1, y: 0 } : undefined}
-                    transition={{ delay: 0.2, duration: 0.3 }}
-                  >
-                    <p className="text-gray-300 text-sm text-center">
-                      {image.metadata.caption}
-                    </p>
-                  </motion.div>
-                )}
-              </GlassCard>
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div
-            className="glass-card rounded-2xl p-12 text-center"
-            initial={!reducedMotion ? { opacity: 0, y: 20 } : undefined}
-            animate={!reducedMotion ? { opacity: 1, y: 0 } : undefined}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="text-gray-400 text-lg mb-4">
-              <FormattedMessage id="gallery.noImages" />
-            </div>
-            <p className="text-gray-500 text-sm">
-              <FormattedMessage id="gallery.comingSoon" />
-            </p>
-          </motion.div>
-        )}
-      </MainContainer>
-      <ImageModal
-        isOpen={modalOpen}
-        onClose={closeModal}
-        images={galleryImages}
-        initialIndex={selectedImageIndex}
-      />
-    </>
-  )
-}
+    return (
+       <>
+         <BandStructuredData band={band as any} baseUrl={baseUrl} />
+         <MainContainer
+           variant="glass"
+           title={
+             <span>
+               <FormattedMessage id="gallery.ourGallery" />
+             </span>
+           }
+         >
+           {band.images?.length ? (
+             <ThumbnailGrid images={galleryImages} onClick={open} />
+           ) : (
+             <motion.div
+               className="glass-card rounded-2xl p-12 text-center"
+               initial={!reducedMotion ? { opacity: 0, y: 20 } : undefined}
+               animate={!reducedMotion ? { opacity: 1, y: 0 } : undefined}
+               transition={{ duration: 0.5 }}
+             >
+               <div className="text-gray-400 text-lg mb-4">
+                 <FormattedMessage id="gallery.noImages" />
+               </div>
+               <p className="text-gray-500 text-sm">
+                 <FormattedMessage id="gallery.comingSoon" />
+               </p>
+             </motion.div>
+           )}
+         </MainContainer>
+       </>
+     )
+   }

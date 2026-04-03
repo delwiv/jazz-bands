@@ -41,7 +41,7 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.email=admin@jazzbands.com"
+      - "--certificatesresolvers.letsencrypt.acme.email=delwiv@protonmail.com"
       - "--accesslog=true"
     ports:
       - "80:80"

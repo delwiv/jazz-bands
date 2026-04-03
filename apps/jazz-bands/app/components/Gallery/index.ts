@@ -1,0 +1,8 @@
+export { CaptionOverlay } from './CaptionOverlay'
+export type { GalleryImage } from '~/lib/types'
+export { ImagePreview } from './ImagePreview'
+export { ImageViewer } from './ImageViewer'
+export { NavigationArrows } from './NavigationArrows'
+export { PaginationDots } from './PaginationDots'
+export { ProgressBar } from './ProgressBar'
+export { ThumbnailGrid } from './ThumbnailGrid'
