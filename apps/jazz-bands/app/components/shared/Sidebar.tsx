@@ -11,7 +11,7 @@ export interface SidebarProps {
 
 export function Sidebar({ initialTrack, initialQueue, images }: SidebarProps) {
   return (
-    <div className="w-full h-full flex flex-col justify-start">
+    <div className="w-full h-full flex flex-col justify-between">
       {/* Player sticky at top */}
       <div className="overflow-y-auto scrollbar-hidden">
         <SlideshowPreview images={images} />

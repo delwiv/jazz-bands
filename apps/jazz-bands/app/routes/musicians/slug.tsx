@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { FormattedMessage } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { Carousel } from '~/components/Carousel/Carousel'
-import { Layout } from '~/components/shared/Layout'
+import { MainContainer } from '~/components/shared/MainContainer'
 import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
 import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import type { Photo } from '~/lib/types'
@@ -250,8 +250,8 @@ export default function MusicianDetail() {
   }
 
   return (
-    <Layout band={band}>
-      <div className="min-h-screen bg-gray-900">
+    <MainContainer>
+      <div className="w-full">
         <MusicianStructuredData
           musician={musician}
           band={band}
@@ -423,6 +423,6 @@ export default function MusicianDetail() {
         images={gallery.map((img) => ({ url: img.url }))}
         initialIndex={selectedImageIndex}
       />
-    </Layout>
+    </MainContainer>
   )
 }

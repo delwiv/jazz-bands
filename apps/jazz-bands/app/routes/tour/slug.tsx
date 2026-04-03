@@ -7,7 +7,7 @@ import {
   Ticket,
 } from 'lucide-react'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
-import { Layout } from '~/components/shared/Layout'
+import { MainContainer } from '~/components/shared/MainContainer'
 import { getBandWithTourDates } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
 import type { TourDate } from '~/lib/types'
@@ -151,8 +151,8 @@ export default function TourDateDetail() {
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tourDate.venue + ', ' + tourDate.city)}`
 
   return (
-    <Layout band={band}>
-      <div className="min-h-screen bg-gray-900">
+    <MainContainer>
+      <div className="w-full">
         <TourDateStructuredData
           tourDate={tourDate}
           band={band}
@@ -310,7 +310,7 @@ export default function TourDateDetail() {
           </div>
         </div>
       </div>
-    </Layout>
+    </MainContainer>
   )
 }
 
