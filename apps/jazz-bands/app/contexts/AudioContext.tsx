@@ -143,7 +143,7 @@ export function AudioProvider({
 
       return () => clearInterval(interval)
     }
-  }, [currentTime])
+  }, [currentTime, currentTrack])
 
   const initHowl = useCallback(
     (url: string) => {

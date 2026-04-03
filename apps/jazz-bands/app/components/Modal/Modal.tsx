@@ -53,7 +53,7 @@ export function Modal({
       {isOpen && (
         <>
           <motion.div
-            className={`fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm ${overlayClassName}`}
+            className={`fixed inset-x-0 top-[64px] bottom-0 z-50 bg-slate-900/90 backdrop-blur-sm ${overlayClassName}`}
             variants={modalOverlayVariants}
             initial="hidden"
             animate="visible"
@@ -65,7 +65,7 @@ export function Modal({
             aria-label="Close modal overlay"
           />
           <motion.div
-            className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${modalClassName}`}
+            className={`fixed inset-x-0 top-[64px] bottom-0 z-50 ${modalClassName}`}
             variants={modalContentVariants}
             initial="hidden"
             animate="visible"

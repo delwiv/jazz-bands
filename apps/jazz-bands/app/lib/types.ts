@@ -48,6 +48,7 @@ export interface Recording {
     _type: 'reference'
     _ref: string
   }
+  audioUrl?: string
   duration?: number
   album?: string
   releaseYear?: number

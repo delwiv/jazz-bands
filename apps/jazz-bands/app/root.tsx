@@ -45,11 +45,11 @@ export async function loader({ request }: Route.LoaderArgs) {
           .map((img: (typeof band.images)[number], idx: number) => ({
             src: img.asset
               ? urlForImage
-                  .image(img.asset)
-                  .width(3840)
-                  .height(3840)
-                  .fit('max')
-                  .url()
+                .image(img.asset)
+                .width(3840)
+                .height(3840)
+                .fit('max')
+                .url()
               : '',
             alt:
               img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,

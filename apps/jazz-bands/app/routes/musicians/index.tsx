@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl'
 import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { GlassCard } from '~/components/shared/GlassCard'
-import { SectionWrapper } from '~/components/shared/SectionWrapper'
+import { MainContainer } from '~/components/shared/MainContainer'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { staggerContainerVariants } from '~/lib/animationVariants'
 import { getBandBySlug, getMusiciansByBandId } from '~/lib/queries'
@@ -50,7 +50,10 @@ export default function MusiciansPage() {
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
-      <SectionWrapper title={<FormattedMessage id="musicians.ourMusicians" />}>
+      <MainContainer
+        variant="glass"
+        title={<FormattedMessage id="musicians.ourMusicians" />}
+      >
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           variants={staggerContainerVariants}
@@ -100,7 +103,7 @@ export default function MusiciansPage() {
             </Link>
           ))}
         </motion.div>
-      </SectionWrapper>
+      </MainContainer>
     </>
   )
 }

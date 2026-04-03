@@ -130,11 +130,11 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
   const photoUrl =
     musician.photo && typeof musician.photo === 'object'
       ? urlForImage
-          .image(musician.photo)
-          .width(1200)
-          .height(630)
-          .fit('max')
-          .url()
+        .image(musician.photo)
+        .width(1200)
+        .height(630)
+        .fit('max')
+        .url()
       : ''
 
   return [
@@ -205,11 +205,11 @@ export default function MusicianDetail() {
           return {
             url: img.asset
               ? urlForImage
-                  .image(img.asset)
-                  .width(3840)
-                  .height(3840)
-                  .fit('max')
-                  .url()
+                .image(img.asset)
+                .width(3840)
+                .height(3840)
+                .fit('max')
+                .url()
               : '',
           }
         }),
@@ -220,20 +220,21 @@ export default function MusicianDetail() {
   const coverPhotoUrl =
     musician.photo && typeof musician.photo === 'object'
       ? urlForImage
-          .image(musician.photo)
-          .width(1920)
-          .height(1080)
-          .fit('max')
-          .url()
+        .image(musician.photo)
+        .width(2560)
+        .height(1440)
+        .fit('crop')
+        .crop('focalpoint')
+        .url()
       : ''
   const profilePhotoUrl =
     musician.photo && typeof musician.photo === 'object'
       ? urlForImage
-          .image(musician.photo)
-          .width(400)
-          .height(400)
-          .fit('crop')
-          .url()
+        .image(musician.photo)
+        .width(400)
+        .height(400)
+        .fit('crop')
+        .url()
       : ''
 
   // Carousel state
@@ -250,179 +251,170 @@ export default function MusicianDetail() {
   }
 
   return (
-    <MainContainer>
-      <div className="w-full">
-        <MusicianStructuredData
-          musician={musician}
-          band={band}
-          origin={origin}
-        />
-
-        {/* Cover/Photo Section */}
-        <div
-          className="relative h-80 md:h-96 bg-gray-800 cursor-pointer"
-          onClick={() => gallery.length > 0 && openCarousel(0)}
-        >
-          <img
-            src={coverPhotoUrl}
-            alt={musician.name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              window.history.back()
-            }}
-            className="focus-ring absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
+    <>
+      <MusicianStructuredData musician={musician} band={band} origin={origin} />
+      <MainContainer
+        variant='glass'
+        hero={
+          <div
+            className="relative h-80 bg-gray-800 cursor-pointer overflow-hidden"
+            onClick={() => gallery.length > 0 && openCarousel(0)}
           >
-            <ArrowLeft className="icon-md" />
-            <FormattedMessage id="musicians.backToMusicians" />
-          </button>
-        </div>
+            <img
+              src={coverPhotoUrl}
+              alt={musician.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                window.history.back()
+              }}
+              className="focus-ring absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
+            >
+              <ArrowLeft className="icon-md" />
+              <FormattedMessage id="musicians.backToMusicians" />
+            </button>
+          </div>
+        }
+      >
 
         {/* Content */}
-        <div className="max-w-4xl mx-auto px-4 py-8 -mt-24 relative z-10">
-          <div className="bg-gray-900 rounded-lg p-6 shadow-2xl">
-            <div className="flex items-start gap-6">
-              <button
-                onClick={() => gallery.length > 0 && openCarousel(0)}
-                disabled={gallery.length === 0}
-                className={
-                  gallery.length > 0
-                    ? 'cursor-pointer hover:opacity-80 transition-opacity'
-                    : ''
-                }
-              >
-                <img
-                  src={profilePhotoUrl}
-                  alt={musician.name}
-                  className="w-32 h-32 rounded-lg object-cover shadow-lg border-2 border-amber-500"
-                />
-              </button>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  {musician.name}
-                </h1>
-                {musician.instrument && (
-                  <p className="text-amber-400 text-lg mb-4">
-                    {musician.instrument}
-                  </p>
-                )}
-                {band && (
-                  <p className="text-gray-300 text-sm">
-                    <FormattedMessage id="musicians.memberOf" />{' '}
-                    <span className="text-white">{band.name}</span>
-                  </p>
-                )}
-              </div>
+        <div className="px-6">
+          <div className="flex items-start gap-6">
+            <button
+              onClick={() => gallery.length > 0 && openCarousel(0)}
+              disabled={gallery.length === 0}
+              className={
+                gallery.length > 0
+                  ? 'cursor-pointer hover:opacity-80 transition-opacity'
+                  : ''
+              }
+            >
+              <img
+                src={profilePhotoUrl}
+                alt={musician.name}
+                className="w-32 h-32 rounded-lg object-cover shadow-lg border-2 border-amber-500"
+              />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold text-white mb-2">
+                {musician.name}
+              </h1>
+              {musician.instrument && (
+                <p className="text-amber-400 text-lg mb-4">
+                  {musician.instrument}
+                </p>
+              )}
+              {band && (
+                <p className="text-gray-300 text-sm">
+                  <FormattedMessage id="musicians.memberOf" />{' '}
+                  <span className="text-white">{band.name}</span>
+                </p>
+              )}
             </div>
-
-            {/* Bio */}
-            <div className="mt-8 p-6 bg-gray-800/50 rounded-lg">
-              <h2 className="text-xl font-semibold text-white mb-4">
-                <FormattedMessage id="musicians.biography" />
-              </h2>
-              <div className="prose prose-invert max-w-none text-gray-300">
-                {bio && bio.length > 0 ? (
-                  <PortableText
-                    value={bio}
-                    components={{
-                      block: {
-                        normal: ({ children }) => (
-                          <p className="mb-4 leading-relaxed">{children}</p>
-                        ),
-                        h1: ({ children }) => (
-                          <h3 className="text-2xl font-bold mb-4">
-                            {children}
-                          </h3>
-                        ),
-                        h2: ({ children }) => (
-                          <h4 className="text-xl font-semibold mb-3">
-                            {children}
-                          </h4>
-                        ),
-                        h3: ({ children }) => (
-                          <h5 className="text-lg font-medium mb-2">
-                            {children}
-                          </h5>
-                        ),
-                      },
-                      marks: {
-                        strong: ({ children }) => <strong>{children}</strong>,
-                        em: ({ children }) => <em>{children}</em>,
-                        link: ({ children, value }) => (
-                          <a
-                            href={value.href}
-                            className="text-blue-400 hover:underline"
-                          >
-                            {children}
-                          </a>
-                        ),
-                      },
-                    }}
-                  />
-                ) : (
-                  <p className="text-gray-300">
-                    <FormattedMessage id="musicians.noBiographyAvailable" />
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Gallery */}
-            {gallery.length > 1 && (
-              <div className="mt-8">
-                <h2 className="text-xl font-semibold text-white mb-4">
-                  <FormattedMessage id="musicians.gallery" />
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {gallery.slice(1).map((photo, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => openCarousel(idx + 1)}
-                      className="relative aspect-square rounded-lg overflow-hidden bg-gray-800 focus-ring text-left"
-                      aria-label={`View ${musician.name} photo ${idx + 2} in full size`}
-                    >
-                      <img
-                        src={photo.url}
-                        alt={`${musician.name} - Photo ${idx + 2}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform pointer-events-none"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Band memberships */}
-            {musician.bands && musician.bands.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-xl font-semibold text-white mb-4">
-                  <FormattedMessage id="musicians.bandMemberships" />
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {musician.bands.map((bandItem) => (
-                    <span
-                      key={bandItem.slug}
-                      className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm"
-                    >
-                      {bandItem.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* Bio */}
+          <div className="mt-8 p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">
+              <FormattedMessage id="musicians.biography" />
+            </h2>
+            <div className="prose prose-invert max-w-none text-gray-300">
+              {bio && bio.length > 0 ? (
+                <PortableText
+                  value={bio}
+                  components={{
+                    block: {
+                      normal: ({ children }) => (
+                        <p className="mb-4 leading-relaxed">{children}</p>
+                      ),
+                      h1: ({ children }) => (
+                        <h3 className="text-2xl font-bold mb-4">{children}</h3>
+                      ),
+                      h2: ({ children }) => (
+                        <h4 className="text-xl font-semibold mb-3">
+                          {children}
+                        </h4>
+                      ),
+                      h3: ({ children }) => (
+                        <h5 className="text-lg font-medium mb-2">{children}</h5>
+                      ),
+                    },
+                    marks: {
+                      strong: ({ children }) => <strong>{children}</strong>,
+                      em: ({ children }) => <em>{children}</em>,
+                      link: ({ children, value }) => (
+                        <a
+                          href={value.href}
+                          className="text-blue-400 hover:underline"
+                        >
+                          {children}
+                        </a>
+                      ),
+                    },
+                  }}
+                />
+              ) : (
+                <p className="text-gray-300">
+                  <FormattedMessage id="musicians.noBiographyAvailable" />
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Gallery */}
+          {gallery.length > 1 && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold text-white mb-4">
+                <FormattedMessage id="musicians.gallery" />
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {gallery.slice(1).map((photo, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => openCarousel(idx + 1)}
+                    className="relative aspect-square rounded-lg overflow-hidden bg-gray-800 focus-ring text-left"
+                    aria-label={`View ${musician.name} photo ${idx + 2} in full size`}
+                  >
+                    <img
+                      src={photo.url}
+                      alt={`${musician.name} - Photo ${idx + 2}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform pointer-events-none"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* {musician.bands && musician.bands.length > 0 && ( */}
+          {/*   <div className="mt-8"> */}
+          {/*     <h2 className="text-xl font-semibold text-white mb-4"> */}
+          {/*       <FormattedMessage id="musicians.bandMemberships" /> */}
+          {/*     </h2> */}
+          {/*     <div className="flex flex-wrap gap-2"> */}
+          {/*       {musician.bands.map((bandItem) => ( */}
+          {/*         <span */}
+          {/*           key={bandItem.slug} */}
+          {/*           className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm" */}
+          {/*         > */}
+          {/*           {bandItem.name} */}
+          {/*         </span> */}
+          {/*       ))} */}
+          {/*     </div> */}
+          {/*   </div> */}
+          {/* )} */}
         </div>
-      </div>
-      <Carousel
-        key={selectedImageIndex}
-        isOpen={carouselOpen}
-        onClose={closeCarousel}
-        images={gallery.map((img) => ({ url: img.url }))}
-        initialIndex={selectedImageIndex}
-      />
-    </MainContainer>
+        <Carousel
+          key={selectedImageIndex}
+          isOpen={carouselOpen}
+          onClose={closeCarousel}
+          images={gallery.map((img) => ({ url: img.url }))}
+          initialIndex={selectedImageIndex}
+        />
+      </MainContainer>
+    </>
   )
 }
