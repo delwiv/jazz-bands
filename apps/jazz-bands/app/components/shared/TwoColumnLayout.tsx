@@ -71,14 +71,14 @@ export function TwoColumnLayout({
         Skip to main content
       </a>
 
-      <div className="relative z-10 flex flex-col h-screen">
+      <div className="relative z-10 flex flex-col h-screen justify-stretch">
         <Header band={band} />
 
         <div className="flex relative lg:flex-row">
           {/* Main content area - scrolls on both desktop and mobile */}
           <main
             id="main-content"
-            className="flex-1 min-h-[calc(100dvh-5rem)] grid items-stretch justify-stretch pt-6 gap-8"
+            className="flex-1 min-h-[calc(100dvh-5rem)] grid items-stretch justify-stretch gap-8"
             style={{
               scrollbarGutter: 'stable',
             }}

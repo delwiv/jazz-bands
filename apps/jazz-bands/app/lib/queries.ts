@@ -11,9 +11,12 @@ export const getAllBands = `
     "slug": slug.current,
     "logo": logo.asset->url,
     "heroImage": heroImage.asset->url,
+    "backgroundImage": backgroundImage.asset->url,
     "mainImages": coalesce(mainImages, [])[] {
       _key,
-      asset
+      asset,
+      hotspot,
+      crop
     }
   }
 `
@@ -25,15 +28,19 @@ export const getBandBySlug = `
     name,
     "slug": slug.current,
     description,
-    "logo": logo.asset->url,
+    "logo": logo,
     "backgroundImage": backgroundImage.asset->url,
     "contentImages": coalesce(contentImages, [])[] {
       _key,
-      asset
+      asset,
+      hotspot,
+      crop
     },
     "images": coalesce(images, [])[] {
       _key,
       asset,
+      hotspot,
+      crop,
       metadata
     },
     "members": bandMembers[] {
@@ -41,16 +48,24 @@ export const getBandBySlug = `
       sortOrder,
       instrument,
       bio,
-      "images": images[0].asset,
-        "photo": coalesce(images[0].asset, musician->images[0].asset),
+      "images": images[0] { asset, hotspot, crop },
+      "photo": coalesce(
+        images[0] { asset, hotspot, crop },
+        musician->images[0] { asset, hotspot, crop }
+      ),
       "musician": musician-> {
         _id,
         name,
         "slug": slug.current,
         bio,
         instrument,
-    "photo": images[0].asset,
-        "gallery": images[] { asset, metadata }
+        "images": images[0] { asset, hotspot, crop },
+        "gallery": images[] {
+          asset,
+          hotspot,
+          crop,
+          metadata
+        }
       }
     },
     tourDates,
@@ -81,8 +96,13 @@ export const getMusicianBySlug = `
     "slug": slug.current,
     bio,
     instrument,
-    "photo": images[0].asset,
-    "gallery": images[] { asset, metadata },
+    "photo": images[0] { asset, hotspot, crop },
+    "gallery": images[] {
+      asset,
+      hotspot,
+      crop,
+      metadata
+    },
     "bands": bands[]-> {
       name,
       "slug": slug.current,
@@ -92,7 +112,7 @@ export const getMusicianBySlug = `
       _key,
       bio,
       instrument,
-      "image": image.asset,
+      "image": image { asset, hotspot, crop },
       "band": band-> {
         name,
         "slug": slug.current,
@@ -114,7 +134,10 @@ export const getMusiciansByBandId = `
     "slug": musician->slug.current,
     "bio": coalesce(bio, musician->bio),
     "instrument": coalesce(instrument, musician->instrument),
-    "photo": coalesce(images[0].asset, musician->images[0].asset)
+    "photo": coalesce(
+      images[0] { asset, hotspot, crop },
+      musician->images[0] { asset, hotspot, crop }
+    )
   } | order(sortOrder asc)
 `
 

@@ -3,7 +3,6 @@ import clsx from 'clsx'
 import { FormattedMessage } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
-import { Badge } from '~/components/shared/Badge'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
 import { getBandBySlug } from '~/lib/queries'
@@ -63,7 +62,7 @@ export default function BandHome() {
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <MainContainer>
         {/* Home Section - Side by side like legacy */}
-        <section className="">
+        <section className=" pt-6">
           <div className="glass-card p-4 rounded-lg xl:p-6">
             <div
               className={clsx(
@@ -120,17 +119,14 @@ export default function BandHome() {
         <section className="glass-card rounded-lg p-2 lg:p-4 xl:p-6">
           <div className="flex flex-wrap justify-center gap-6 md:gap-8">
             {band.members?.map((musician) => {
-              const photoUrl =
-                musician.photo &&
-                  typeof musician.photo === 'object' &&
-                  musician.photo._ref
-                  ? urlForImage
-                    .image(musician.photo)
-                    .width(400)
-                    .height(400)
-                    .fit('crop')
-                    .url()
-                  : ''
+              const photoUrl = musician.photo?.asset
+                ? urlForImage
+                  .image(musician.photo.asset)
+                  .width(400)
+                  .height(400)
+                  .fit('crop')
+                  .url()
+                : ''
 
               return (
                 <a
@@ -147,12 +143,21 @@ export default function BandHome() {
                       className="w-40 h-40 mx-auto rounded-full object-cover mb-4 shadow-lg ring-2 ring-white/[0.1]"
                     />
                   )}
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {musician.musician?.name}
-                  </h3>
-                  {musician.instrument && (
-                    <Badge variant="default">{musician.instrument}</Badge>
-                  )}
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-white mb-1">
+                      {musician.musician?.name}
+                    </h3>
+                    {(musician.instrument || musician.musician?.instrument) && (
+                      <p className="text-gray-400 text-sm">
+                        {(musician.instrument || musician.musician?.instrument)
+                          .charAt(0)
+                          .toUpperCase() +
+                          (
+                            musician.instrument || musician.musician?.instrument
+                          ).slice(1)}
+                      </p>
+                    )}
+                  </div>
                 </a>
               )
             })}
