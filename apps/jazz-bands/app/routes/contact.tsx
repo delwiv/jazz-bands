@@ -2,12 +2,12 @@ import { motion } from 'framer-motion'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
+import { MainContainer } from '~/components/shared/MainContainer'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
-import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { getBandBySlug } from '~/lib/queries'
 import type { ContactLoaderData } from '~/lib/routes.types'
-import { sanityClient, urlForImage } from '~/lib/sanity.settings'
+import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -23,27 +23,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Response('Band not found', { status: 404 })
   }
 
-  // Extract baseUrl as serializable string (Request object not JSON-serializable)
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
-  // Transform band images to GalleryImage format for SSR
-  const galleryImages =
-    band.images
-      ?.filter((img: (typeof band.images)[number]) => img.asset)
-      .map((img: (typeof band.images)[number], idx: number) => ({
-        src: img.asset
-          ? urlForImage
-              .image(img.asset)
-              .width(3840)
-              .height(3840)
-              .fit('max')
-              .url()
-          : '',
-        alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
-      })) || []
-
-  return { band, baseUrl, galleryImages }
+  return { band, baseUrl }
 }
 
 export function meta({
@@ -56,11 +39,10 @@ export function meta({
 }
 
 export default function ContactPage() {
-  const { band, baseUrl, galleryImages } = useLoaderData<ContactLoaderData>()
+  const { band, baseUrl } = useLoaderData<ContactLoaderData>()
   const reducedMotion = useReducedMotion()
   const intl = useIntl()
 
-  // Brand color mapping for social icons
   const socialColors: Record<string, string> = {
     twitter: 'hover:text-[#1DA1F2]',
     facebook: 'hover:text-[#1877F2]',
@@ -72,12 +54,7 @@ export default function ContactPage() {
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
-      <TwoColumnLayout
-        band={band}
-        images={galleryImages}
-        initialTrack={band.recordings?.[0] || null}
-        initialQueue={band.recordings || []}
-      >
+      <MainContainer>
         <SectionWrapper
           title={<FormattedMessage id="contact.contact" />}
           className="py-8"
@@ -176,7 +153,7 @@ export default function ContactPage() {
             </div>
           </div>
         </SectionWrapper>
-      </TwoColumnLayout>
+      </MainContainer>
     </>
   )
 }

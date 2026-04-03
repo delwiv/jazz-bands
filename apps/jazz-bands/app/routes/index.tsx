@@ -1,5 +1,4 @@
 import { PortableText } from '@portabletext/react'
-import { motion, useScroll, useTransform } from 'framer-motion'
 import { FormattedMessage } from 'react-intl'
 import {
   type LoaderFunctionArgs,
@@ -8,17 +7,11 @@ import {
 } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { Badge } from '~/components/shared/Badge'
-import { GlassCard } from '~/components/shared/GlassCard'
+import { MainContainer } from '~/components/shared/MainContainer'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
 import { Skeleton } from '~/components/shared/Skeleton'
-import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
-import {
-  cardHoverVariants,
-  itemVariants,
-  staggerContainerVariants,
-} from '~/lib/animationVariants'
 import { getBandBySlug } from '~/lib/queries'
 import type { BandHomeLoaderData } from '~/lib/routes.types'
 import { sanityClient, urlForImage } from '~/lib/sanity.settings'
@@ -37,27 +30,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Response(`Band "${bandSlug}" not found`, { status: 404 })
   }
 
-  // Extract baseUrl as serializable string (Request object not JSON-serializable)
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
-  // Transform band images to GalleryImage format for SSR
-  const galleryImages =
-    band.images
-      ?.filter((img: (typeof band.images)[number]) => img.asset)
-      .map((img: (typeof band.images)[number], idx: number) => ({
-        src: img.asset
-          ? urlForImage
-              .image(img.asset)
-              .width(3840)
-              .height(3840)
-              .fit('max')
-              .url()
-          : '',
-        alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
-      })) || []
-
-  return { band, baseUrl, galleryImages }
+  return { band, baseUrl }
 }
 
 export function meta({
@@ -69,39 +45,30 @@ export function meta({
 
   const meta = buildBandMeta(loaderData.band, loaderData.baseUrl, 'home')
 
-  // Preload hero image for LCP optimization
-  if (loaderData.band.heroImage) {
-    meta.push({
-      rel: 'preload',
-      as: 'image',
-      href: loaderData.band.heroImage,
-      imageSrcSet: loaderData.band.heroImage,
-    })
-  }
-
   return meta
 }
 
 export default function BandHome() {
-  const { band, baseUrl, galleryImages } = useLoaderData<BandHomeLoaderData>()
+  const { band, baseUrl } = useLoaderData<BandHomeLoaderData>()
   const navigation = useNavigation()
   const isLoading = navigation.state === 'loading'
   const reducedMotion = useReducedMotion()
 
-  // Hero parallax scroll effect
-  const { scrollY } = useScroll()
-  const heroOpacity = useTransform(scrollY, [0, 300], [1, 0])
-  const heroScale = useTransform(scrollY, [0, 300], [1, 0.95])
-  const bgY = useTransform(scrollY, [0, 300], ['0%', '30%'])
+  // Compute upcoming dates once for conditional rendering
+  const currentDate = new Date()
+  currentDate.setHours(0, 0, 0, 0)
+  const upcomingDates =
+    band.tourDates
+      ?.filter((date) => {
+        const eventDate = new Date(date.date)
+        return eventDate >= currentDate
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 4) || []
 
   if (isLoading) {
     return (
-      <TwoColumnLayout
-        band={band}
-        images={galleryImages || []}
-        initialTrack={band.recordings?.[0] || null}
-        initialQueue={band.recordings || []}
-      >
+      <>
         {/* Hero Section Skeleton */}
         <section className="relative h-96 flex items-center justify-center bg-slate-900">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950" />
@@ -110,7 +77,10 @@ export default function BandHome() {
               variant="text"
               className="h-10 w-64 mx-auto mb-4 bg-slate-800/50"
             />
-            <Skeleton variant="text" className="mx-auto mb-2 bg-slate-800/50" />
+            <Skeleton
+              variant="text"
+              className="mx-auto mb-2 bg-slate-800/50"
+            />
             <Skeleton
               variant="text"
               className="mx-auto w-3/4 bg-slate-800/50"
@@ -184,23 +154,18 @@ export default function BandHome() {
             </div>
           </div>
         </section>
-      </TwoColumnLayout>
+      </>
     )
   }
 
   return (
     <>
       <BandStructuredData band={band} baseUrl={baseUrl} />
-      <TwoColumnLayout
-        band={band}
-        images={galleryImages || []}
-        initialTrack={band.recordings?.[0] || null}
-        initialQueue={band.recordings || []}
-      >
+      <MainContainer>
         {/* Home Section - Side by side like legacy */}
-        <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden w-full py-12 px-6">
-          <div className="max-w-7xl w-full mx-auto">
-            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <section className="py-6">
+          <div className="glass-card p-4 rounded-lg xl:p-6">
+            <div className="grid xl:grid-cols-2 gap-8 md:gap-12 items-start">
               {/* Left: Main Image */}
               {(() => {
                 const mainImage = band.contentImages?.[0]
@@ -208,52 +173,26 @@ export default function BandHome() {
                   return null
                 }
                 return (
-                  <motion.div
-                    className="relative aspect-auto md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden shadow-2xl"
-                    initial={
-                      !reducedMotion ? { opacity: 0, x: -50 } : undefined
-                    }
-                    animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
-                    transition={
-                      !reducedMotion
-                        ? { duration: 0.6, ease: 'easeOut' }
-                        : undefined
-                    }
-                  >
-                    <img
-                      src={urlForImage
-                        .image(mainImage.asset)
-                        .width(1200)
-                        .fit('max')
-                        .url()}
-                      alt={band.name}
-                      className="w-full h-full object-contain"
-                      loading="eager"
-                    />
-                  </motion.div>
+                  <img
+                    src={urlForImage
+                      .image(mainImage.asset)
+                      .width(1200)
+                      .fit('max')
+                      .url()}
+                    alt={band.name}
+                    className="relative aspect-auto rounded-lg overflow-hidden object-contain"
+                    loading="eager"
+                  />
                 )
               })()}
 
               {/* Right: Band Info */}
-              <motion.div
-                className="space-y-6 text-white"
-                initial={!reducedMotion ? { opacity: 0, x: 50 } : undefined}
-                animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
-                transition={
-                  !reducedMotion
-                    ? { duration: 0.6, ease: 'easeOut', delay: 0.2 }
-                    : undefined
-                }
-              >
-                {/* Band Name with Divider */}
-                <div>
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                    {band.name}
-                  </h1>
-                  <div className="h-px w-full bg-gradient-to-r from-white to-transparent mb-6" />
-                </div>
+              <div className="space-y-6 text-white">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
+                  {band.name}
+                </h1>
+                <div className="h-px w-full bg-gradient-to-r from-white to-transparent mb-6" />
 
-                {/* Description */}
                 {band.description && band.description.length > 0 && (
                   <div className="prose prose-invert max-w-none text-lg text-gray-200 leading-relaxed">
                     <PortableText
@@ -272,44 +211,15 @@ export default function BandHome() {
                     />
                   </div>
                 )}
-
-                {/* Musicians List */}
-                {band.members && band.members.length > 0 && (
-                  <ul className="space-y-2 text-lg text-gray-200">
-                    {band.members.map((member: any, idx: number) => (
-                      <li
-                        key={member._key || idx}
-                        className="flex items-center gap-2"
-                      >
-                        <span className="text-gray-400">•</span>
-                        <span>
-                          {member.musician?.name || member.name} :{' '}
-                          {member.instrument}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
 
-        <div className="sr-only">
-          <p>Hero section with band name: {band.name}</p>
-        </div>
-
-        {/* Musicians Section - Horizontal Scroll */}
-        <SectionWrapper>
-          <motion.div
-            className="flex flex-wrap justify-center gap-6 md:gap-8 max-w-7xl mx-auto"
-            variants={staggerContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
-          >
+        {/* Musicians Section - glass-styled div */}
+        <section className="glass-card rounded-lg p-2 lg:p-4 xl:p-6">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
             {band.members?.map((musician) => {
-              // Build photo URL from asset reference
               const photoUrl =
                 musician.photo &&
                 typeof musician.photo === 'object' &&
@@ -323,76 +233,44 @@ export default function BandHome() {
                   : ''
 
               return (
-                <motion.a
+                <a
                   key={musician._key}
                   href={`/musicians/${musician.musician?.slug}`}
-                  variants={itemVariants}
                   className="flex-none"
                 >
-                  <GlassCard className="w-64 p-6 text-center hover:shadow-xl transition-shadow">
-                    {photoUrl && (
-                      <img
-                        src={photoUrl}
-                        alt={musician.musician?.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-40 h-40 mx-auto rounded-full object-cover mb-4 shadow-lg ring-2 ring-white/[0.1]"
-                      />
-                    )}
-                    <h3 className="text-xl font-bold text-white mb-2">
-                      {musician.musician?.name}
-                    </h3>
-                    {musician.instrument && (
-                      <Badge variant="default">{musician.instrument}</Badge>
-                    )}
-                  </GlassCard>
-                </motion.a>
+                  {photoUrl && (
+                    <img
+                      src={photoUrl}
+                      alt={musician.musician?.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-40 h-40 mx-auto rounded-full object-cover mb-4 shadow-lg ring-2 ring-white/[0.1]"
+                    />
+                  )}
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    {musician.musician?.name}
+                  </h3>
+                  {musician.instrument && (
+                    <Badge variant="default">{musician.instrument}</Badge>
+                  )}
+                </a>
               )
             })}
-          </motion.div>
-
-          <div className="text-center mt-8">
-            <PrimaryButton href="/musicians">
-              <FormattedMessage id="home.viewAllMusicians" />
-            </PrimaryButton>
           </div>
-        </SectionWrapper>
+        </section>
 
-        {/* Tour Dates Section with Scroll Animations */}
-        <SectionWrapper title={<FormattedMessage id="home.upcomingShows" />}>
-          {() => {
-            const currentDate = new Date()
-            currentDate.setHours(0, 0, 0, 0)
-
-            const upcomingDates =
-              band.tourDates
-                ?.filter((date) => {
-                  const eventDate = new Date(date.date)
-                  return eventDate >= currentDate
-                })
-                .sort(
-                  (a, b) =>
-                    new Date(b.date).getTime() - new Date(a.date).getTime(),
-                )
-                .slice(0, 4) || []
-
-            if (upcomingDates.length === 0) return null
-
-            return (
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                variants={staggerContainerVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                {upcomingDates.map((date, idx) => {
+        {/* Tour Dates Section - only render if dates exist */}
+        {upcomingDates.length > 0 && (
+          <SectionWrapper title={<FormattedMessage id="home.upcomingShows" />}>
+            {() => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {upcomingDates.map((date) => {
                   const eventDate = new Date(date.date)
                   const isUpcoming = eventDate >= currentDate
 
                   return (
-                    <motion.div key={idx} variants={itemVariants}>
-                      <GlassCard className="p-6">
+                    <div key={date._key}>
+                      <div className="glass-card p-6">
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="text-2xl font-bold text-white">
@@ -433,23 +311,21 @@ export default function BandHome() {
                             <FormattedMessage id="home.getTickets" />
                           </PrimaryButton>
                         )}
-                      </GlassCard>
-                    </motion.div>
+                      </div>
+                    </div>
                   )
                 })}
 
-                {upcomingDates?.length && (
-                  <div className="text-center mt-8">
-                    <PrimaryButton href="/tour">
-                      <FormattedMessage id="home.viewAllShows" />
-                    </PrimaryButton>
-                  </div>
-                )}
-              </motion.div>
-            )
-          }}
-        </SectionWrapper>
-      </TwoColumnLayout>
+                <div className="text-center mt-8">
+                  <PrimaryButton href="/tour">
+                    <FormattedMessage id="home.viewAllShows" />
+                  </PrimaryButton>
+                </div>
+              </div>
+            )}
+          </SectionWrapper>
+        )}
+      </MainContainer>
     </>
   )
 }

@@ -5,8 +5,8 @@ import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { ImageModal } from '~/components/shared/ImageModal'
+import { MainContainer } from '~/components/shared/MainContainer'
 import { SectionWrapper } from '~/components/shared/SectionWrapper'
-import { TwoColumnLayout } from '~/components/shared/TwoColumnLayout'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import {
   galleryItemVariants,
@@ -30,11 +30,36 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Response('Band not found', { status: 404 })
   }
 
-  // Extract baseUrl as JSON-serializable string
   const url = new URL(request.url)
   const baseUrl = `${url.protocol}//${url.host}`
 
-  // Transform band images to GalleryImage format for SSR
+  return { band, baseUrl }
+}
+
+export function meta({
+  loaderData,
+}: {
+  loaderData: Awaited<ReturnType<typeof loader>> | null
+}) {
+  if (!loaderData?.band) return []
+  return buildBandMeta(loaderData.band, loaderData.baseUrl, 'gallery')
+}
+
+export default function GalleryPage() {
+  const { band, baseUrl } = useLoaderData<GalleryLoaderData>()
+  const reducedMotion = useReducedMotion()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+
+  const openModal = (index: number) => {
+    setSelectedImageIndex(index)
+    setModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setModalOpen(false)
+  }
+
   const galleryImages =
     band.images
       ?.filter((img: (typeof band.images)[number]) => img.asset)
@@ -50,42 +75,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
       })) || []
 
-  return { band, baseUrl, galleryImages }
-}
-
-export function meta({
-  loaderData,
-}: {
-  loaderData: Awaited<ReturnType<typeof loader>> | null
-}) {
-  if (!loaderData?.band) return []
-  return buildBandMeta(loaderData.band, loaderData.baseUrl, 'gallery')
-}
-
-export default function GalleryPage() {
-  const { band, baseUrl, galleryImages } = useLoaderData<GalleryLoaderData>()
-  const reducedMotion = useReducedMotion()
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-
-  const openModal = (index: number) => {
-    setSelectedImageIndex(index)
-    setModalOpen(true)
-  }
-
-  const closeModal = () => {
-    setModalOpen(false)
-  }
-
   return (
     <>
       <BandStructuredData band={band as any} baseUrl={baseUrl} />
-      <TwoColumnLayout
-        band={band}
-        images={galleryImages}
-        initialTrack={band.recordings?.[0] || null}
-        initialQueue={band.recordings || []}
-      >
+      <MainContainer>
         <SectionWrapper
           title={
             <span>
@@ -204,14 +197,13 @@ export default function GalleryPage() {
             )}
           </div>
         </SectionWrapper>
-
         <ImageModal
           isOpen={modalOpen}
           onClose={closeModal}
           images={galleryImages}
           initialIndex={selectedImageIndex}
         />
-      </TwoColumnLayout>
+      </MainContainer>
     </>
   )
 }
