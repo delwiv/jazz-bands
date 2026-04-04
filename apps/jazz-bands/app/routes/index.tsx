@@ -1,7 +1,7 @@
 import { PortableText } from '@portabletext/react'
 import clsx from 'clsx'
 import { FormattedMessage } from 'react-intl'
-import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { type LoaderFunctionArgs, useLoaderData, Link } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
@@ -53,8 +53,8 @@ export default function BandHome() {
         const eventDate = new Date(date.date)
         return eventDate >= currentDate
       })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 4) || []
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 6) || []
 
   const mainImage = band.contentImages?.[0]
   return (
@@ -173,7 +173,7 @@ export default function BandHome() {
                 const isUpcoming = eventDate >= currentDate
 
                 return (
-                  <div key={date._key}>
+                  <Link to={`/tour/${date.slug || date._key}`} key={date._key} className="block">
                     <div className="p-6">
                       <div className="flex justify-between items-start">
                         <div>
@@ -216,7 +216,7 @@ export default function BandHome() {
                         </PrimaryButton>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
 
