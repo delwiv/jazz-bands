@@ -1,122 +1,273 @@
+# ============================================================================
+# Jazz Bands Platform - Unified Docker Compose
+# ============================================================================
+# This file manages:
+# - Legacy Angular apps (port 3017-3047)
+# - New React SSR apps (boheme.jazzbands.com, etc.)
+# - Manager services
+# - Analytics (Umami + PostgreSQL)
+# - Databases (Mongo, Redis, PostgreSQL)
+# ============================================================================
+
+# Anchors for New React SSR Platform (jazz-bands)
+x-band-common-ssr: &band-common-ssr
+  build:
+    context: ./apps/jazz-bands
+    dockerfile: Dockerfile
+  restart: always
+  environment:
+    - SANITY_STUDIO_PROJECT_ID
+    - SANITY_STUDIO_DATASET
+    - SANITY_STUDIO_API_READ_TOKEN
+    - SANITY_STUDIO_API_WRITE_TOKEN
+    - NODE_ENV=production
+  networks:
+    - jazzbands-net
+  deploy:
+    resources:
+      limits:
+        memory: 256M
+      reservations:
+        memory: 128M
+  labels:
+    - "traefik.enable=true"
+    - "traefik.docker.network=jazzbands-net"
+
+# Anchors for Legacy Apps
+x-legacy-common: &legacy-common
+  env_file: .env
+  restart: always
+  networks:
+    - api-network
+  depends_on:
+    - mongo
+
+volumes:
+  traefik-certs-ssr:
+  traefik-certs-legacy:
+
 networks:
-   api-network:
-     driver: bridge
-     external: false
+  api-network:
+    driver: bridge
+    name: jazz-bands-api
+  jazzbands-net:
+    driver: bridge
+    name: jazz-bands-ssr
 
 services:
-  boheme:
-    env_file: .env
-    container_name: boheme
+  # ======================================================================
+  # NEW REACT SSR PLATFORM (6 Bands with Traefik)
+  # ======================================================================
+
+  jazzbands-traefik:
+    image: traefik:v3.0
+    container_name: jazzbands-traefik-ssr
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=delwiv@protonmail.com"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certs-ssr:/acme
     restart: always
+    networks:
+      - jazzbands-net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # New React SSR Apps (6 bands)
+  boheme-ssr:
+    container_name: boheme-ssr
+    <<: *band-common-ssr
+    build:
+      args:
+        BAND_SLUG: boheme
+    environment:
+      - PORT=3001
+      - BAND_SLUG=boheme
+      - UMAMI_WEBSITE_ID_BOHEME=${UMAMI_WEBSITE_ID_BOHEME}
+    labels:
+      - "traefik.http.routers.boheme-ssr.entrypoints=websecure"
+      - "traefik.http.routers.boheme-ssr.rule=Host(`boheme.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.boheme-ssr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.boheme-ssr.loadbalancer.server.port=3001"
+
+  canto-ssr:
+    container_name: canto-ssr
+    <<: *band-common-ssr
+    build:
+      args:
+        BAND_SLUG: canto
+    environment:
+      - PORT=3002
+      - BAND_SLUG=canto
+      - UMAMI_WEBSITE_ID_CANTO=${UMAMI_WEBSITE_ID_CANTO}
+    labels:
+      - "traefik.http.routers.canto-ssr.entrypoints=websecure"
+      - "traefik.http.routers.canto-ssr.rule=Host(`canto.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.canto-ssr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.canto-ssr.loadbalancer.server.port=3002"
+
+  jazzola-ssr:
+    container_name: jazzola-ssr
+    <<: *band-common-ssr
+    build:
+      args:
+        BAND_SLUG: jazzola
+    environment:
+      - PORT=3003
+      - BAND_SLUG=jazzola
+      - UMAMI_WEBSITE_ID_JAZZOLA=${UMAMI_WEBSITE_ID_JAZZOLA}
+    labels:
+      - "traefik.http.routers.jazzola-ssr.entrypoints=websecure"
+      - "traefik.http.routers.jazzola-ssr.rule=Host(`jazzola.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.jazzola-ssr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.jazzola-ssr.loadbalancer.server.port=3003"
+
+  swing-family-ssr:
+    container_name: swing-family-ssr
+    <<: *band-common-ssr
+    build:
+      args:
+        BAND_SLUG: swing-family
+    environment:
+      - PORT=3004
+      - BAND_SLUG=swing-family
+      - UMAMI_WEBSITE_ID_SWING_FAMILY=${UMAMI_WEBSITE_ID_SWING_FAMILY}
+    labels:
+      - "traefik.http.routers.swing-family-ssr.entrypoints=websecure"
+      - "traefik.http.routers.swing-family-ssr.rule=Host(`swing-family.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.swing-family-ssr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.swing-family-ssr.loadbalancer.server.port=3004"
+
+  trio-rsh-ssr:
+    container_name: trio-rsh-ssr
+    <<: *band-common-ssr
+    build:
+      args:
+        BAND_SLUG: trio-rsh
+    environment:
+      - PORT=3005
+      - BAND_SLUG=trio-rsh
+      - UMAMI_WEBSITE_ID_TRIO_RSH=${UMAMI_WEBSITE_ID_TRIO_RSH}
+    labels:
+      - "traefik.http.routers.trio-rsh-ssr.entrypoints=websecure"
+      - "traefik.http.routers.trio-rsh-ssr.rule=Host(`trio-rsh.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.trio-rsh-ssr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.trio-rsh-ssr.loadbalancer.server.port=3005"
+
+  west-side-trio-ssr:
+    container_name: west-side-trio-ssr
+    <<: *band-common-ssr
+    build:
+      args:
+        BAND_SLUG: west-side-trio
+    environment:
+      - PORT=3006
+      - BAND_SLUG=west-side-trio
+      - UMAMI_WEBSITE_ID_WEST_SIDE_TRIO=${UMAMI_WEBSITE_ID_WEST_SIDE_TRIO}
+    labels:
+      - "traefik.http.routers.west-side-trio-ssr.entrypoints=websecure"
+      - "traefik.http.routers.west-side-trio-ssr.rule=Host(`west-side-trio.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.west-side-trio-ssr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.west-side-trio-ssr.loadbalancer.server.port=3006"
+
+  # ======================================================================
+  # LEGACY ANGULAR APPS
+  # ======================================================================
+
+  boheme:
+    container_name: boheme-legacy
+    <<: *legacy-common
     build: ./apps/boheme
     environment:
       PORT: 3017
     ports:
       - "3017:3017"
-    networks:
-      - api-network
-    depends_on:
-      - mongo
 
   canto:
-    env_file: .env
-    container_name: canto
-    restart: always
+    container_name: canto-legacy
+    <<: *legacy-common
     build: ./apps/canto
     environment:
       PORT: 3045
     ports:
-      - "3045:3045"
-    networks:
-      - api-network
-    depends_on:
-      - mongo
+      - "3045:3345"
 
   jazzola:
-    env_file: .env
-    container_name: jazzola
-    restart: always
+    container_name: jazzola-legacy
+    <<: *legacy-common
     build: ./apps/jazzola
     environment:
       PORT: 3342
     ports:
       - "3342:3342"
-    networks:
-      - api-network
-    depends_on:
-      - mongo
 
   swing-family:
-    env_file: .env
-    container_name: swing-family
-    restart: always
+    container_name: swing-family-legacy
+    <<: *legacy-common
     build: ./apps/swing-family
     environment:
       PORT: 3047
     ports:
       - "3047:3047"
-    networks:
-      - api-network
-    depends_on:
-      - mongo
 
   trio-rsh:
-    env_file: .env
-    container_name: trio-rsh
-    restart: always
+    container_name: trio-rsh-legacy
+    <<: *legacy-common
     build: ./apps/trio-rsh
     environment:
       PORT: 3027
     ports:
       - "3027:3027"
-    networks:
-      - api-network
-    depends_on:
-      - mongo
 
   west-side-trio:
-    env_file: .env
-    container_name: west-side-trio
-    restart: always
+    container_name: west-side-trio-legacy
+    <<: *legacy-common
     build: ./apps/west-side-trio
     environment:
       PORT: 7027
     ports:
       - "7027:7027"
-    networks:
-      - api-network
-    depends_on:
-      - mongo
+
+  # ======================================================================
+  # MANAGER SERVICES
+  # ======================================================================
 
   managr:
-    env_file: .env
     container_name: managr
-    restart: always
+    <<: *legacy-common
     build: ./apps/managr
     environment:
       PORT: 3091
-      API_URL: $MANAGR_API_URL
+      API_URL: ${MANAGR_API_URL}
     ports:
       - "3091:3091"
-    networks:
-      - api-network
-    depends_on:
-      - mongo
 
   managr-api:
-    env_file: .env
     container_name: managr-api
-    restart: always
+    <<: *legacy-common
     build: ./apps/managr-api
     environment:
       PORT: 3092
     ports:
       - "3092:3092"
-    networks:
-      - api-network
     depends_on:
       - mongo
       - redis
+
+  # ======================================================================
+  # DATABASES
+  # ======================================================================
 
   mongo:
     image: "mongo:4.4.18"
@@ -125,14 +276,20 @@ services:
     restart: always
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD}
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - ./data/mongo:/data/db
       - ./data/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh
     networks:
       - api-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   redis:
     image: "bitnami/redis:latest"
@@ -146,11 +303,16 @@ services:
     command: /opt/bitnami/scripts/redis/run.sh --appendonly no
     volumes:
       - ./data/redis:/bitnami/redis/data
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
-  # Shared PostgreSQL for Umami analytics (ARM64-compatible)
   postgres:
-    image: "postgres:16-alpine"
     container_name: postgres-shared
+    image: "postgres:16-alpine"
     restart: always
     env_file: .env
     environment:
@@ -176,20 +338,23 @@ services:
         reservations:
           memory: 64M
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-umami} -d ${POSTGRES_DB:-umami}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 5
       start_period: 10s
 
- # Umami Analytics (PostgreSQL + SQLite migration path)
+  # ======================================================================
+  # ANALYTICS (serves as "analytics.jazz.wildredbeard.tech" via labels)
+  # ======================================================================
+
   umami:
-    image: ghcr.io/umami-software/umami:postgresql-latest
     container_name: umami-analytics
+    image: ghcr.io/umami-software/umami:postgresql-latest
     restart: always
     env_file: .env
     environment:
-      DATABASE_URL: postgresql://umami:${POSTGRES_PASSWORD}@postgres:5432/umami
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       APP_SECRET: ${UMAMI_APP_SECRET}
       APP_NAME: Umami
       APP_PORT: 3000
@@ -198,6 +363,14 @@ services:
       - "3000:3000"
     networks:
       - api-network
+      - jazzbands-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=jazzbands-net"
+      - "traefik.http.routers.umami-analytics.entrypoints=websecure"
+      - "traefik.http.routers.umami-analytics.rule=Host(`analytics.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.umami-analytics.tls.certresolver=letsencrypt"
+      - "traefik.http.services.umami-analytics.loadbalancer.server.port=3000"
     depends_on:
       postgres:
         condition: service_healthy
