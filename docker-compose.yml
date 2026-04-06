@@ -1,38 +1,19 @@
 # ============================================================================
-# Jazz Bands Platform - Unified Docker Compose
+# Jazz Bands Platform - Legacy + Manager + Shared Infrastructure
 # ============================================================================
 # This file manages:
-# - Legacy Angular apps (port 3017-3047)
-# - New React SSR apps (boheme.jazzbands.com, etc.)
+# - Legacy Angular apps
 # - Manager services
-# - Analytics (Umami + PostgreSQL)
-# - Databases (Mongo, Redis, PostgreSQL)
+# - Shared databases (Mongo, Redis, PostgreSQL)
+# - Analytics (Umami)
 # ============================================================================
-
-# Anchors for New React SSR Platform (jazz-bands)
-x-band-common-ssr: &band-common-ssr
-  build:
-    context: ./apps/jazz-bands
-    dockerfile: Dockerfile
-  restart: always
-  environment:
-    - SANITY_STUDIO_PROJECT_ID
-    - SANITY_STUDIO_DATASET
-    - SANITY_STUDIO_API_READ_TOKEN
-    - SANITY_STUDIO_API_WRITE_TOKEN
-    - NODE_ENV=production
-  networks:
-    - jazzbands-net
-  deploy:
-    resources:
-      limits:
-        memory: 256M
-      reservations:
-        memory: 128M
-  labels:
-    - "traefik.enable=true"
-    - "traefik.docker.network=jazzbands-net"
-
+#
+# To start jazzbands SSR apps, use:
+#   docker-compose -f docker-compose.jazzbands.yml up -d
+#
+# To start jazzbands SSR apps in dev mode, use:
+#   docker-compose -f docker-compose.jazzbands-dev.yml up -d
+#
 # Anchors for Legacy Apps
 x-legacy-common: &legacy-common
   env_file: .env
@@ -43,7 +24,6 @@ x-legacy-common: &legacy-common
     - mongo
 
 volumes:
-  traefik-certs-ssr:
   traefik-certs-legacy:
 
 networks:
@@ -52,135 +32,9 @@ networks:
     name: jazz-bands-api
   jazzbands-net:
     driver: bridge
-    name: jazz-bands-ssr
+    external: true
 
 services:
-  # ======================================================================
-  # NEW REACT SSR PLATFORM (6 Bands with Traefik)
-  # ======================================================================
-
-  jazzbands-traefik:
-    image: traefik:v3.0
-    container_name: jazzbands-traefik-ssr
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.email=delwiv@protonmail.com"
-      - "--accesslog=true"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik-certs-ssr:/acme
-    restart: always
-    networks:
-      - jazzbands-net
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-
-  # New React SSR Apps (6 bands)
-  boheme-ssr:
-    container_name: boheme-ssr
-    <<: *band-common-ssr
-    build:
-      args:
-        BAND_SLUG: boheme
-    environment:
-      - PORT=3001
-      - BAND_SLUG=boheme
-      - UMAMI_WEBSITE_ID_BOHEME=${UMAMI_WEBSITE_ID_BOHEME}
-    labels:
-      - "traefik.http.routers.boheme-ssr.entrypoints=websecure"
-      - "traefik.http.routers.boheme-ssr.rule=Host(`boheme.jazz.wildredbeard.tech`)"
-      - "traefik.http.routers.boheme-ssr.tls.certresolver=letsencrypt"
-      - "traefik.http.services.boheme-ssr.loadbalancer.server.port=3001"
-
-  canto-ssr:
-    container_name: canto-ssr
-    <<: *band-common-ssr
-    build:
-      args:
-        BAND_SLUG: canto
-    environment:
-      - PORT=3002
-      - BAND_SLUG=canto
-      - UMAMI_WEBSITE_ID_CANTO=${UMAMI_WEBSITE_ID_CANTO}
-    labels:
-      - "traefik.http.routers.canto-ssr.entrypoints=websecure"
-      - "traefik.http.routers.canto-ssr.rule=Host(`canto.jazz.wildredbeard.tech`)"
-      - "traefik.http.routers.canto-ssr.tls.certresolver=letsencrypt"
-      - "traefik.http.services.canto-ssr.loadbalancer.server.port=3002"
-
-  jazzola-ssr:
-    container_name: jazzola-ssr
-    <<: *band-common-ssr
-    build:
-      args:
-        BAND_SLUG: jazzola
-    environment:
-      - PORT=3003
-      - BAND_SLUG=jazzola
-      - UMAMI_WEBSITE_ID_JAZZOLA=${UMAMI_WEBSITE_ID_JAZZOLA}
-    labels:
-      - "traefik.http.routers.jazzola-ssr.entrypoints=websecure"
-      - "traefik.http.routers.jazzola-ssr.rule=Host(`jazzola.jazz.wildredbeard.tech`)"
-      - "traefik.http.routers.jazzola-ssr.tls.certresolver=letsencrypt"
-      - "traefik.http.services.jazzola-ssr.loadbalancer.server.port=3003"
-
-  swing-family-ssr:
-    container_name: swing-family-ssr
-    <<: *band-common-ssr
-    build:
-      args:
-        BAND_SLUG: swing-family
-    environment:
-      - PORT=3004
-      - BAND_SLUG=swing-family
-      - UMAMI_WEBSITE_ID_SWING_FAMILY=${UMAMI_WEBSITE_ID_SWING_FAMILY}
-    labels:
-      - "traefik.http.routers.swing-family-ssr.entrypoints=websecure"
-      - "traefik.http.routers.swing-family-ssr.rule=Host(`swing-family.jazz.wildredbeard.tech`)"
-      - "traefik.http.routers.swing-family-ssr.tls.certresolver=letsencrypt"
-      - "traefik.http.services.swing-family-ssr.loadbalancer.server.port=3004"
-
-  trio-rsh-ssr:
-    container_name: trio-rsh-ssr
-    <<: *band-common-ssr
-    build:
-      args:
-        BAND_SLUG: trio-rsh
-    environment:
-      - PORT=3005
-      - BAND_SLUG=trio-rsh
-      - UMAMI_WEBSITE_ID_TRIO_RSH=${UMAMI_WEBSITE_ID_TRIO_RSH}
-    labels:
-      - "traefik.http.routers.trio-rsh-ssr.entrypoints=websecure"
-      - "traefik.http.routers.trio-rsh-ssr.rule=Host(`trio-rsh.jazz.wildredbeard.tech`)"
-      - "traefik.http.routers.trio-rsh-ssr.tls.certresolver=letsencrypt"
-      - "traefik.http.services.trio-rsh-ssr.loadbalancer.server.port=3005"
-
-  west-side-trio-ssr:
-    container_name: west-side-trio-ssr
-    <<: *band-common-ssr
-    build:
-      args:
-        BAND_SLUG: west-side-trio
-    environment:
-      - PORT=3006
-      - BAND_SLUG=west-side-trio
-      - UMAMI_WEBSITE_ID_WEST_SIDE_TRIO=${UMAMI_WEBSITE_ID_WEST_SIDE_TRIO}
-    labels:
-      - "traefik.http.routers.west-side-trio-ssr.entrypoints=websecure"
-      - "traefik.http.routers.west-side-trio-ssr.rule=Host(`west-side-trio.jazz.wildredbeard.tech`)"
-      - "traefik.http.routers.west-side-trio-ssr.tls.certresolver=letsencrypt"
-      - "traefik.http.services.west-side-trio-ssr.loadbalancer.server.port=3006"
-
   # ======================================================================
   # LEGACY ANGULAR APPS
   # ======================================================================
@@ -363,14 +217,6 @@ services:
       - "3000:3000"
     networks:
       - api-network
-      - jazzbands-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=jazzbands-net"
-      - "traefik.http.routers.umami-analytics.entrypoints=websecure"
-      - "traefik.http.routers.umami-analytics.rule=Host(`analytics.jazz.wildredbeard.tech`)"
-      - "traefik.http.routers.umami-analytics.tls.certresolver=letsencrypt"
-      - "traefik.http.services.umami-analytics.loadbalancer.server.port=3000"
     depends_on:
       postgres:
         condition: service_healthy

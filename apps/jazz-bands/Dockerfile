@@ -1,30 +1,24 @@
-# Multi-stage build for minimal image size (RAM optimization)
-# Stage 1: Build
+# Multi-stage build
 FROM node:24-slim AS builder
 
-# Install build dependencies for sharp (image optimization)
 RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy source code
 COPY . .
 
-# Build the app
 ARG BAND_SLUG
 ENV BAND_SLUG=${BAND_SLUG}
+ARG UMAMI_WEBSITE_ID
+ENV UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID}
 RUN npm run build
 
-# Stage 2: Production (minimal runtime)
+# Production runtime
 FROM node:24-slim AS runner
 
-# Create non-root user for security (use UID/GID from host if provided for volume mount compatibility)
 ARG UID=1001
 ARG GID=1001
 RUN addgroup -g ${GID} -S nodejs && \
@@ -32,7 +26,6 @@ RUN addgroup -g ${GID} -S nodejs && \
 
 WORKDIR /app
 
-# Copy built app from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
@@ -40,16 +33,12 @@ COPY --from=builder /app/package.json ./
 # Switch to non-root user
 USER nodejs
 
-# Expose port (will be set via env var)
 EXPOSE 3000
 
-# Environment defaults
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:${process.env.PORT}/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start the app
 CMD ["npm", "run", "start"]
