@@ -47,7 +47,7 @@ services:
     container_name: boheme-dev
     environment:
       BAND_SLUG: boheme
-      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_BOHEME}
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_BOHEME_DEV}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -60,7 +60,7 @@ services:
     container_name: canto-dev
     environment:
       BAND_SLUG: canto
-      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_CANTO}
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_CANTO_DEV}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -73,7 +73,7 @@ services:
     container_name: jazzola-dev
     environment:
       BAND_SLUG: jazzola
-      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_JAZZOLA}
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_JAZZOLA_DEV}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -86,7 +86,7 @@ services:
     container_name: swing-family-dev
     environment:
       BAND_SLUG: swing-family
-      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_SWING_FAMILY}
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_SWING_FAMILY_DEV}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -99,7 +99,7 @@ services:
     container_name: trio-rsh-dev
     environment:
       BAND_SLUG: trio-rsh
-      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_TRIO_RSH}
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_TRIO_RSH_DEV}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -112,7 +112,7 @@ services:
     container_name: west-side-trio-dev
     environment:
       BAND_SLUG: west-side-trio
-      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_WEST_SIDE_TRIO}
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_WEST_SIDE_TRIO_DEV}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
