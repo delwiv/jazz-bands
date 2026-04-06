@@ -1,6 +1,7 @@
 networks:
-  api-network:
-    driver: bridge
+   api-network:
+     driver: bridge
+     external: false
 
 services:
   boheme:
@@ -145,3 +146,70 @@ services:
     command: /opt/bitnami/scripts/redis/run.sh --appendonly no
     volumes:
       - ./data/redis:/bitnami/redis/data
+
+  # Shared PostgreSQL for Umami analytics (ARM64-compatible)
+  postgres:
+    image: "postgres:16-alpine"
+    container_name: postgres-shared
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      shared_preload_libraries: ""
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c effective_cache_size=128MB
+      -c max_connections=50
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - api-network
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 64M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-umami} -d ${POSTGRES_DB:-umami}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+ # Umami Analytics (PostgreSQL + SQLite migration path)
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: umami-analytics
+    restart: always
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://umami:${POSTGRES_PASSWORD}@postgres:5432/umami
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      APP_NAME: Umami
+      APP_PORT: 3000
+      UMAMI_ANALYTICS_DOMAINS: ${UMAMI_ANALYTICS_DOMAINS}
+    ports:
+      - "3000:3000"
+    networks:
+      - api-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 192M
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
