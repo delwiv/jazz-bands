@@ -1,22 +1,22 @@
-# Anchors for repeated config
+# Anchors for band services
 x-band-common: &band-common
   build:
-    context: .
+    context: ./apps/jazz-bands
     dockerfile: Dockerfile.dev
   networks:
     - jazzbands-net
   env_file:
     - .env
   volumes:
-    - ./app:/app/app
-    - ./public:/app/public
-    - ./vite.config.ts:/app/vite.config.ts
-    - ./react-router.config.ts:/app/react-router.config.ts
-    - ./tsconfig.json:/app/tsconfig.json
-    - ./package.json:/app/package.json
-    - ./package-lock.json:/app/package-lock.json
-    - ./node_modules:/app/node_modules
-    - ./.env:/app/.env
+    - ./apps/jazz-bands/app:/app/app
+    - ./apps/jazz-bands/public:/app/public
+    - ./apps/jazz-bands/vite.config.ts:/app/vite.config.ts
+    - ./apps/jazz-bands/react-router.config.ts:/app/react-router.config.ts
+    - ./apps/jazz-bands/tsconfig.json:/app/tsconfig.json
+    - ./apps/jazz-bands/package.json:/app/package.json
+    - ./apps/jazz-bands/package-lock.json:/app/package-lock.json
+    - ./apps/jazz-bands/node_modules:/app/node_modules
+    - ./apps/jazz-bands/.env:/app/.env
 
 volumes:
   {}
@@ -47,6 +47,7 @@ services:
     container_name: boheme-dev
     environment:
       BAND_SLUG: boheme
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_BOHEME}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -59,6 +60,7 @@ services:
     container_name: canto-dev
     environment:
       BAND_SLUG: canto
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_CANTO}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -71,6 +73,7 @@ services:
     container_name: jazzola-dev
     environment:
       BAND_SLUG: jazzola
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_JAZZOLA}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -83,6 +86,7 @@ services:
     container_name: swing-family-dev
     environment:
       BAND_SLUG: swing-family
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_SWING_FAMILY}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -95,6 +99,7 @@ services:
     container_name: trio-rsh-dev
     environment:
       BAND_SLUG: trio-rsh
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_TRIO_RSH}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
@@ -107,6 +112,7 @@ services:
     container_name: west-side-trio-dev
     environment:
       BAND_SLUG: west-side-trio
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_WEST_SIDE_TRIO}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=jazzbands-net"
