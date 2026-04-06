@@ -18,6 +18,44 @@ import './tailwind.css'
 import { getBandBySlug } from './lib/queries'
 import { sanityClient, urlForImage } from './lib/sanity.settings'
 
+function UmamiScript({ bandSlug }: { bandSlug?: string }) {
+  // Don't render tracking for localhost/dev without slug
+  if (!bandSlug || bandSlug === 'localhost') {
+    return null
+  }
+
+  // Get website ID from env var (e.g., UMAMI_WEBSITE_ID_BOHEME)
+  const websiteId = process.env[`UMAMI_WEBSITE_ID_${bandSlug.toUpperCase()}`]
+  
+  if (!websiteId) {
+    return null
+  }
+
+  return (
+    <>
+      <script
+        src="https://analytics.jazzbands.com/script.js"
+        data-website-id={websiteId}
+        data-dom-auto={false}
+        defer
+      />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            // Wait for Umami to load, then auto-track respecting doNotTrack
+            window.addEventListener('load', function() {
+              var dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+              if (dnt !== '1' && dnt !== 'yes') {
+                try { window.umami.trackPageView(); } catch(e) {}
+              }
+            });
+          `,
+        }}
+      />
+    </>
+  )
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
   const bandSlug = process.env.BAND_SLUG
 
@@ -112,6 +150,7 @@ export default function App() {
       <head>
         <Meta />
         <Links />
+        <UmamiScript bandSlug={bandSlug} />
       </head>
       <body>
         <I18nProvider>

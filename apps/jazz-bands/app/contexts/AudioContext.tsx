@@ -8,7 +8,10 @@ import {
   useRef,
   useState,
 } from 'react'
+import { trackUmamiEvent } from '~/lib/analytics/umami'
 import type { Recording } from '~/lib/types'
+
+const BAND_SLUG = import.meta.env.BAND_SLUG || 'unknown'
 
 interface AudioContextType {
   currentTrack: Recording | null
@@ -48,6 +51,17 @@ const STORAGE_KEYS = {
   currentTrack: 'jazz-bands-current-track',
   currentTrackTime: 'jazz-bands-current-time',
   isPlaying: 'jazz-bands-is-playing',
+}
+
+function trackAudioEvent(
+  event: string,
+  properties: Record<string, string | number | boolean>,
+): void {
+  trackUmamiEvent(event, {
+    channel: 'web-player',
+    band: BAND_SLUG,
+    ...properties,
+  })
 }
 
 export function AudioProvider({
@@ -157,6 +171,13 @@ export function AudioProvider({
         format: ['mp3'],
         preload: true,
         onend: () => {
+          // Track track_end event
+          if (currentTrack) {
+            trackAudioEvent('track_end', {
+              trackTitle: currentTrack.title,
+              trackKey: currentTrack._key,
+            })
+          }
           // Track ended, will be handled by next() call
         },
         onload: () => {
@@ -170,7 +191,7 @@ export function AudioProvider({
 
       howlRef.current.volume(volume)
     },
-    [volume],
+    [volume, currentTrack],
   )
 
   const playTrack = useCallback(
@@ -181,6 +202,14 @@ export function AudioProvider({
       }
 
       const audioUrl = track.audioUrl
+
+      // Track play event
+      trackAudioEvent('play', {
+        trackTitle: track.title,
+        trackKey: track._key,
+        album: track.album || null,
+        releaseYear: track.releaseYear || null,
+      })
 
       setCurrentTrack(track)
       setIsPlaying(true)
@@ -212,8 +241,12 @@ export function AudioProvider({
 
     if (isPlaying) {
       howlRef.current.pause()
+      // Track pause event
+      trackAudioEvent('pause', { trackTitle: currentTrack.title })
     } else {
       howlRef.current.play()
+      // Track resume event
+      trackAudioEvent('resume', { trackTitle: currentTrack.title })
     }
     setIsPlaying((prev) => {
       const next = !prev
@@ -240,6 +273,12 @@ export function AudioProvider({
     const nextIndex = (currentIndex + 1) % queue.length
     const nextTrack = queue[nextIndex]
 
+    // Track skip_next event
+    trackAudioEvent('skip_next', {
+      currentTrack: currentTrack.title,
+      nextTrack: nextTrack.title,
+    })
+
     playTrack(nextTrack)
   }, [queue, currentTrack, playTrack])
 
@@ -251,20 +290,45 @@ export function AudioProvider({
     )
     const prevIndex =
       currentIndex === 0 ? playlist.length - 1 : currentIndex - 1
+    const prevTrack = playlist[prevIndex]
 
-    playTrack(playlist[prevIndex])
+    // Track skip_prev event
+    trackAudioEvent('skip_prev', {
+      currentTrack: currentTrack.title,
+      nextTrack: prevTrack.title,
+    })
+
+    playTrack(prevTrack)
   }, [currentTrack, playlist, playTrack])
 
   const seek = useCallback((time: number) => {
+    const fromTime = currentTime
     howlRef.current?.seek(time)
     setCurrentTime(time)
-  }, [])
+
+    // Track seek event
+    if (currentTrack) {
+      trackAudioEvent('seek', {
+        trackTitle: currentTrack.title,
+        fromTime,
+        toTime: time,
+        direction: time > fromTime ? 'forward' : 'backward',
+      })
+    }
+  }, [currentTrack, currentTime])
 
   const setVolume = useCallback(
     (value: number) => {
       const clampedValue = Math.max(0, Math.min(1, value))
       // Only update if meaningfully different (avoid excessive calls)
       if (Math.abs(clampedValue - volume) < 0.02) return
+
+      // Track volume_change event
+      trackAudioEvent('volume_change', {
+        fromVolume: volume,
+        toVolume: clampedValue,
+      })
+
       setVolumeState(clampedValue)
       howlRef.current?.volume(clampedValue)
     },
@@ -274,6 +338,11 @@ export function AudioProvider({
   const addToQueue = useCallback((track: Recording) => {
     setQueue((prev) => {
       const updated = [...prev, track]
+      // Track queue_add event
+      trackAudioEvent('queue_add', {
+        trackTitle: track.title,
+        queueSize: updated.length,
+      })
       // Queue order resets to Sanity order on page reload
       return updated
     })
@@ -284,6 +353,12 @@ export function AudioProvider({
       const updated = [...prev]
       const [movedItem] = updated.splice(oldIndex, 1)
       updated.splice(newIndex, 0, movedItem)
+      // Track queue_reorder event
+      trackAudioEvent('queue_reorder', {
+        trackTitle: movedItem.title,
+        oldIndex,
+        newIndex,
+      })
       // Queue order resets to Sanity order on page reload
       return updated
     })
