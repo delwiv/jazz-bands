@@ -61,7 +61,11 @@
     "upcomingConcerts": "Upcoming Concerts",
     "pastConcerts": "Past Concerts",
     "upcoming": "Upcoming",
-    "past": "Past"
+    "past": "Past",
+    "backToDates": "Back to tour dates",
+    "venue": "Venue",
+    "viewOnMap": "View on Google Maps",
+    "ticketsAndInfo": "Tickets & Info"
   },
   "musicians": {
     "ourMusicians": "Musicians",
