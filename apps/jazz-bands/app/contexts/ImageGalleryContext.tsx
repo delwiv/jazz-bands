@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useState } from 'react'
-import type { GalleryImage } from '~/lib/types'
 import { ImageViewer } from '~/components/Gallery/ImageViewer'
+import type { GalleryImage } from '~/lib/types'
 
 interface ImageGalleryContextValue {
   open: (index: number, images?: GalleryImage[]) => void
@@ -22,7 +22,8 @@ export function ImageGalleryProvider({
 }: ImageGalleryProviderProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [activeImages, setActiveImages] = useState<GalleryImage[]>(defaultImages)
+  const [activeImages, setActiveImages] =
+    useState<GalleryImage[]>(defaultImages)
 
   const open = useCallback((index: number, images?: GalleryImage[]) => {
     // Allow caller to pass custom images array, otherwise use default
@@ -60,7 +61,9 @@ export function ImageGalleryProvider({
 export function useImageGallery(): ImageGalleryContextValue {
   const context = useContext(ImageGalleryContext)
   if (!context) {
-    throw new Error('useImageGallery must be used within an ImageGalleryProvider')
+    throw new Error(
+      'useImageGallery must be used within an ImageGalleryProvider',
+    )
   }
   return context
 }

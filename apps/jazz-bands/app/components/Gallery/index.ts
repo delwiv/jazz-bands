@@ -1,5 +1,5 @@
-export { CaptionOverlay } from './CaptionOverlay'
 export type { GalleryImage } from '~/lib/types'
+export { CaptionOverlay } from './CaptionOverlay'
 export { ImagePreview } from './ImagePreview'
 export { ImageViewer } from './ImageViewer'
 export { NavigationArrows } from './NavigationArrows'

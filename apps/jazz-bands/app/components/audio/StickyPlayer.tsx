@@ -78,10 +78,11 @@ function SortableTrack({
       style={style}
       {...attributes}
       onClick={() => onClick?.(track)}
-      className={`focus-ring flex items-center justify-between rounded-lg p-3 cursor-pointer transition-colors ${isCurrent
+      className={`focus-ring flex items-center justify-between rounded-lg p-3 cursor-pointer transition-colors ${
+        isCurrent
           ? 'bg-amber-500/30 border border-amber-500/50 hover:bg-amber-500/40'
           : 'bg-gray-800/50 hover:bg-gray-700/50'
-        }`}
+      }`}
       tabIndex={0}
       role="button"
     >
@@ -204,10 +205,11 @@ function Queue({
                   return (
                     <div
                       key={track._key || idx}
-                      className={`flex items-center justify-between rounded-lg p-3 cursor-default ${isCurrent
+                      className={`flex items-center justify-between rounded-lg p-3 cursor-default ${
+                        isCurrent
                           ? 'bg-amber-500/30 border border-amber-500/50'
                           : 'bg-gray-800/50'
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="w-5 h-5 flex items-center justify-center text-gray-300 shrink-0">
@@ -215,8 +217,9 @@ function Queue({
                         </div>
                         <div className="min-w-0">
                           <p
-                            className={`font-medium truncate ${isCurrent ? 'text-amber-200' : 'text-white'
-                              }`}
+                            className={`font-medium truncate ${
+                              isCurrent ? 'text-amber-200' : 'text-white'
+                            }`}
                           >
                             {track.title}
                           </p>
@@ -228,8 +231,9 @@ function Queue({
                         </div>
                       </div>
                       <span
-                        className={`text-sm ml-2 shrink-0 ${isCurrent ? 'text-amber-200' : 'text-gray-300'
-                          }`}
+                        className={`text-sm ml-2 shrink-0 ${
+                          isCurrent ? 'text-amber-200' : 'text-gray-300'
+                        }`}
                       >
                         {track.duration ? formatTime(track.duration) : '--:--'}
                       </span>
@@ -716,7 +720,7 @@ export function StickyPlayer({
         <Queue
           queue={mergedQueue}
           isCurrentTrack={(title) => title === track.title}
-          onClose={() => { }}
+          onClose={() => {}}
           onReorder={handleReorderQueue}
           playTrack={handlePlayTrack}
           disabled={!isHydrated}

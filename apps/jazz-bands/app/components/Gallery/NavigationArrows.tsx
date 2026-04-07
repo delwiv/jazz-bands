@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { buttonVariants } from '~/lib/animationVariants'
 
 interface NavigationArrowsProps {
