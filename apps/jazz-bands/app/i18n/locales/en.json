@@ -58,6 +58,8 @@
     "getTickets": "Get Tickets",
     "ticketsTBA": "Tickets TBA",
     "soldOut": "Sold Out",
+    "upcomingConcerts": "Upcoming Concerts",
+    "pastConcerts": "Past Concerts",
     "upcoming": "Upcoming",
     "past": "Past"
   },
