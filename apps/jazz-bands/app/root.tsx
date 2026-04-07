@@ -53,7 +53,7 @@ export async function loader({ request }: Route.LoaderArgs) {
             alt:
               img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
           })) || []
-      umamiWebsiteId = process.env[`UMAMI_WEBSITE_ID_${bandSlug.toUpperCase()}`] || ''
+      umamiWebsiteId = process.env.UMAMI_WEBSITE_ID
     } catch (error) {
       console.error('Failed to fetch band data:', error)
     }
@@ -105,8 +105,16 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export default function App() {
-  const { bandSlug, band, recordings, initialTrack, galleryImages, umamiWebsiteId } =
-    useLoaderData<Route>()
+  const {
+    bandSlug,
+    band,
+    recordings,
+    initialTrack,
+    galleryImages,
+    umamiWebsiteId,
+  } = useLoaderData<Route>()
+
+  console.log({ umamiWebsiteId })
 
   return (
     <html lang="fr">
@@ -116,9 +124,8 @@ export default function App() {
         {umamiWebsiteId && (
           <>
             <script
-              src="https://analytics.jazzbands.com/script.js"
+              src="https://analytics.jazz.wildredbeard.tech/script.js"
               data-website-id={umamiWebsiteId}
-              data-dom-auto={false}
               defer
             />
             <script
