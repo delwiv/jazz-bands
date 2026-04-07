@@ -74,7 +74,11 @@
     "upcomingConcerts": "Concerts à venir",
     "pastConcerts": "Concerts passés",
     "upcoming": "À venir",
-    "past": "Passé"
+    "past": "Passé",
+    "backToDates": "Retour aux dates de tournée",
+    "venue": "Lieu",
+    "viewOnMap": "Voir sur Google Maps",
+    "ticketsAndInfo": "Billets et informations"
   },
   "contact": {
     "contact": "Contact",

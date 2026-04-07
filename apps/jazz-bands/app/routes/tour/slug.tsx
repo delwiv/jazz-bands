@@ -6,7 +6,9 @@ import {
   MapPin,
   Ticket,
 } from 'lucide-react'
+import { FormattedMessage, useIntl } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { GlassCard } from '~/components/shared/GlassCard'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { getBandWithTourDates } from '~/lib/queries'
 import { sanityClient } from '~/lib/sanity.settings'
@@ -129,23 +131,15 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
 
 export default function TourDateDetail() {
   const { tourDate, band, bandSlug, origin } = useLoaderData<typeof loader>()
+  const intl = useIntl()
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return new Intl.DateTimeFormat('en-US', {
+    return intl.formatDate(new Date(dateStr), {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(date)
-  }
-
-  const formatMonthYear = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'long',
-      year: 'numeric',
-    }).format(date)
+    })
   }
 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tourDate.venue + ', ' + tourDate.city)}`
@@ -159,101 +153,62 @@ export default function TourDateDetail() {
         origin={origin}
       />
 
-      <div className="relative bg-gradient-to-br from-amber-600 to-orange-700 text-white mb-8">
-        <div className="py-16">
-          <button
-            onClick={() => window.history.back()}
-            className="focus-ring flex items-center gap-2 mb-8 text-white/80 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="icon-md" />
-            Back to tour dates
-          </button>
+      <div className="glass-card rounded-lg p-4 lg:p-8">
+        <button
+          onClick={() => window.history.back()}
+          className="focus-ring flex items-center gap-2 mb-6 text-gray-300 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="icon-md" />
+          <FormattedMessage id="tour.backToDates" />
+        </button>
 
-          <div className="mb-4">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
-              <Calendar className="icon-sm" />
-              {formatMonthYear(tourDate.date)}
-            </span>
-          </div>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <h1 className="text-4xl font-bold text-amber-400 mb-2">{band}</h1>
+            <p className="text-2xl font-medium text-white mb-6">
+              {formatDate(tourDate.date)}
+            </p>
 
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{band}</h1>
-
-          <div className="flex items-center gap-2 text-xl mb-6">
-            <MapPin className="w-6 h-6" />
-            {tourDate.venue}, {tourDate.city}
-            {tourDate.region ? `, ${tourDate.region}` : ''}
-          </div>
-
-          <p className="text-2xl font-medium">{formatDate(tourDate.date)}</p>
-
-          {tourDate.soldOut && (
-            <div className="mt-6 flex items-center gap-2 bg-red-600/80 px-4 py-2 rounded-lg">
-              <AlertCircle className="icon-md" />
-              <span className="font-medium">This show is sold out</span>
-            </div>
-          )}
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg
-            viewBox="0 0 1440 120"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              fill="#111827"
-            />
-          </svg>
-        </div>
-      </div>
-
-      <div className="py-12">
-        <div className="bg-gray-800 rounded-lg p-8 shadow-2xl">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Event Details
-              </h2>
-
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Calendar className="icon-md text-amber-500 mt-1" />
-                  <div>
-                    <p className="text-gray-300 text-sm">Date & Time</p>
-                    <p className="text-white font-medium">
-                      {formatDate(tourDate.date)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <MapPin className="icon-md text-amber-500 mt-1" />
-                  <div>
-                    <p className="text-gray-300 text-sm">Venue</p>
-                    <p className="text-white font-medium">{tourDate.venue}</p>
-                    <p className="text-gray-300">
-                      {tourDate.city}
-                      {tourDate.region ? `, ${tourDate.region}` : ''}
-                    </p>
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <MapPin className="icon-md text-amber-500 mt-1 shrink-0" />
+                <div>
+                  <p className="text-gray-400 text-sm mb-1">
+                    <FormattedMessage id="tour.venue" />
+                  </p>
+                  <p className="text-white font-medium">{tourDate.venue}</p>
+                  <p className="text-gray-300">
+                    {tourDate.city}
+                    {tourDate.region ? `, ${tourDate.region}` : ''}
+                  </p>
                 </div>
               </div>
+
+              {tourDate.soldOut && (
+                <div className="flex items-center gap-2 bg-red-600/30 border border-red-500/50 px-4 py-3 rounded-lg">
+                  <AlertCircle className="icon-md shrink-0" />
+                  <span className="text-red-200 font-medium">
+                    <FormattedMessage id="tour.soldOut" />
+                  </span>
+                </div>
+              )}
 
               <a
                 href={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="focus-ring mt-6 inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white"
+                className="focus-ring inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors"
               >
                 <ExternalLink className="icon-sm" />
-                View on Google Maps
+                <FormattedMessage id="tour.viewOnMap" />
               </a>
             </div>
+          </div>
 
-            <div>
+          <div>
+            <div className="glass-card p-6 rounded-lg bg-white/[0.03]">
               <h2 className="text-xl font-semibold text-white mb-4">
-                Tickets & Info
+                <FormattedMessage id="tour.ticketsAndInfo" />
               </h2>
 
               <div className="space-y-4">
@@ -265,12 +220,18 @@ export default function TourDateDetail() {
                     className="focus-ring flex items-center gap-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors text-white font-medium"
                   >
                     <Ticket className="icon-md" />
-                    Buy Tickets
+                    <FormattedMessage id="tour.getTickets" />
                   </a>
                 )}
 
+                {!tourDate.ticketsUrl && !tourDate.soldOut && (
+                  <span className="inline-flex items-center px-3 py-1 bg-gray-700/50 rounded-full text-sm text-gray-300">
+                    <FormattedMessage id="tour.ticketsTBA" />
+                  </span>
+                )}
+
                 {tourDate.details && (
-                  <div className="bg-gray-700/50 rounded-lg p-4">
+                  <div className="mt-6 pt-6 border-t border-white/[0.1]">
                     <p className="text-gray-300 whitespace-pre-line">
                       {tourDate.details}
                     </p>
@@ -279,72 +240,8 @@ export default function TourDateDetail() {
               </div>
             </div>
           </div>
-
-          <div className="mt-8 pt-8 border-t border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              Share this event
-            </h3>
-
-            <div className="flex flex-wrap gap-4">
-              <ShareButton
-                platform="facebook"
-                label="Share on Facebook"
-                url={`${origin}/tour/${tourDate.slug || tourDate._key}`}
-                text={`Can't wait to see ${band} at ${tourDate.venue} on ${tourDate.date}!`}
-              />
-              <ShareButton
-                platform="twitter"
-                label="Share on Twitter"
-                url={`${origin}/tour/${tourDate.slug || tourDate._key}`}
-                text={`Can't wait to see ${band} at ${tourDate.venue} on ${tourDate.date}!`}
-              />
-              <ShareButton
-                platform="linkedin"
-                label="Share on LinkedIn"
-                url={`${origin}/tour/${tourDate.slug || tourDate._key}`}
-                text={`Excited for ${band} performing at ${tourDate.venue}`}
-              />
-            </div>
-          </div>
         </div>
       </div>
     </MainContainer>
-  )
-}
-
-function ShareButton({
-  platform,
-  label,
-  url,
-  text,
-}: {
-  platform: 'facebook' | 'twitter' | 'linkedin'
-  label: string
-  url: string
-  text: string
-}) {
-  let shareUrl = ''
-
-  switch (platform) {
-    case 'facebook':
-      shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
-      break
-    case 'twitter':
-      shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
-      break
-    case 'linkedin':
-      shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
-      break
-  }
-
-  return (
-    <a
-      href={shareUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="focus-ring flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white text-sm"
-    >
-      {label}
-    </a>
   )
 }
