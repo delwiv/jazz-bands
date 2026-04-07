@@ -1,14 +1,18 @@
 /**
  * Umami tracking helper
  * Tracks events to self-hosted Umami analytics
- * Respects Do Not Track (DNT) browser setting
+ * Note: We track based on legitimate interest (GDPR Art. 6(1)(f)) for site optimization
+ * This is a privacy-friendly approach that does not require consent
  */
 
 // Extend Window type for Umami
 declare global {
   interface Window {
     umami?: {
-      trackEvent: (name: string, properties?: Record<string, string | number | boolean>) => void;
+      track: (
+        eventName: string,
+        eventData?: Record<string, string | number | boolean>
+      ) => void;
       trackPageView?: () => void;
     };
   }
@@ -28,15 +32,9 @@ export function trackUmamiEvent(
     return;
   }
 
-  // Respect Do Not Track setting
-  const dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-  if (dnt === '1' || dnt === 'yes') {
-    return;
-  }
-
-  // Use Umami's global object
-  if (window.umami && typeof window.umami.trackEvent === 'function') {
-    window.umami.trackEvent(event, properties);
+  // Track events - we use legitimate interest for analytics
+  if (window.umami && typeof window.umami.track === 'function') {
+    window.umami.track(event, properties);
   }
 }
 
@@ -46,11 +44,6 @@ export function trackUmamiEvent(
  */
 export function trackUmamiPageView(): void {
   if (typeof window === 'undefined') {
-    return;
-  }
-
-  const dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-  if (dnt === '1' || dnt === 'yes') {
     return;
   }
 

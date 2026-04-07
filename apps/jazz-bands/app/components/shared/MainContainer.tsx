@@ -86,14 +86,14 @@ export function MainContainer({
       role={hasTitle ? 'region' : undefined}
       aria-labelledby={hasTitle ? titleId : undefined}
     >
-      {hero && (
-        <div className="relative">
-          {hero}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/80 to-transparent bottom-0 pointer-events-none" />
-        </div>
-      )}
+      {/* {hero && ( */}
+      {/*   <div className="relative"> */}
+      {/*     {hero} */}
+      {/*     <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/80 to-transparent bottom-0 pointer-events-none" /> */}
+      {/*   </div> */}
+      {/* )} */}
 
-      <div className="px-4">{glassCardContent}</div>
+      <div className="p-4">{glassCardContent}</div>
     </div>
   )
 }

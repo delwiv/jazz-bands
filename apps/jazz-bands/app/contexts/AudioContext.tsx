@@ -195,7 +195,7 @@ export function AudioProvider({
   )
 
   const playTrack = useCallback(
-    (track: Recording) => {
+    (track: Recording, skipPlayEvent = false) => {
       if (!track.audioUrl) {
         console.warn('Track has no audio URL')
         return
@@ -203,13 +203,15 @@ export function AudioProvider({
 
       const audioUrl = track.audioUrl
 
-      // Track play event
-      trackAudioEvent('play', {
-        trackTitle: track.title,
-        trackKey: track._key,
-        album: track.album || null,
-        releaseYear: track.releaseYear || null,
-      })
+      // Track play event (skip if already tracked by skip_next/skip_prev)
+      if (!skipPlayEvent) {
+        trackAudioEvent('play', {
+          trackTitle: track.title,
+          trackKey: track._key,
+          album: track.album || null,
+          releaseYear: track.releaseYear || null,
+        })
+      }
 
       setCurrentTrack(track)
       setIsPlaying(true)
@@ -279,7 +281,7 @@ export function AudioProvider({
       nextTrack: nextTrack.title,
     })
 
-    playTrack(nextTrack)
+    playTrack(nextTrack, true)
   }, [queue, currentTrack, playTrack])
 
   const prev = useCallback(() => {
@@ -298,7 +300,7 @@ export function AudioProvider({
       nextTrack: prevTrack.title,
     })
 
-    playTrack(prevTrack)
+    playTrack(prevTrack, true)
   }, [currentTrack, playlist, playTrack])
 
   const seek = useCallback((time: number) => {

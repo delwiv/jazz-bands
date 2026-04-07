@@ -62,7 +62,7 @@ export default function BandHome() {
       <BandStructuredData band={band} baseUrl={baseUrl} />
       <MainContainer>
         {/* Home Section - Side by side like legacy */}
-        <section className=" pt-6">
+        <section className="">
           <div className="glass-card p-4 rounded-lg xl:p-6">
             <div
               className={clsx(
@@ -173,7 +173,11 @@ export default function BandHome() {
                 const isUpcoming = eventDate >= currentDate
 
                 return (
-                  <Link to={`/tour/${date.slug || date._key}`} key={date._key} className="block">
+                  <Link
+                    to={`/tour/${date.slug || date._key}`}
+                    key={date._key}
+                    className="block"
+                  >
                     <div className="p-6">
                       <div className="flex justify-between items-start">
                         <div>
