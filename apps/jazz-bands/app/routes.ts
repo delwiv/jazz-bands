@@ -8,5 +8,6 @@ export default [
   route('/tour', './routes/tour/index.tsx'),
   route('/tour/:tourDateSlug', './routes/tour/slug.tsx'),
   route('/contact', './routes/contact.tsx'),
+  route('/about', './routes/about.tsx'),
   route('*', './routes/__catchall.tsx'),
 ] satisfies RouteConfig
