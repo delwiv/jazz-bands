@@ -176,20 +176,9 @@ export default function AboutPage() {
               <FormattedMessage id="about.legalBasisHeading" />
             </h3>
 
-            <p className="text-gray-300 leading-relaxed mb-6">
+             <p className="text-gray-300 leading-relaxed mb-6">
               <FormattedMessage id="about.legalBasisPara" />
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="glass-card shadow-2xl p-6 text-center"
-          >
-            <p className="text-gray-400">
-              <FormattedMessage id="about.laterComing" />
-            </p>
+</p>
           </motion.div>
         </div>
       </MainContainer>

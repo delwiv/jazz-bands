@@ -26,9 +26,8 @@ function NavLink({ to, children, primaryColor }: NavLinkProps) {
     return (
       <Link
         to={to}
-        className={`focus-ring hover:opacity-80 relative px-1 ${
-          isActive ? 'text-white' : 'text-gray-300'
-        }`}
+        className={`focus-ring hover:opacity-80 relative px-1 ${isActive ? 'text-white' : 'text-gray-300'
+          }`}
       >
         {children}
         {isActive && (
@@ -94,27 +93,27 @@ export function Header({ band }: HeaderProps) {
           )}
         </button>
 
-{/* Desktop Navigation */}
-<div className="flex gap-6 hidden md:flex">
-  <NavLink to="/" primaryColor={primaryColor}>
-    <FormattedMessage id="header.home" />
-  </NavLink>
-  <NavLink to="/about" primaryColor={primaryColor}>
-    <FormattedMessage id="header.about" />
-  </NavLink>
-  <NavLink to="/musicians" primaryColor={primaryColor}>
-    <FormattedMessage id="header.musicians" />
-  </NavLink>
-  <NavLink to="/tour" primaryColor={primaryColor}>
-    <FormattedMessage id="header.tour" />
-  </NavLink>
-  <NavLink to="/gallery" primaryColor={primaryColor}>
-    <FormattedMessage id="header.gallery" />
-  </NavLink>
-  <NavLink to="/contact" primaryColor={primaryColor}>
-    <FormattedMessage id="header.contact" />
-  </NavLink>
-</div>
+        {/* Desktop Navigation */}
+        <div className="flex gap-6 hidden md:flex">
+          <NavLink to="/" primaryColor={primaryColor}>
+            <FormattedMessage id="header.home" />
+          </NavLink>
+          <NavLink to="/musicians" primaryColor={primaryColor}>
+            <FormattedMessage id="header.musicians" />
+          </NavLink>
+          <NavLink to="/tour" primaryColor={primaryColor}>
+            <FormattedMessage id="header.tour" />
+          </NavLink>
+          <NavLink to="/gallery" primaryColor={primaryColor}>
+            <FormattedMessage id="header.gallery" />
+          </NavLink>
+          <NavLink to="/contact" primaryColor={primaryColor}>
+            <FormattedMessage id="header.contact" />
+          </NavLink>
+          <NavLink to="/about" primaryColor={primaryColor}>
+            <FormattedMessage id="header.about" />
+          </NavLink>
+        </div>
 
         {/* Mobile Navigation Dropdown */}
         {isMenuOpen && (

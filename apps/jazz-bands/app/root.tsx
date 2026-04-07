@@ -114,8 +114,6 @@ export default function App() {
     umamiWebsiteId,
   } = useLoaderData<Route>()
 
-  console.log({ umamiWebsiteId })
-
   return (
     <html lang="fr">
       <head>

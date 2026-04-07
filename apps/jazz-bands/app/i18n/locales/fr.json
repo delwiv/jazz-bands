@@ -34,12 +34,10 @@
     "noCookiesBullet": "Aucun cookie ou pixel de suivi",
     "noCrossSiteBullet": "Aucun suivi inter-sites ou profilage utilisateur",
     "noAdsBullet": "Aucune publicité ni reclacage",
-    "anonymizedBullet": "Les adresses IP sont anonymisées après 24 heures",
+    "anonymizedBullet": "Toutes les données sont anonymisées - aucune information personnellement identifiable",
     "selfHostedBullet": "Toutes les données sont auto-hébergées et nous appartiennent",
     "legalBasisHeading": "Base Juridique",
-    "legalBasisPara": "Nous traitons ces données sur la base de notre intérêt légitime (Article 6(1)(f) RGPD) pour optimiser notre site Web et comprendre notre public. Cette approche respectueuse de la vie privée ne nécessite pas de consentement ni de bannière de cookies.",
-    "readMoreLink": "Lire notre politique de confidentialité complète (à venir) →",
-    "laterComing": "Plus d'informations à venir bientôt..."
+    "legalBasisPara": "Nous traitons ces données sur la base de notre intérêt légitime (Article 6(1)(f) RGPD) pour optimiser notre site Web et comprendre notre public. Cette approche respectueuse de la vie privée ne nécessite pas de consentement ni de bannière de cookies."
   },
   "home": {
     "upcomingShows": "Concerts à venir",

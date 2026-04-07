@@ -34,12 +34,10 @@
     "noCookiesBullet": "No cookies or tracking pixels",
     "noCrossSiteBullet": "No cross-site tracking or user profiling",
     "noAdsBullet": "No advertising or retargeting",
-    "anonymizedBullet": "IP addresses are anonymized after 24 hours",
+    "anonymizedBullet": "All data is anonymized - no personally identifiable information",
     "selfHostedBullet": "All data is self-hosted and owned by us",
     "legalBasisHeading": "Legal Basis",
-    "legalBasisPara": "We process this data based on our legitimate interest (Article 6(1)(f) GDPR) to optimize our website and understand our audience. This is a privacy-friendly approach that does not require consent or cookie banners.",
-    "readMoreLink": "Read our full privacy policy (coming soon) →",
-    "laterComing": "More information coming soon..."
+    "legalBasisPara": "We process this data based on our legitimate interest (Article 6(1)(f) GDPR) to optimize our website and understand our audience. This is a privacy-friendly approach that does not require consent or cookie banners."
   },
   "home": {
     "upcomingShows": "Upcoming Concerts",
