@@ -153,13 +153,23 @@ export default function TourPage() {
     return date >= todayForBadge ? 'upcoming' : 'past'
   }
 
+   const formatDate = (dateStr: string): string => {
+    const formatted = intl.formatDate(new Date(dateStr), {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+    // Capitalize first letter (handles French and other languages)
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+  }
+
   // Helper function to render grouped tour dates
   const renderGroups = (
     groups: [string, TourDate[]][],
     section: 'upcoming' | 'past',
   ): React.ReactNode[] => {
     const isUpcoming = section === 'upcoming'
-    const headingColor = isUpcoming ? 'text-amber-300' : 'text-gray-500'
 
     const renderTourCard = (date: TourDate) => (
       <GlassCard
@@ -168,12 +178,7 @@ export default function TourPage() {
       >
         <div>
           <p className="text-2xl font-bold text-amber-400">
-            {new Date(date.date).toLocaleDateString('en-US', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-            })}
+            {formatDate(date.date)}
           </p>
           <p className="text-xl font-semibold text-white mt-2">
             {date.venue}
@@ -226,12 +231,7 @@ export default function TourPage() {
         <GlassCard className="rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <p className="text-2xl font-bold text-amber-400">
-              {new Date(date.date).toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
+              {formatDate(date.date)}
             </p>
             <p className="text-xl font-semibold text-white mt-2">{date.venue}</p>
             <p className="text-gray-300">{date.city}, {date.region || ''}</p>
@@ -274,35 +274,24 @@ export default function TourPage() {
       </Link>
     )
 
-    return groups.map(([group, dates]) => (
-      <div key={group} className="space-y-4">
-        {group !== next14DaysKey && (
-          <h3 className={`text-xl font-semibold ${headingColor} mb-3`}>{group}</h3>
-        )}
-        {reducedMotion ? (
-          <div className="space-y-4">
-            {dates.map((date: TourDate, idx: number) => (
-              <Link
-                key={date._key || date.slug || idx}
-                to={`/tour/${date.slug || date._key}`}
-                className="block"
-              >
-                {renderTourCard(date)}
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <motion.div
-            className="space-y-4"
-            variants={staggerContainerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {dates.map((date: TourDate) => renderAnimatedTourCard(date))}
-          </motion.div>
+    const allDates = groups.flatMap(([, dates]) => dates) as TourDate[]
+    return (
+      <div className="flex flex-col gap-4">
+        {allDates.map((date: TourDate, idx: number) =>
+          reducedMotion ? (
+            <Link
+              key={date._key || date.slug || idx}
+              to={`/tour/${date.slug || date._key}`}
+              className="block"
+            >
+              {renderTourCard(date)}
+            </Link>
+          ) : (
+            renderAnimatedTourCard(date)
+          )
         )}
       </div>
-    ))
+    )
   }
 
   return (
@@ -317,7 +306,7 @@ export default function TourPage() {
         />
       ))}
       <MainContainer>
-        <section title={<FormattedMessage id="tour.tourDates" />}>
+        <section>
           {regions.length > 0 && (
             <div className="mb-8 text-center">
               <label className="mr-4 font-semibold text-gray-300">
