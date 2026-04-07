@@ -1,18 +1,14 @@
 # ============================================================================
-# Jazz Bands Platform - Legacy + Manager + Shared Infrastructure
+# Jazz Bands Platform - Production (Legacy + Manager + Databases)
 # ============================================================================
 # This file manages:
-# - Legacy Angular apps
-# - Manager services
-# - Shared databases (Mongo, Redis, PostgreSQL)
-# - Analytics (Umami)
+# - Legacy Angular apps (6 bands)
+# - Manager services (managr, managr-api)
+# - Shared databases (Mongo, Redis)
 # ============================================================================
 #
-# To start jazzbands SSR apps, use:
-#   docker-compose -f docker-compose.jazzbands.yml up -d
-#
-# To start jazzbands SSR apps in dev mode, use:
-#   docker-compose -f docker-compose.jazzbands-dev.yml up -d
+# Dev mode: Use docker-compose.jazzbands-dev.yml
+# Production SSR: Create new file when dev is complete
 #
 # Anchors for Legacy Apps
 x-legacy-common: &legacy-common
@@ -164,71 +160,4 @@ services:
         reservations:
           memory: 64M
 
-  postgres:
-    container_name: postgres-shared
-    image: "postgres:16-alpine"
-    restart: always
-    env_file: .env
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      shared_preload_libraries: ""
-    command: >
-      postgres
-      -c shared_buffers=64MB
-      -c effective_cache_size=128MB
-      -c max_connections=50
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-    networks:
-      - api-network
-    deploy:
-      resources:
-        limits:
-          memory: 200M
-        reservations:
-          memory: 64M
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 10s
 
-  # ======================================================================
-  # ANALYTICS (serves as "analytics.jazz.wildredbeard.tech" via labels)
-  # ======================================================================
-
-  umami:
-    container_name: umami-analytics
-    image: ghcr.io/umami-software/umami:postgresql-latest
-    restart: always
-    env_file: .env
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      APP_SECRET: ${UMAMI_APP_SECRET}
-      APP_NAME: Umami
-      APP_PORT: 3000
-      UMAMI_ANALYTICS_DOMAINS: ${UMAMI_ANALYTICS_DOMAINS}
-    ports:
-      - "3000:3000"
-    networks:
-      - api-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 384M
-        reservations:
-          memory: 192M
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/heartbeat"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s

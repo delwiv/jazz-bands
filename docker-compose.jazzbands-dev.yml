@@ -1,10 +1,24 @@
+# ============================================================================
+# Jazz Bands Platform - Development Environment
+# ============================================================================
+# This file manages ALL dev services:
+# - PostgreSQL (dev database)
+# - Traefik (dev proxy on port 8012)
+# - Umami (dev analytics)
+# - 6 Band dev containers (SSR)
+# ============================================================================
+#
+# Usage:
+#   docker-compose -f docker-compose.jazzbands-dev.yml up -d
+#
 # Anchors for band services
 x-band-common: &band-common
   build:
     context: ./apps/jazz-bands
     dockerfile: Dockerfile.dev
   networks:
-    - jazzbands-net
+      - jazzbands-net
+      - jazz-bands-api
   env_file:
     - .env
   volumes:
@@ -19,23 +33,70 @@ x-band-common: &band-common
     - ./apps/jazz-bands/.env:/app/.env
 
 volumes:
-  {}
+  postgres-data:
 
 networks:
   jazzbands-net:
-    driver: bridge
+    name: jazzbands-net  # Explicit name to avoid Docker Compose prefix
+  jazz-bands-api:
+    external: true
 
 services:
+  # ======================================================================
+  # DATABASE
+  # ======================================================================
+
+  postgres:
+    container_name: postgres-dev
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      shared_preload_libraries: ""
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c effective_cache_size=128MB
+      -c max_connections=50
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - jazz-bands-api
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 64M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # ======================================================================
+  # TRAEFIK (HTTP on port 8012, NO SSL for dev)
+  # ======================================================================
+
   traefik:
     image: traefik:latest
     container_name: jazzbands-traefik-dev
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=jazzbands-net"
       - "--entrypoints.web.address=:8012"
       - "--accesslog=true"
+      - "--api.dashboard=true"
     ports:
       - "8012:8012"
+      - "8099:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
@@ -50,7 +111,6 @@ services:
       UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_BOHEME_DEV}
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=jazzbands-net"
       - "traefik.http.routers.boheme-dev.entrypoints=web"
       - "traefik.http.routers.boheme-dev.rule=Host(`boheme.jazz.wildredbeard.tech`)"
       - "traefik.http.services.boheme-dev.loadbalancer.server.port=5173"
@@ -63,7 +123,6 @@ services:
       UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_CANTO_DEV}
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=jazzbands-net"
       - "traefik.http.routers.canto-dev.entrypoints=web"
       - "traefik.http.routers.canto-dev.rule=Host(`canto.jazz.wildredbeard.tech`)"
       - "traefik.http.services.canto-dev.loadbalancer.server.port=5173"
@@ -76,7 +135,6 @@ services:
       UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_JAZZOLA_DEV}
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=jazzbands-net"
       - "traefik.http.routers.jazzola-dev.entrypoints=web"
       - "traefik.http.routers.jazzola-dev.rule=Host(`jazzola.jazz.wildredbeard.tech`)"
       - "traefik.http.services.jazzola-dev.loadbalancer.server.port=5173"
@@ -89,7 +147,6 @@ services:
       UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_SWING_FAMILY_DEV}
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=jazzbands-net"
       - "traefik.http.routers.swing-family-dev.entrypoints=web"
       - "traefik.http.routers.swing-family-dev.rule=Host(`swing-family.jazz.wildredbeard.tech`)"
       - "traefik.http.services.swing-family-dev.loadbalancer.server.port=5173"
@@ -102,7 +159,6 @@ services:
       UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_TRIO_RSH_DEV}
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=jazzbands-net"
       - "traefik.http.routers.trio-rsh-dev.entrypoints=web"
       - "traefik.http.routers.trio-rsh-dev.rule=Host(`trio-rsh.jazz.wildredbeard.tech`)"
       - "traefik.http.services.trio-rsh-dev.loadbalancer.server.port=5173"
@@ -115,7 +171,39 @@ services:
       UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID_WEST_SIDE_TRIO_DEV}
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=jazzbands-net"
       - "traefik.http.routers.west-side-trio-dev.entrypoints=web"
       - "traefik.http.routers.west-side-trio-dev.rule=Host(`west-side-trio.jazz.wildredbeard.tech`)"
       - "traefik.http.services.west-side-trio-dev.loadbalancer.server.port=5173"
+
+  # ======================================================================
+  # ANALYTICS (Umami)
+  # ======================================================================
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: umami-dev
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      APP_NAME: Umami
+      APP_PORT: 3000
+      UMAMI_ANALYTICS_DOMAINS: ${UMAMI_ANALYTICS_DOMAINS}
+    networks:
+      - jazzbands-net
+      - jazz-bands-api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.umami-dev.entrypoints=web"
+      - "traefik.http.routers.umami-dev.rule=Host(`analytics.jazz.wildredbeard.tech`)"
+      - "traefik.http.services.umami-dev.loadbalancer.server.port=3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
