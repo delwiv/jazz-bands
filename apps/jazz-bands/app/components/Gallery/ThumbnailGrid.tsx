@@ -1,4 +1,4 @@
-import { GalleryImage } from '~/lib/types'
+import type { GalleryImage } from '~/lib/types'
 
 interface ThumbnailGridProps {
   images: GalleryImage[]
@@ -20,10 +20,10 @@ export function ThumbnailGrid({
       className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${className}`}
     >
       {images.map((image, index) => (
-<div
-           key={`thumb-${image.src}`}
-           className={`relative overflow-hidden bg-slate-800/50 group focus-ring ${itemClassName}`}
-           onClick={() => onClick?.(index)}
+        <div
+          key={`thumb-${image.src}`}
+          className={`relative overflow-hidden bg-slate-800/50 group focus-ring ${itemClassName}`}
+          onClick={() => onClick?.(index)}
           role={onClick ? 'button' : undefined}
           tabIndex={onClick ? 0 : undefined}
           style={{ cursor: onClick ? 'pointer' : 'default' }}

@@ -11,10 +11,10 @@ declare global {
     umami?: {
       track: (
         eventName: string,
-        eventData?: Record<string, string | number | boolean>
-      ) => void;
-      trackPageView?: () => void;
-    };
+        eventData?: Record<string, string | number | boolean>,
+      ) => void
+      trackPageView?: () => void
+    }
   }
 }
 
@@ -25,16 +25,16 @@ declare global {
  */
 export function trackUmamiEvent(
   event: string,
-  properties?: Record<string, string | number | boolean>
+  properties?: Record<string, string | number | boolean>,
 ): void {
   // Only run in browser
   if (typeof window === 'undefined') {
-    return;
+    return
   }
 
   // Track events - we use legitimate interest for analytics
   if (window.umami && typeof window.umami.track === 'function') {
-    window.umami.track(event, properties);
+    window.umami.track(event, properties)
   }
 }
 
@@ -44,10 +44,10 @@ export function trackUmamiEvent(
  */
 export function trackUmamiPageView(): void {
   if (typeof window === 'undefined') {
-    return;
+    return
   }
 
   if (window.umami && typeof window.umami.trackPageView === 'function') {
-    window.umami.trackPageView();
+    window.umami.trackPageView()
   }
 }

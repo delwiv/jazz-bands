@@ -152,7 +152,9 @@ export function ImagePreview({
           onNext={handleNext}
           showPrevious={images.length > 1}
           showNext={images.length > 1}
-          buttonClassName={isDisabled ? 'cursor-default pointer-events-none' : ''}
+          buttonClassName={
+            isDisabled ? 'cursor-default pointer-events-none' : ''
+          }
         />
 
         <div className="absolute bottom-2 left-0 right-0 text-center">

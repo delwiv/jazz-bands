@@ -303,21 +303,24 @@ export function AudioProvider({
     playTrack(prevTrack, true)
   }, [currentTrack, playlist, playTrack])
 
-  const seek = useCallback((time: number) => {
-    const fromTime = currentTime
-    howlRef.current?.seek(time)
-    setCurrentTime(time)
+  const seek = useCallback(
+    (time: number) => {
+      const fromTime = currentTime
+      howlRef.current?.seek(time)
+      setCurrentTime(time)
 
-    // Track seek event
-    if (currentTrack) {
-      trackAudioEvent('seek', {
-        trackTitle: currentTrack.title,
-        fromTime,
-        toTime: time,
-        direction: time > fromTime ? 'forward' : 'backward',
-      })
-    }
-  }, [currentTrack, currentTime])
+      // Track seek event
+      if (currentTrack) {
+        trackAudioEvent('seek', {
+          trackTitle: currentTrack.title,
+          fromTime,
+          toTime: time,
+          direction: time > fromTime ? 'forward' : 'backward',
+        })
+      }
+    },
+    [currentTrack, currentTime],
+  )
 
   const setVolume = useCallback(
     (value: number) => {

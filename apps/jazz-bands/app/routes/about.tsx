@@ -3,8 +3,8 @@ import { FormattedMessage } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { MainContainer } from '~/components/shared/MainContainer'
-import { type AboutLoaderData } from '~/lib/routes.types'
 import { getBandBySlug } from '~/lib/queries'
+import type { AboutLoaderData } from '~/lib/routes.types'
 import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
 
@@ -176,9 +176,9 @@ export default function AboutPage() {
               <FormattedMessage id="about.legalBasisHeading" />
             </h3>
 
-             <p className="text-gray-300 leading-relaxed mb-6">
+            <p className="text-gray-300 leading-relaxed mb-6">
               <FormattedMessage id="about.legalBasisPara" />
-</p>
+            </p>
           </motion.div>
         </div>
       </MainContainer>

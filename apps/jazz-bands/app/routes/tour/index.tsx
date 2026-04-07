@@ -81,7 +81,9 @@ export default function TourPage() {
 
   const groupAgeDays = 7
   const todayForGrouping = new Date(today)
-  const next14Days = new Date(todayForGrouping.getTime() + 14 * 24 * 60 * 60 * 1000)
+  const next14Days = new Date(
+    todayForGrouping.getTime() + 14 * 24 * 60 * 60 * 1000,
+  )
 
   const getNextGroupDate = (startDate: Date): string => {
     const groupStart = new Date(
@@ -133,7 +135,9 @@ export default function TourPage() {
   const next14DaysKey = intl.formatMessage({ id: 'tour.next14Days' })
 
   // Shared sorting function for consistency
-  const sortGroups = (entries: [string, TourDate[]][]): [string, TourDate[]][] =>
+  const sortGroups = (
+    entries: [string, TourDate[]][],
+  ): [string, TourDate[]][] =>
     entries.sort((a, b) => {
       if (a[0] === next14DaysKey) return -1
       if (b[0] === next14DaysKey) return 1
@@ -153,7 +157,7 @@ export default function TourPage() {
     return date >= todayForBadge ? 'upcoming' : 'past'
   }
 
-   const formatDate = (dateStr: string): string => {
+  const formatDate = (dateStr: string): string => {
     const formatted = intl.formatDate(new Date(dateStr), {
       weekday: 'long',
       month: 'long',
@@ -180,10 +184,10 @@ export default function TourPage() {
           <p className="text-2xl font-bold text-amber-400">
             {formatDate(date.date)}
           </p>
-          <p className="text-xl font-semibold text-white mt-2">
-            {date.venue}
+          <p className="text-xl font-semibold text-white mt-2">{date.venue}</p>
+          <p className="text-gray-300">
+            {date.city}, {date.region || ''}
           </p>
-          <p className="text-gray-300">{date.city}, {date.region || ''}</p>
           {date.details && <p className="mt-2 text-gray-300">{date.details}</p>}
         </div>
 
@@ -227,15 +231,25 @@ export default function TourPage() {
     )
 
     const renderAnimatedTourCard = (date: TourDate) => (
-      <Link key={date._key || date.slug} to={`/tour/${date.slug || date._key}`} className="block">
+      <Link
+        key={date._key || date.slug}
+        to={`/tour/${date.slug || date._key}`}
+        className="block"
+      >
         <GlassCard className="rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <p className="text-2xl font-bold text-amber-400">
               {formatDate(date.date)}
             </p>
-            <p className="text-xl font-semibold text-white mt-2">{date.venue}</p>
-            <p className="text-gray-300">{date.city}, {date.region || ''}</p>
-            {date.details && <p className="mt-2 text-gray-300">{date.details}</p>}
+            <p className="text-xl font-semibold text-white mt-2">
+              {date.venue}
+            </p>
+            <p className="text-gray-300">
+              {date.city}, {date.region || ''}
+            </p>
+            {date.details && (
+              <p className="mt-2 text-gray-300">{date.details}</p>
+            )}
           </div>
 
           <div className="flex gap-4 flex-wrap justify-center md:justify-end">
@@ -267,7 +281,9 @@ export default function TourPage() {
               </PrimaryButton>
             )}
             {!date.ticketsUrl && !date.soldOut && (
-              <Badge variant="default" className="!px-6 !py-2">Tickets TBA</Badge>
+              <Badge variant="default" className="!px-6 !py-2">
+                Tickets TBA
+              </Badge>
             )}
           </div>
         </GlassCard>
@@ -288,7 +304,7 @@ export default function TourPage() {
             </Link>
           ) : (
             renderAnimatedTourCard(date)
-          )
+          ),
         )}
       </div>
     )

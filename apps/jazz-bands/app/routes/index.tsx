@@ -1,7 +1,7 @@
 import { PortableText } from '@portabletext/react'
 import clsx from 'clsx'
 import { FormattedMessage } from 'react-intl'
-import { type LoaderFunctionArgs, useLoaderData, Link } from 'react-router'
+import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
@@ -121,11 +121,11 @@ export default function BandHome() {
             {band.members?.map((musician) => {
               const photoUrl = musician.photo?.asset
                 ? urlForImage
-                  .image(musician.photo.asset)
-                  .width(400)
-                  .height(400)
-                  .fit('crop')
-                  .url()
+                    .image(musician.photo.asset)
+                    .width(400)
+                    .height(400)
+                    .fit('crop')
+                    .url()
                 : ''
 
               return (
