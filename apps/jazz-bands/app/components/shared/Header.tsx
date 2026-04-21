@@ -26,9 +26,8 @@ function NavLink({ to, children, primaryColor }: NavLinkProps) {
     return (
       <Link
         to={to}
-        className={`focus-ring hover:opacity-80 relative px-1 ${
-          isActive ? 'text-white' : 'text-gray-300'
-        }`}
+        className={`focus-ring hover:opacity-80 relative px-1 ${isActive ? 'text-white' : 'text-gray-300'
+          }`}
       >
         {children}
         {isActive && (
