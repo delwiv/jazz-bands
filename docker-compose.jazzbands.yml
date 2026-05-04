@@ -1,0 +1,183 @@
+# ============================================================================
+# Jazz Bands Platform - Production Stack (Pi 4)
+# ============================================================================
+# Services:
+#   - Traefik: HTTP/8012 (ACME), TLS/8443 (Let's Encrypt), band routing
+#   - 6 Band containers: 256MB limits each
+#
+# Architecture:
+#   nginx:443 (TCP stream) → traefik:8443 (TLS termination) → band:5173
+#   nginx:80 (ACME)        → traefik:8012 (Let's Encrypt challenges)
+#
+# Usage:
+#   docker-compose -f docker-compose.jazzbands.yml up -d
+# ==============================================================================
+
+x-band-prod: &band-prod
+  image: ghcr.io/wildredbeard/jazz-bands:${COMPOSE_IMAGE_TAG:-latest}
+  restart: always
+  env_file:
+    - .env
+  environment:
+    - NODE_ENV=production
+    - PORT=5173
+    - SANITY_DATASET=production
+    - SANITY_STUDIO_DATASET=production
+  deploy:
+    resources:
+      limits:
+        memory: 256M
+      reservations:
+        memory: 128M
+  networks:
+    - jazzbands-prod
+
+volumes:
+  traefik-certs:
+    driver: local
+
+services:
+  # ==========================================================================
+  # TRAEFIK - Production Router
+  # ==========================================================================
+  traefik:
+    image: traefik:latest
+    container_name: jazzbands-traefik-prod
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=jazzbands-prod"
+      - "--entrypoints.web.address=:8012"
+      - "--entrypoints.websecure.address=:8443"
+      - "--certsresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certsresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certsresolvers.letsencrypt.acme.storage=./traefik-certs/acme.json"
+      - "--certsresolvers.letsencrypt.acme.disableCPE=true"
+      - "--accesslog=true"
+      - "--api.enable=true"
+      - "--api.dashboard=true"
+    ports:
+      - "8012:8012"
+      - "8013:8013"
+    expose:
+      - "8443"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certs:/traefik-certs:rw
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    networks:
+      - jazzbands-prod
+
+  boheme:
+    <<: *band-prod
+    container_name: boheme-prod
+    environment:
+      - BAND_SLUG=boheme
+      - SANITY_API_READ_TOKEN=${SANITY_READ_TOKEN}
+      - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID_BOHEME}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.boheme.rule=Host(`boheme.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.boheme.tls=true"
+      - "traefik.http.routers.boheme.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.boheme.entrypoints=websecure"
+      - "traefik.http.services.boheme.loadbalancer.server.port=5173"
+
+  canto:
+    <<: *band-prod
+    container_name: canto-prod
+    depends_on:
+      - boheme
+    environment:
+      - BAND_SLUG=canto
+      - SANITY_API_READ_TOKEN=${SANITY_READ_TOKEN}
+      - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID_CANTO}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.canto.rule=Host(`canto.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.canto.tls=true"
+      - "traefik.http.routers.canto.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.canto.entrypoints=websecure"
+      - "traefik.http.services.canto.loadbalancer.server.port=5173"
+
+  jazzola:
+    <<: *band-prod
+    container_name: jazzola-prod
+    depends_on:
+      - boheme
+    environment:
+      - BAND_SLUG=jazzola
+      - SANITY_API_READ_TOKEN=${SANITY_READ_TOKEN}
+      - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID_JAZZOLA}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jazzola.rule=Host(`jazzola.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.jazzola.tls=true"
+      - "traefik.http.routers.jazzola.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.jazzola.entrypoints=websecure"
+      - "traefik.http.services.jazzola.loadbalancer.server.port=5173"
+
+  swing-family:
+    <<: *band-prod
+    container_name: swing-family-prod
+    depends_on:
+      - boheme
+    environment:
+      - BAND_SLUG=swing-family
+      - SANITY_API_READ_TOKEN=${SANITY_READ_TOKEN}
+      - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID_SWING_FAMILY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.swing-family.rule=Host(`swing-family.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.swing-family.tls=true"
+      - "traefik.http.routers.swing-family.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.swing-family.entrypoints=websecure"
+      - "traefik.http.services.swing-family.loadbalancer.server.port=5173"
+
+  trio-rsh:
+    <<: *band-prod
+    container_name: trio-rsh-prod
+    depends_on:
+      - boheme
+    environment:
+      - BAND_SLUG=trio-rsh
+      - SANITY_API_READ_TOKEN=${SANITY_READ_TOKEN}
+      - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID_TRIO_RSH}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trio-rsh.rule=Host(`trio-rsh.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.trio-rsh.tls=true"
+      - "traefik.http.routers.trio-rsh.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.trio-rsh.entrypoints=websecure"
+      - "traefik.http.services.trio-rsh.loadbalancer.server.port=5173"
+
+  west-side-trio:
+    <<: *band-prod
+    container_name: west-side-prod
+    depends_on:
+      - boheme
+    environment:
+      - BAND_SLUG=west-side-trio
+      - SANITY_API_READ_TOKEN=${SANITY_READ_TOKEN}
+      - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID_WEST_SIDE_TRIO}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.west-side-trio.rule=Host(`west-side-trio.jazz.wildredbeard.tech`)"
+      - "traefik.http.routers.west-side-trio.tls=true"
+      - "traefik.http.routers.west-side-trio.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.west-side-trio.entrypoints=websecure"
+      - "traefik.http.services.west-side-trio.loadbalancer.server.port=5173"
+
+# ============================================================================
+# VOLUMES & NETWORKS
+# ============================================================================
+
+networks:
+  jazzbands-prod:
+    driver: bridge

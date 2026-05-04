@@ -63,11 +63,6 @@ if (!dataset) {
     'Missing required environment variable: SANITY_STUDIO_DATASET',
   )
 }
-if (!apiReadToken) {
-  throw new Error(
-    'Missing required environment variable: SANITY_API_READ_TOKEN',
-  )
-}
 
 // Base configuration
 const baseConfig: ClientConfig = {
@@ -88,9 +83,9 @@ const baseConfig: ClientConfig = {
 export const sanityClient =
   typeof window === 'undefined'
     ? createClient({
-        ...baseConfig,
-        useCdn: false,
-      })
+      ...baseConfig,
+      useCdn: false,
+    })
     : (undefined as never) // Type guard for client-side
 
 /**
