@@ -14,15 +14,7 @@
 # ==============================================================================
 
 x-band-prod: &band-prod
-  build:
-    context: ./apps/jazz-bands
-    dockerfile: Dockerfile
-    target: runner
-    args:
-      VITE_SANITY_STUDIO_PROJECT_ID: ${VITE_SANITY_STUDIO_PROJECT_ID}
-      VITE_SANITY_STUDIO_DATASET: ${VITE_SANITY_STUDIO_DATASET}
-      VITE_SANITY_API_READ_TOKEN: ${VITE_SANITY_API_READ_TOKEN}
-  image: jazz-bands:prod-alpine
+  image: ghcr.io/wildredbeard/jazz-bands:${COMPOSE_IMAGE_TAG:-latest}
   restart: always
   env_file:
     - .env
