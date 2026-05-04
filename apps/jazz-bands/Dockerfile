@@ -1,10 +1,14 @@
 # ============================================================================
 # Stage 1: Builder - Compile React Router SSR app
 # ============================================================================
-FROM node:24-alpine AS builder
+FROM node:24-slim AS builder
 
-# Install system dependencies for Vite/React build (if native modules needed)
-RUN apk add --no-cache python3 make g++
+# Install build dependencies (Debian slim, not Alpine—better ARM64 natively)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -29,34 +33,31 @@ COPY . .
 RUN npm run build
 
 # ============================================================================
-# Stage 2: Runner - Production container (Alpine, ~14MB base)
+# Stage 2: Runner - Production container (Debian slim, ~140MB base)
+# Note: Slim is larger than Alpine but has native ARM64 glibc support
 # ============================================================================
-FROM node:24-alpine AS runner
+FROM node:24-slim AS runner
 
-# Create non-root user (best practice, container = 256MB limit for Pi4)
-ARG UID=1001
-ARG GID=1001
-RUN addgroup -g ${GID} -S nodejs && \
-  adduser -S nodejs -u ${UID}
-
+# Set working directory
 WORKDIR /app
 
-# Copy build artifacts from builder stage
+# Copy build artifacts from builder stage (as root, then chown to node)
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json .
+RUN chown -R node:node /app
 
-# Switch to non-root user
-USER nodejs
+# Drop privileges (node-slim uses 'node' user/group)
+USER node
 
 ENV NODE_ENV=production
 ENV PORT=5173
 ENV NODE_OPTIONS="--max-old-space-size=180"
 
-# Healthcheck using lightweight wget (Alpine native)
+# Healthcheck using curl (default in node-slim)
 # Port 5173 = React Router v7 default, respects PORT env var
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD ["wget", "--spider", "-q", "http://localhost:5173/"]
+  CMD ["curl", "-f", "http://localhost:5173/", "-s"]
 
 # Zero-config production server with @react-router/serve
 # 180MB max heap for Pi 4; PORT=5173
