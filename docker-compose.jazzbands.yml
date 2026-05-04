@@ -30,7 +30,7 @@ x-band-prod: &band-prod
     - NODE_ENV=production
     - PORT=5173
     - SANITY_DATASET=production
-    - SANITY_STUDIO_DATASET: production
+    - SANITY_STUDIO_DATASET=production
   deploy:
     resources:
       limits:
@@ -101,7 +101,7 @@ services:
     <<: *band-prod
     container_name: canto-prod
     depends_on:
-      - boheme 
+      - boheme
     environment:
       - BAND_SLUG=canto
       - SANITY_API_READ_TOKEN=${SANITY_READ_TOKEN}
