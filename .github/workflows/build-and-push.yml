@@ -2,20 +2,20 @@ name: Build and Push Jazz Bands
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, develop]
     tags: ["v*"]
   pull_request:
-    branches: [main, develop]
+    branches: [master, develop]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-push:
-    name: Build and Push to GHCR
+  build:
+    name: Build ${{ github.head_ref || github.ref_name }}
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/v'))
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/v')) || github.event_name == 'pull_request'
 
     permissions:
       contents: read
@@ -46,13 +46,16 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/jazz-bands
           flavor: |
-            latest=auto
-            latest=true
+            latest=${{ github.ref == 'refs/heads/master' }}
           tags: |
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/heads/main') }}
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=sha,format=short
+            # Main branch only
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+            # Branch names (main, develop)
+            type=ref,event=branch,enable=${{ github.event_name != 'pull_request' }}
+            # Version tags
+            type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            # PR builds: pr-42-branch-name
+            type=raw,value=pr-${{ github.event.pull_request.number }}-${{ github.head_ref }},enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -66,13 +69,3 @@ jobs:
           cache-to: type=gha,mode=max
           # Pi4 = ARM64, else = AMD64 (builds as multi-arch manifest with QEMU)
           platforms: linux/amd64,linux/arm64
-
-      - name: Image digest
-        run: echo ${{ steps.build-and-push.outputs.digest }}
-
-      - name: Deploy stage
-        if: startsWith(github.ref, 'refs/heads/main')
-        run: |
-          echo "Workflow completed successfully."
-          echo "If you want GitHub Actions to auto-deploy to your Pi4 or VPS, add another step with SSH deployment."
-          echo "Current image: ghcr.io/${{ github.repository_owner }}/jazz-bands:latest"
