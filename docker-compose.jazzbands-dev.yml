@@ -17,8 +17,8 @@ x-band-common: &band-common
     context: ./apps/jazz-bands
     dockerfile: Dockerfile.dev
   networks:
-      - jazzbands-net
-      - jazz-bands-api
+    - jazzbands-net
+    - jazz-bands-api
   env_file:
     - .env
   volumes:
@@ -37,7 +37,7 @@ volumes:
 
 networks:
   jazzbands-net:
-    name: jazzbands-net  # Explicit name to avoid Docker Compose prefix
+    name: jazzbands-net # Explicit name to avoid Docker Compose prefix
   jazz-bands-api:
     external: true
 
@@ -61,8 +61,6 @@ services:
       -c shared_buffers=64MB
       -c effective_cache_size=128MB
       -c max_connections=50
-    ports:
-      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -112,7 +110,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.boheme-dev.entrypoints=web"
-      - 'traefik.http.routers.boheme-dev.rule=Host(`boheme-dev.jazz.wildredbeard.tech`)'
+      - "traefik.http.routers.boheme-dev.rule=Host(`boheme-dev.jazz.wildredbeard.tech`)"
       - "traefik.http.services.boheme-dev.loadbalancer.server.port=5173"
 
   canto:
@@ -124,7 +122,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.canto-dev.entrypoints=web"
-      - 'traefik.http.routers.canto-dev.rule=Host(`canto-dev.jazz.wildredbeard.tech`)'
+      - "traefik.http.routers.canto-dev.rule=Host(`canto-dev.jazz.wildredbeard.tech`)"
       - "traefik.http.services.canto-dev.loadbalancer.server.port=5173"
 
   jazzola:
@@ -136,7 +134,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jazzola-dev.entrypoints=web"
-      - 'traefik.http.routers.jazzola-dev.rule=Host(`jazzola-dev.jazz.wildredbeard.tech`)'
+      - "traefik.http.routers.jazzola-dev.rule=Host(`jazzola-dev.jazz.wildredbeard.tech`)"
       - "traefik.http.services.jazzola-dev.loadbalancer.server.port=5173"
 
   swing-family:
@@ -148,7 +146,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.swing-family-dev.entrypoints=web"
-      - 'traefik.http.routers.swing-family-dev.rule=Host(`swing-family-dev.jazz.wildredbeard.tech`)'
+      - "traefik.http.routers.swing-family-dev.rule=Host(`swing-family-dev.jazz.wildredbeard.tech`)"
       - "traefik.http.services.swing-family-dev.loadbalancer.server.port=5173"
 
   trio-rsh:
@@ -160,7 +158,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.trio-rsh-dev.entrypoints=web"
-      - 'traefik.http.routers.trio-rsh-dev.rule=Host(`trio-rsh-dev.jazz.wildredbeard.tech`)'
+      - "traefik.http.routers.trio-rsh-dev.rule=Host(`trio-rsh-dev.jazz.wildredbeard.tech`)"
       - "traefik.http.services.trio-rsh-dev.loadbalancer.server.port=5173"
 
   west-side-trio:
@@ -172,7 +170,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.west-side-trio-dev.entrypoints=web"
-      - 'traefik.http.routers.west-side-trio-dev.rule=Host(`west-side-trio-dev.jazz.wildredbeard.tech`)'
+      - "traefik.http.routers.west-side-trio-dev.rule=Host(`west-side-trio-dev.jazz.wildredbeard.tech`)"
       - "traefik.http.services.west-side-trio-dev.loadbalancer.server.port=5173"
 
   # ======================================================================
@@ -196,13 +194,14 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.umami-dev.entrypoints=web"
-      - 'traefik.http.routers.umami-dev.rule=Host(`analytics-dev.jazz.wildredbeard.tech`)'
+      - "traefik.http.routers.umami-dev.rule=Host(`analytics-dev.jazz.wildredbeard.tech`)"
       - "traefik.http.services.umami-dev.loadbalancer.server.port=3000"
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/heartbeat"]
+      test:
+        ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/heartbeat"]
       interval: 30s
       timeout: 10s
       retries: 3

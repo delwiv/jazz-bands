@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write # For OIDC authentication with GHCR
+      id-token: write
 
     steps:
       - name: Checkout code
@@ -36,7 +36,6 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          # GitHub token for OIDC authentication (no password needed)
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -67,5 +66,4 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # Pi4 = ARM64, else = AMD64 (builds as multi-arch manifest with QEMU)
           platforms: linux/amd64,linux/arm64
