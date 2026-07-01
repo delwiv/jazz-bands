@@ -11,7 +11,7 @@ import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { getBandWithTourDates } from '~/lib/queries'
-import { sanityClient } from '~/lib/sanity.settings'
+import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import type { TourDate } from '~/lib/types'
 
 function TourDateStructuredData({
@@ -45,7 +45,7 @@ function TourDateStructuredData({
     organizer: {
       '@type': 'MusicGroup',
       name: band,
-      sameAs: `${origin}/${bandSlug}`,
+      sameAs: `${origin}/`,
     },
   }
 
@@ -99,6 +99,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return {
     tourDate,
     band: band.name,
+    bandLogo: band.logo,
     bandSlug: band.slug,
     origin,
   }
@@ -107,13 +108,20 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
   if (!data) return []
 
-  const { tourDate, band } = data
-  const title = `${band} - ${tourDate.venue}, ${tourDate.city} - ${tourDate.date}`
+  const { tourDate, band, bandLogo, origin } = data
+  const title = `${band} — ${tourDate.venue}, ${tourDate.city} — ${tourDate.date}`
   const description = `Catch ${band} live at ${tourDate.venue} in ${tourDate.city} on ${tourDate.date}${tourDate.region ? `, ${tourDate.region}` : ''}.`
 
   const eventDate = tourDate.date.startsWith('T')
     ? tourDate.date
     : `${tourDate.date}T19:00:00`
+
+  let ogImageUrl = `${origin}/og-default.jpg`
+  try {
+    if (bandLogo?.asset?._ref) {
+      ogImageUrl = urlForImage.image(bandLogo).width(1200).height(630).fit('max').url()
+    }
+  } catch {}
 
   return [
     { title },
@@ -121,11 +129,15 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },
     { property: 'og:type', content: 'event' },
-    { property: 'og:site_name', content: 'Jazz Bands' },
+    { property: 'og:image', content: ogImageUrl },
+    { property: 'og:image:width', content: '1200' },
+    { property: 'og:image:height', content: '630' },
+    { property: 'og:site_name', content: band },
     { name: 'article:published_time', content: eventDate },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: description },
+    { name: 'twitter:image', content: ogImageUrl },
   ]
 }
 
