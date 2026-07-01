@@ -18,7 +18,7 @@ export default defineConfig({
   server: {
     // Allow wildcard subdomain access via Traefik
     host: '0.0.0.0',
-    allowedHosts: process.env.BAND_SLUG ? [`${process.env.BAND_SLUG}.jazz.wildredbeard.tech`] : ['localhost'],
+    allowedHosts: true,
   },
   build: {
     target: 'esnext',

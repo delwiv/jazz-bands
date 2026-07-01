@@ -14,15 +14,15 @@
 # ==============================================================================
 
 x-band-prod: &band-prod
-  image: ghcr.io/wildredbeard/jazz-bands:${COMPOSE_IMAGE_TAG:-latest}
+  image: ghcr.io/delwiv/jazz-bands:${COMPOSE_IMAGE_TAG:-latest}
   restart: always
   env_file:
     - .env
   environment:
     - NODE_ENV=production
     - PORT=5173
-    - SANITY_DATASET=production
-    - SANITY_STUDIO_DATASET=production
+    - SANITY_DATASET=staging
+    - SANITY_STUDIO_DATASET=staging
   deploy:
     resources:
       limits:
@@ -77,6 +77,7 @@ services:
   boheme:
     <<: *band-prod
     container_name: boheme-prod
+    env_file: .env
     environment:
       - BAND_SLUG=boheme
       - SANITY_API_READ_TOKEN=${SANITY_READ_TOKEN}
