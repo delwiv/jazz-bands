@@ -78,6 +78,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export function meta({ data }: Route.MetaArgs) {
   return [
+    { charset: 'utf-8' },
     { title: data?.bandSlug ? `${data.bandSlug} - Jazz Band` : 'Jazz Bands' },
     { name: 'description', content: 'Jazz band website' },
     {
