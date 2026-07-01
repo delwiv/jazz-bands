@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { buttonVariants } from '~/lib/animationVariants'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
 
 interface PrimaryButtonProps {
   children: React.ReactNode
@@ -20,11 +21,20 @@ export function PrimaryButton({
   target,
   rel,
 }: PrimaryButtonProps) {
+  const reducedMotion = useReducedMotion()
   const baseClasses =
     'focus-ring px-6 py-3 rounded-lg font-semibold transition-colors'
   const enabledClasses = disabled
     ? 'opacity-50 cursor-not-allowed'
     : 'bg-white text-black hover:bg-white/80 active:bg-white/90'
+
+  const motionProps = !reducedMotion
+    ? {
+        variants: buttonVariants,
+        whileHover: 'hover' as const,
+        whileTap: 'tap' as const,
+      }
+    : {}
 
   if (href) {
     return (
@@ -34,10 +44,8 @@ export function PrimaryButton({
         rel={rel}
         onClick={onClick}
         className={`${baseClasses} ${enabledClasses} ${className}`}
-        variants={buttonVariants}
         initial="initial"
-        whileHover="hover"
-        whileTap="tap"
+        {...motionProps}
       >
         {children}
       </motion.a>
@@ -49,9 +57,7 @@ export function PrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className={`${baseClasses} ${enabledClasses} ${className}`}
-      variants={buttonVariants}
-      whileHover="hover"
-      whileTap="tap"
+      {...motionProps}
     >
       {children}
     </motion.button>

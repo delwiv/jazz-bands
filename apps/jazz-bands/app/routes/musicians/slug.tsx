@@ -4,9 +4,11 @@ import { FormattedMessage } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { ThumbnailGrid } from '~/components/Gallery/ThumbnailGrid'
 import { MainContainer } from '~/components/shared/MainContainer'
+import { portableTextComponents } from '~/components/shared/PortableTextComponents'
 import { useImageGallery } from '~/contexts/ImageGalleryContext'
 import { getBandBySlug, getMusicianBySlug } from '~/lib/queries'
-import { sanityClient, urlForImage } from '~/lib/sanity.settings'
+import { sanityClient } from '~/lib/sanity.settings'
+import { getGalleryUrl, getOgImageUrl, getThumbUrl, getCoverUrl } from '~/lib/images'
 import type { GalleryImage } from '~/lib/types'
 
 function MusicianStructuredData({
@@ -133,12 +135,7 @@ export function meta({
   // Build photo URL for SEO
   const photoUrl =
     musician.photo && typeof musician.photo === 'object'
-      ? urlForImage
-          .image(musician.photo)
-          .width(1200)
-          .height(630)
-          .fit('max')
-          .url()
+      ? getOgImageUrl(musician.photo)
       : ''
 
   return [
@@ -179,12 +176,7 @@ export default function MusicianDetail() {
     musician.photo._ref
   ) {
     gallery.push({
-      src: urlForImage
-        .image(musician.photo)
-        .width(3840)
-        .height(3840)
-        .fit('max')
-        .url(),
+      src: getGalleryUrl(musician.photo),
       alt: musician.name,
       caption: `${musician.name} - ${musician.instrument || 'Musician'}`,
     })
@@ -212,14 +204,7 @@ export default function MusicianDetail() {
             addedImageIds.add(img.asset._ref)
           }
           return {
-            src: img.asset
-              ? urlForImage
-                  .image(img.asset)
-                  .width(3840)
-                  .height(3840)
-                  .fit('max')
-                  .url()
-              : '',
+            src: img.asset ? getGalleryUrl(img.asset) : '',
             alt: `${musician.name} - Gallery photo`,
             caption: img.metadata?.caption,
           }
@@ -230,22 +215,11 @@ export default function MusicianDetail() {
   // Build photo URLs
   const coverPhotoUrl =
     musician.photo && typeof musician.photo === 'object'
-      ? urlForImage
-          .image(musician.photo)
-          .width(2560)
-          .height(1440)
-          .fit('crop')
-          .crop('focalpoint')
-          .url()
+      ? getCoverUrl(musician.photo)
       : ''
   const profilePhotoUrl =
     musician.photo && typeof musician.photo === 'object'
-      ? urlForImage
-          .image(musician.photo)
-          .width(400)
-          .height(400)
-          .fit('crop')
-          .url()
+      ? getThumbUrl(musician.photo)
       : ''
 
   return (
@@ -317,36 +291,7 @@ export default function MusicianDetail() {
               {bio && bio.length > 0 ? (
                 <PortableText
                   value={bio}
-                  components={{
-                    block: {
-                      normal: ({ children }) => (
-                        <p className="mb-4 leading-relaxed">{children}</p>
-                      ),
-                      h1: ({ children }) => (
-                        <h3 className="text-2xl font-bold mb-4">{children}</h3>
-                      ),
-                      h2: ({ children }) => (
-                        <h4 className="text-xl font-semibold mb-3">
-                          {children}
-                        </h4>
-                      ),
-                      h3: ({ children }) => (
-                        <h5 className="text-lg font-medium mb-2">{children}</h5>
-                      ),
-                    },
-                    marks: {
-                      strong: ({ children }) => <strong>{children}</strong>,
-                      em: ({ children }) => <em>{children}</em>,
-                      link: ({ children, value }) => (
-                        <a
-                          href={value.href}
-                          className="text-blue-400 hover:underline"
-                        >
-                          {children}
-                        </a>
-                      ),
-                    },
-                  }}
+                  components={portableTextComponents}
                 />
               ) : (
                 <p className="text-gray-300">

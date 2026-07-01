@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useIntl } from 'react-intl'
 import { useKeyPress } from '~/hooks/useKeyPress'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { useSwipe } from '~/hooks/useSwipe'
@@ -24,6 +25,7 @@ export function ImageViewer({
 }: ImageViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const reducedMotion = useReducedMotion()
+  const intl = useIntl()
 
   const updateIndex = useCallback(
     (index: number) => {
@@ -95,7 +97,7 @@ export function ImageViewer({
             type="button"
             onClick={onClose}
             className="absolute top-4 right-4 z-20 glass-card p-2 rounded-full border border-white/20 hover:bg-white/10 transition-colors focus-ring"
-            aria-label="Close viewer"
+            aria-label={intl.formatMessage({ id: 'gallery.closeViewer' })}
           >
             <X className="w-6 h-6 text-white" />
           </button>

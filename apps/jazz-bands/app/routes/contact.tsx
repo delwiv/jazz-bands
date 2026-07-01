@@ -4,28 +4,13 @@ import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
-import { getBandBySlug } from '~/lib/queries'
+import { buttonVariants } from '~/lib/animationVariants'
 import type { ContactLoaderData } from '~/lib/routes.types'
-import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
+import { loadBand } from '~/lib/loaders'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const bandSlug = process.env.BAND_SLUG
-
-  if (!bandSlug) {
-    throw new Error('BAND_SLUG environment variable is required')
-  }
-
-  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
-
-  if (!band) {
-    throw new Response('Band not found', { status: 404 })
-  }
-
-  const url = new URL(request.url)
-  const baseUrl = `${url.protocol}//${url.host}`
-
-  return { band, baseUrl }
+  return loadBand(request)
 }
 
 export function meta({
@@ -98,6 +83,16 @@ export default function ContactPage() {
               </div>
             )}
 
+            {/* Mobile Section */}
+            {band.contact?.mobile && (
+              <div className="mb-8 p-6 bg-white/[0.04] rounded-xl border border-white/[0.05]">
+                <label className="block text-gray-300 font-medium mb-3">
+                  <FormattedMessage id="contact.mobile" />
+                </label>
+                <p className="text-gray-300 text-xl">{band.contact.mobile}</p>
+              </div>
+            )}
+
             {/* Social Media Section */}
             {band.socialMedia && band.socialMedia.length > 0 && (
               <div className="mb-8">
@@ -117,15 +112,9 @@ export default function ContactPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`focus-ring bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] text-gray-300 hover:text-white hover:border-white/[0.2] px-5 py-3 rounded-xl transition-all capitalize ${hoverColor}`}
-                        whileHover={
-                          !reducedMotion
-                            ? {
-                                scale: 1.05,
-                                boxShadow: '0 4px 12px rgba(255,255,255,0.1)',
-                              }
-                            : undefined
-                        }
-                        whileTap={!reducedMotion ? { scale: 0.95 } : undefined}
+                        variants={!reducedMotion ? buttonVariants : undefined}
+                        whileHover={!reducedMotion ? "hover" : undefined}
+                        whileTap={!reducedMotion ? "tap" : undefined}
                         aria-label={intl.formatMessage(
                           { id: 'contact.followAria' },
                           { bandName: band.name, platform: social.platform },

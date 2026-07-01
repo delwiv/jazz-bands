@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { Link, useLocation } from 'react-router'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
-import { navUnderlineVariants } from '~/lib/animationVariants'
+import { navUnderlineVariants, dropdownVariants } from '~/lib/animationVariants'
 import type { Band } from '~/lib/types'
 
 interface HeaderProps {
@@ -14,10 +14,9 @@ interface HeaderProps {
 interface NavLinkProps {
   to: string
   children: React.ReactNode
-  primaryColor: string
 }
 
-function NavLink({ to, children, primaryColor }: NavLinkProps) {
+function NavLink({ to, children }: NavLinkProps) {
   const reducedMotion = useReducedMotion()
   const location = useLocation()
   const isActive = location.pathname === to
@@ -31,10 +30,7 @@ function NavLink({ to, children, primaryColor }: NavLinkProps) {
       >
         {children}
         {isActive && (
-          <span
-            className="absolute bottom-0 left-0 h-0.5"
-            style={{ backgroundColor: primaryColor }}
-          />
+          <span className="absolute bottom-0 left-0 h-0.5 bg-primary" />
         )}
       </Link>
     )
@@ -52,8 +48,7 @@ function NavLink({ to, children, primaryColor }: NavLinkProps) {
           initial="hidden"
           animate="visible"
           exit="hidden"
-          className="absolute bottom-0 left-0 h-0.5"
-          style={{ borderColor: primaryColor, backgroundColor: primaryColor }}
+          className="absolute bottom-0 left-0 h-0.5 bg-primary"
         />
       </AnimatePresence>
     </Link>
@@ -62,8 +57,6 @@ function NavLink({ to, children, primaryColor }: NavLinkProps) {
 
 export function Header({ band }: HeaderProps) {
   const intl = useIntl()
-  const primaryColor = band.branding?.primaryColor || '#1e3a8a'
-  const logoTint = primaryColor.replace(')', ', 0.8)').replace('rgb', 'rgba')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -71,8 +64,7 @@ export function Header({ band }: HeaderProps) {
       <nav className="max-w-7xl flex items-center justify-between w-full">
         <Link
           to="/"
-          className="focus-ring text-2xl font-bold text-white"
-          style={{ color: logoTint }}
+          className="focus-ring text-2xl font-bold text-primary/80"
           onClick={() => setIsMenuOpen(false)}
         >
           {band.name}
@@ -95,22 +87,22 @@ export function Header({ band }: HeaderProps) {
 
         {/* Desktop Navigation */}
         <div className="flex gap-6 hidden md:flex">
-          <NavLink to="/" primaryColor={primaryColor}>
+          <NavLink to="/">
             <FormattedMessage id="header.home" />
           </NavLink>
-          <NavLink to="/musicians" primaryColor={primaryColor}>
+          <NavLink to="/musicians">
             <FormattedMessage id="header.musicians" />
           </NavLink>
-          <NavLink to="/tour" primaryColor={primaryColor}>
+          <NavLink to="/tour">
             <FormattedMessage id="header.tour" />
           </NavLink>
-          <NavLink to="/gallery" primaryColor={primaryColor}>
+          <NavLink to="/gallery">
             <FormattedMessage id="header.gallery" />
           </NavLink>
-          <NavLink to="/contact" primaryColor={primaryColor}>
+          <NavLink to="/contact">
             <FormattedMessage id="header.contact" />
           </NavLink>
-          <NavLink to="/about" primaryColor={primaryColor}>
+          <NavLink to="/about">
             <FormattedMessage id="header.about" />
           </NavLink>
         </div>
@@ -119,10 +111,10 @@ export function Header({ band }: HeaderProps) {
         {isMenuOpen && (
           <AnimatePresence>
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              variants={dropdownVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
               className="absolute top-full left-0 right-0 bg-slate-900/98 backdrop-blur-xl border-b border-white/10 shadow-xl md:hidden"
             >
               <div className="flex flex-col p-4 space-y-2">

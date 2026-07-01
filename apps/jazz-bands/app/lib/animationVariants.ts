@@ -66,54 +66,6 @@ export const fadeUpVariants: Variants = {
   },
 } as Variants
 
-export const fadeInVariants: Variants = {
-  initial: {
-    opacity: 0,
-  },
-  animate: {
-    opacity: 1,
-    transition: {
-      duration: 0.5,
-      ease: 'easeOut',
-    },
-  },
-} as Variants
-
-export const scaleInVariants: Variants = {
-  initial: {
-    opacity: 0,
-    scale: 0.9,
-  },
-  animate: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.4,
-      ease: 'easeOut',
-    },
-  },
-} as Variants
-
-export const heroParallaxVariants = {
-  container: {
-    initial: {
-      y: 0,
-    },
-  },
-  background: {
-    transition: {
-      type: 'tween',
-      ease: 'linear',
-    },
-  },
-  content: {
-    transition: {
-      type: 'tween',
-      ease: 'easeOut',
-    },
-  },
-}
-
 export const cardHoverVariants: Variants = {
   initial: {
     y: 0,
@@ -186,6 +138,29 @@ export const navUnderlineVariants: Variants = {
     },
   },
 } as Variants
+
+export const dropdownVariants: Variants = {
+  initial: {
+    opacity: 0,
+    y: -10,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.2,
+      ease: 'easeOut',
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    transition: {
+      duration: 0.2,
+      ease: 'easeIn',
+    },
+  },
+}
 
 export const galleryItemVariants: Variants = {
   hidden: {

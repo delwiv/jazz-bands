@@ -1,32 +1,17 @@
 import { PortableText } from '@portabletext/react'
-import clsx from 'clsx'
 import { FormattedMessage } from 'react-intl'
 import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
-import { getBandBySlug } from '~/lib/queries'
+import { portableTextComponents } from '~/components/shared/PortableTextComponents'
 import type { BandHomeLoaderData } from '~/lib/routes.types'
-import { sanityClient, urlForImage } from '~/lib/sanity.settings'
+import { urlForImage } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
+import { loadBand } from '~/lib/loaders'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const bandSlug = process.env.BAND_SLUG
-
-  if (!bandSlug) {
-    throw new Error('BAND_SLUG environment variable is required')
-  }
-
-  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
-
-  if (!band) {
-    throw new Response(`Band "${bandSlug}" not found`, { status: 404 })
-  }
-
-  const url = new URL(request.url)
-  const baseUrl = `${url.protocol}//${url.host}`
-
-  return { band, baseUrl }
+  return loadBand(request)
 }
 
 export function meta({
@@ -65,10 +50,7 @@ export default function BandHome() {
         <section className="">
           <div className="glass-card p-4 rounded-lg xl:p-6">
             <div
-              className={clsx(
-                mainImage && 'xl:grid-cols-2',
-                'grid gap-8 md:gap-12 items-center justify-center',
-              )}
+              className={`${mainImage ? 'xl:grid-cols-2 ' : ''}grid gap-8 md:gap-12 items-center justify-center`}
             >
               {/* Left: Main Image */}
               {(() => {
@@ -96,17 +78,7 @@ export default function BandHome() {
                   <div className="prose prose-invert max-w-none text-lg text-gray-200 leading-relaxed">
                     <PortableText
                       value={band.description}
-                      components={{
-                        block: {
-                          normal: ({ children }) => (
-                            <p className="mb-4">{children}</p>
-                          ),
-                        },
-                        marks: {
-                          strong: ({ children }) => <strong>{children}</strong>,
-                          em: ({ children }) => <em>{children}</em>,
-                        },
-                      }}
+                      components={portableTextComponents}
                     />
                   </div>
                 )}

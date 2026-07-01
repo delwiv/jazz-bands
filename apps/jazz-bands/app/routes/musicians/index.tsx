@@ -6,31 +6,18 @@ import { GlassCard } from '~/components/shared/GlassCard'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { staggerContainerVariants } from '~/lib/animationVariants'
-import { getBandBySlug, getMusiciansByBandId } from '~/lib/queries'
+import { getMusiciansByBandId } from '~/lib/queries'
 import type { MusiciansLoaderData } from '~/lib/routes.types'
-import { sanityClient, urlForImage } from '~/lib/sanity.settings'
+import { sanityClient } from '~/lib/sanity.settings'
+import { getThumbUrl } from '~/lib/images'
 import { buildBandMeta } from '~/utils/seo'
+import { loadBand } from '~/lib/loaders'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const bandSlug = process.env.BAND_SLUG
-
-  if (!bandSlug) {
-    throw new Error('BAND_SLUG environment variable is required')
-  }
-
-  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
-
-  if (!band) {
-    throw new Response('Band not found', { status: 404 })
-  }
-
+  const { band, baseUrl } = await loadBand(request)
   const musicians = await sanityClient.fetch(getMusiciansByBandId, {
     bandId: band._id,
   })
-
-  const url = new URL(request.url)
-  const baseUrl = `${url.protocol}//${url.host}`
-
   return { band, musicians, baseUrl }
 }
 
@@ -75,12 +62,7 @@ export default function MusiciansPage() {
                     transition={{ duration: 0.4 }}
                   >
                     <img
-                      src={urlForImage
-                        .image(musician.photo)
-                        .width(800)
-                        .height(800)
-                        .fit('crop')
-                        .url()}
+                      src={getThumbUrl(musician.photo, 800, 800)}
                       alt={musician.name}
                       loading="lazy"
                       decoding="async"

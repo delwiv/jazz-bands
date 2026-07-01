@@ -1,35 +1,12 @@
-import { motion } from 'framer-motion'
 import { FormattedMessage } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { BandStructuredData } from '~/components/StructuredData'
 import { MainContainer } from '~/components/shared/MainContainer'
-import { getBandBySlug } from '~/lib/queries'
-import type { AboutLoaderData } from '~/lib/routes.types'
-import { sanityClient } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
-
-interface AboutLoaderData {
-  band: any
-  baseUrl: string
-}
+import { loadBand } from '~/lib/loaders'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const bandSlug = process.env.BAND_SLUG
-
-  if (!bandSlug) {
-    throw new Error('BAND_SLUG environment variable is required')
-  }
-
-  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
-
-  if (!band) {
-    throw new Response('Band not found', { status: 404 })
-  }
-
-  const url = new URL(request.url)
-  const baseUrl = `${url.protocol}//${url.host}`
-
-  return { band, baseUrl }
+  return loadBand(request)
 }
 
 export function meta({
@@ -42,7 +19,7 @@ export function meta({
 }
 
 export default function AboutPage() {
-  const { band, baseUrl } = useLoaderData<AboutLoaderData>()
+  const { band, baseUrl } = useLoaderData<typeof loader>()
 
   return (
     <>
@@ -52,11 +29,7 @@ export default function AboutPage() {
         title={<FormattedMessage id="about.aboutUs" />}
       >
         <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="glass-card shadow-2xl p-8 mb-8"
+          <div className="glass-card shadow-2xl p-8 mb-8"
           >
             <h2 className="text-2xl font-bold mb-6 text-white">
               <FormattedMessage id="about.privacyAndAnalytics" />
@@ -179,7 +152,7 @@ export default function AboutPage() {
             <p className="text-gray-300 leading-relaxed mb-6">
               <FormattedMessage id="about.legalBasisPara" />
             </p>
-          </motion.div>
+          </div>
         </div>
       </MainContainer>
     </>
