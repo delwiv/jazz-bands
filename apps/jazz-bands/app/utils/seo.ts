@@ -6,6 +6,7 @@
  */
 
 import type { MetaFunction } from 'react-router'
+import { urlForImage } from '~/lib/sanity.settings'
 
 /**
  * Get the base URL from request (protocol + host)
@@ -66,6 +67,17 @@ export function generateMetaDescription(
   maxLength: number = 160,
 ): string {
   return truncate(description, maxLength)
+}
+
+function resolveImageUrl(
+  image: { asset?: { _ref?: string }; hotspot?: any; crop?: any } | null | undefined,
+): string | null {
+  if (!image?.asset?._ref) return null
+  try {
+    return urlForImage.image(image).width(1200).height(630).fit('max').url()
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -183,14 +195,27 @@ export function buildBandMeta(
   const ogDescription =
     band.openGraph?.description ||
     generateMetaDescription(pageDescription || descriptionText, 200)
-  const ogImage = getOgImageUrl(baseUrl, null)
+
+  const resolvedOgImage =
+    resolveImageUrl(band.openGraph?.image) ||
+    resolveImageUrl(band.logo as any)
+  const ogImage = resolvedOgImage
+    ? getOgImageUrl(baseUrl, resolvedOgImage)
+    : getOgImageUrl(baseUrl, null)
 
   // Twitter Card
   const twitterCard = band.twitterCard?.card || 'summary_large_image'
   const twitterTitle = band.twitterCard?.title || ogTitle
   const twitterDescription = band.twitterCard?.description || ogDescription
-  const twitterImage = ogImage
-  const twitterCreator = band.twitterCard?.creator || `@${band.slug.current}`
+
+  const resolvedTwitterImage =
+    resolveImageUrl(band.twitterCard?.image) || resolvedOgImage
+  const twitterImage = resolvedTwitterImage
+    ? getOgImageUrl(baseUrl, resolvedTwitterImage)
+    : ogImage
+
+  const bandSlug = typeof band.slug === 'string' ? band.slug : band.slug?.current
+  const twitterCreator = band.twitterCard?.creator || (bandSlug ? `@${bandSlug}` : '@jazzband')
 
   const meta: ReturnType<MetaFunction> = [
     // Basic Meta Tags
