@@ -6,16 +6,11 @@ interface FooterProps {
 }
 
 export function Footer({ band }: FooterProps) {
-  const secondaryColor = band.branding?.secondaryColor || '#dc2626'
-
   return (
     <footer className="relative glass-card border-t py-12 rounded-t-lg w-full">
       <div className="max-w-7xl mx-auto px-3 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
-          <h3
-            className="font-bold text-lg mb-4 text-gray-300 hover:text-opacity-100 transition-colors"
-            style={{ color: secondaryColor }}
-          >
+          <h3 className="font-bold text-lg mb-4 text-secondary">
             {band.name}
           </h3>
           <p className="text-gray-300">

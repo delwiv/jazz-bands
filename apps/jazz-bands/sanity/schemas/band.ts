@@ -111,6 +111,41 @@ export const bandType = defineType({
       description: 'Référence vers le document de contact partagé.',
     }),
     defineField({
+      name: 'socialMedia',
+      title: 'Réseaux Sociaux',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'platform',
+              title: 'Plateforme',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Facebook', value: 'facebook' },
+                  { title: 'Instagram', value: 'instagram' },
+                  { title: 'YouTube', value: 'youtube' },
+                  { title: 'Spotify', value: 'spotify' },
+                  { title: 'TikTok', value: 'tiktok' },
+                  { title: 'Twitter', value: 'twitter' },
+                  { title: 'Bandcamp', value: 'bandcamp' },
+                  { title: 'SoundCloud', value: 'soundcloud' },
+                ],
+              },
+            }),
+            defineField({
+              name: 'url',
+              title: 'URL',
+              type: 'url',
+              description: 'Full URL to the social media profile',
+            }),
+          ],
+        },
+      ],
+    }),
+    defineField({
       name: 'branding',
       title: 'Identité Visuelle',
       type: 'object',

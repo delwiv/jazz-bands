@@ -165,6 +165,7 @@ export interface Band {
     _type: 'contact'
     email?: string
     phone?: string
+    mobile?: string
   }
   socialMedia?: Array<{
     _key?: string

@@ -85,6 +85,7 @@
     "getInTouch": "Get in Touch",
     "email": "Email",
     "phone": "Phone",
+    "mobile": "Mobile",
     "followUs": "Follow Us",
     "bookingInquiries": "For booking inquiries, please contact us via email or phone.",
     "responseTime": "We typically respond within 48 hours.",
@@ -117,7 +118,10 @@
     "ourGallery": "Gallery",
     "noImages": "No images available at the moment",
     "comingSoon": "Gallery coming soon",
-    "viewFullSize": "View Full Size"
+    "viewFullSize": "View Full Size",
+    "closeViewer": "Close viewer",
+    "previousImage": "Previous image",
+    "nextImage": "Next image"
   },
   "carousel": {
     "close": "Close carousel",

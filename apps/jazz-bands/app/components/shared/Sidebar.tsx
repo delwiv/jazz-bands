@@ -1,15 +1,15 @@
 import { useImageGallery } from '~/contexts/ImageGalleryContext'
 import type { GalleryImage, Recording } from '~/lib/types'
-import { StickyPlayer } from '../audio/StickyPlayer'
 import { ImagePreview } from '../Gallery/ImagePreview'
+import { StickyPlayer } from '../audio/StickyPlayer'
 
 export interface SidebarProps {
-  initialTrack: Recording | null
-  initialQueue: Recording[]
   images: GalleryImage[]
+  initialTrack?: Recording | null
+  initialQueue?: Recording[]
 }
 
-export function Sidebar({ initialTrack, initialQueue, images }: SidebarProps) {
+export function Sidebar({ images, initialTrack, initialQueue }: SidebarProps) {
   const { open } = useImageGallery()
 
   return (

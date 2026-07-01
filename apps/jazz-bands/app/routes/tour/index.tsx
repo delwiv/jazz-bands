@@ -11,30 +11,14 @@ import { GlassCard } from '~/components/shared/GlassCard'
 import { MainContainer } from '~/components/shared/MainContainer'
 import { PrimaryButton } from '~/components/shared/PrimaryButton'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
-import { staggerContainerVariants } from '~/lib/animationVariants'
-import { getBandBySlug } from '~/lib/queries'
+import { staggerContainerVariants, dropdownVariants } from '~/lib/animationVariants'
 import type { TourLoaderData } from '~/lib/routes.types'
-import { sanityClient } from '~/lib/sanity.settings'
 import type { TourDate } from '~/lib/types'
 import { buildBandMeta } from '~/utils/seo'
+import { loadBand } from '~/lib/loaders'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const bandSlug = process.env.BAND_SLUG
-
-  if (!bandSlug) {
-    throw new Error('BAND_SLUG environment variable is required')
-  }
-
-  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
-
-  if (!band) {
-    throw new Response('Band not found', { status: 404 })
-  }
-
-  const url = new URL(request.url)
-  const baseUrl = `${url.protocol}//${url.host}`
-
-  return { band, baseUrl }
+  return loadBand(request)
 }
 
 export function meta({
@@ -168,7 +152,61 @@ export default function TourPage() {
     return formatted.charAt(0).toUpperCase() + formatted.slice(1)
   }
 
-  // Helper function to render grouped tour dates
+  function TourCardContent({ date }: { date: TourDate }) {
+  return (
+    <>
+      <div>
+        <p className="text-2xl font-bold text-amber-400">
+          {formatDate(date.date)}
+        </p>
+        <p className="text-xl font-semibold text-white mt-2">{date.venue}</p>
+        <p className="text-gray-300">
+          {date.city}, {date.region || ''}
+        </p>
+        {date.details && <p className="mt-2 text-gray-300">{date.details}</p>}
+      </div>
+
+      <div className="flex gap-4 flex-wrap justify-center md:justify-end">
+        <Badge
+          variant={
+            date.soldOut
+              ? 'warning'
+              : formatDateBadge(date.date) === 'upcoming'
+                ? 'success'
+                : 'default'
+          }
+        >
+          {date.soldOut ? (
+            <FormattedMessage id="tour.soldOut" />
+          ) : formatDateBadge(date.date) === 'upcoming' ? (
+            <FormattedMessage id="tour.upcoming" />
+          ) : (
+            <FormattedMessage id="tour.past" />
+          )}
+        </Badge>
+
+        {date.soldOut || !date.ticketsUrl ? null : (
+          <PrimaryButton
+            href={date.ticketsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="!py-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FormattedMessage id="tour.getTickets" />
+          </PrimaryButton>
+        )}
+        {!date.ticketsUrl && !date.soldOut && (
+          <Badge variant="default" className="!px-6 !py-2">
+            <FormattedMessage id="tour.ticketsTBA" />
+          </Badge>
+        )}
+      </div>
+    </>
+  )
+}
+
+// Helper function to render grouped tour dates
   const renderGroups = (
     groups: [string, TourDate[]][],
     section: 'upcoming' | 'past',
@@ -180,53 +218,7 @@ export default function TourPage() {
         className="rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
         hover={false}
       >
-        <div>
-          <p className="text-2xl font-bold text-amber-400">
-            {formatDate(date.date)}
-          </p>
-          <p className="text-xl font-semibold text-white mt-2">{date.venue}</p>
-          <p className="text-gray-300">
-            {date.city}, {date.region || ''}
-          </p>
-          {date.details && <p className="mt-2 text-gray-300">{date.details}</p>}
-        </div>
-
-        <div className="flex gap-4 flex-wrap justify-center md:justify-end">
-          <Badge
-            variant={
-              date.soldOut
-                ? 'warning'
-                : formatDateBadge(date.date) === 'upcoming'
-                  ? 'success'
-                  : 'default'
-            }
-          >
-            {date.soldOut ? (
-              <FormattedMessage id="tour.soldOut" />
-            ) : formatDateBadge(date.date) === 'upcoming' ? (
-              <FormattedMessage id="tour.upcoming" />
-            ) : (
-              <FormattedMessage id="tour.past" />
-            )}
-          </Badge>
-
-          {date.soldOut || !date.ticketsUrl ? null : (
-            <PrimaryButton
-              href={date.ticketsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="!py-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FormattedMessage id="tour.getTickets" />
-            </PrimaryButton>
-          )}
-          {!date.ticketsUrl && !date.soldOut && (
-            <Badge variant="default" className="!px-6 !py-2">
-              <FormattedMessage id="tour.ticketsTBA" />
-            </Badge>
-          )}
-        </div>
+        <TourCardContent date={date} />
       </GlassCard>
     )
 
@@ -237,55 +229,7 @@ export default function TourPage() {
         className="block"
       >
         <GlassCard className="rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <p className="text-2xl font-bold text-amber-400">
-              {formatDate(date.date)}
-            </p>
-            <p className="text-xl font-semibold text-white mt-2">
-              {date.venue}
-            </p>
-            <p className="text-gray-300">
-              {date.city}, {date.region || ''}
-            </p>
-            {date.details && (
-              <p className="mt-2 text-gray-300">{date.details}</p>
-            )}
-          </div>
-
-          <div className="flex gap-4 flex-wrap justify-center md:justify-end">
-            <Badge
-              variant={
-                date.soldOut
-                  ? 'warning'
-                  : formatDateBadge(date.date) === 'upcoming'
-                    ? 'success'
-                    : 'default'
-              }
-            >
-              {date.soldOut
-                ? intl.formatMessage({ id: 'tour.soldOut' })
-                : formatDateBadge(date.date) === 'upcoming'
-                  ? intl.formatMessage({ id: 'tour.upcoming' })
-                  : intl.formatMessage({ id: 'tour.past' })}
-            </Badge>
-
-            {date.soldOut || !date.ticketsUrl ? null : (
-              <PrimaryButton
-                href={date.ticketsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="!py-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Get Tickets
-              </PrimaryButton>
-            )}
-            {!date.ticketsUrl && !date.soldOut && (
-              <Badge variant="default" className="!px-6 !py-2">
-                Tickets TBA
-              </Badge>
-            )}
-          </div>
+          <TourCardContent date={date} />
         </GlassCard>
       </Link>
     )
@@ -342,10 +286,10 @@ export default function TourPage() {
                 {!reducedMotion && isDropdownOpen && (
                   <AnimatePresence>
                     <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
+                      variants={dropdownVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
                       className="absolute top-full mt-2 left-0 bg-slate-900/90 backdrop-blur-xl border border-white/[0.1] rounded-lg overflow-hidden z-50 min-w-[200px]"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -385,7 +329,7 @@ export default function TourPage() {
                       }}
                       className="focus-ring w-full text-left px-4 py-2 text-white hover:bg-white/[0.06] transition"
                     >
-                      All Regions
+                      <FormattedMessage id="tour.allRegions" />
                     </button>
                     {regions.map((region) => (
                       <button

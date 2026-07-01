@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useReducedMotion } from '~/hooks/useReducedMotion'
 
 interface PaginationDotsProps {
   currentIndex: number
@@ -6,7 +7,6 @@ interface PaginationDotsProps {
   onSelect: (index: number) => void
   className?: string
   dotClassName?: string
-  activeDotClassName?: string
 }
 
 export function PaginationDots({
@@ -15,9 +15,9 @@ export function PaginationDots({
   onSelect,
   className = '',
   dotClassName = '',
-  activeDotClassName = '',
 }: PaginationDotsProps) {
   if (totalImages <= 1) return null
+  const reducedMotion = useReducedMotion()
 
   return (
     <div
@@ -31,13 +31,13 @@ export function PaginationDots({
           className={`focus-ring ${dotClassName}`}
           aria-label={`Go to image ${index + 1}`}
           aria-current={index === currentIndex ? 'true' : undefined}
-          whileHover={{ scale: 1.2 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={!reducedMotion ? { scale: 1.2 } : undefined}
+          whileTap={!reducedMotion ? { scale: 0.9 } : undefined}
         >
           <div
             className={`w-2 h-2 rounded-full transition-all ${
               index === currentIndex
-                ? `bg-white w-4 ${activeDotClassName}`
+                ? 'bg-white w-4'
                 : 'bg-white/40 hover:bg-white/60'
             }`}
           />

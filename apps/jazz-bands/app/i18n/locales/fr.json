@@ -84,7 +84,8 @@
     "contact": "Contact",
     "getInTouch": "Contactez-nous",
     "email": "Email",
-    "phone": "Téléphone",
+    "phone": "Téléphone (fixe)",
+    "mobile": "Mobile",
     "followUs": "Suivez-nous",
     "bookingInquiries": "Pour les demandes de réservation, veuillez nous contacter par email ou téléphone.",
     "responseTime": "Nous répondons généralement sous 48 heures.",
@@ -117,7 +118,10 @@
     "ourGallery": "Galerie",
     "noImages": "Aucune image disponible pour le moment",
     "comingSoon": "La galerie sera bientôt disponible",
-    "viewFullSize": "Voir en taille réelle"
+    "viewFullSize": "Voir en taille réelle",
+    "closeViewer": "Fermer le visualiseur",
+    "previousImage": "Image précédente",
+    "nextImage": "Image suivante"
   },
   "carousel": {
     "close": "Fermer le carrousel",

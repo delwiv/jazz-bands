@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import React from 'react'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
+import { pageVariants } from '~/lib/animationVariants'
 
 export interface MainContainerProps {
   children: React.ReactNode
@@ -59,7 +60,7 @@ export function MainContainer({
             !reducedMotion ? { duration: 0.5, ease: 'easeOut' } : undefined
           }
           viewport={{ once: true }}
-          className="text-3xl md:text-4xl font-lgmt-bold text-white mb-4"
+          className="text-3xl md:text-4xl font-bold text-white mb-4"
         >
           {title}
         </motion.h2>

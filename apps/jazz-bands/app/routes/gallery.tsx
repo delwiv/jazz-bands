@@ -5,34 +5,19 @@ import { ThumbnailGrid } from '~/components/Gallery/ThumbnailGrid'
 import { BandStructuredData } from '~/components/StructuredData'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { MainContainer } from '~/components/shared/MainContainer'
+import { getGalleryUrl } from '~/lib/images'
 import { useImageGallery } from '~/contexts/ImageGalleryContext'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import {
   galleryItemVariants,
   staggerContainerVariants,
 } from '~/lib/animationVariants'
-import { getBandBySlug } from '~/lib/queries'
 import type { GalleryLoaderData } from '~/lib/routes.types'
-import { sanityClient, urlForImage } from '~/lib/sanity.settings'
 import { buildBandMeta } from '~/utils/seo'
+import { loadBand } from '~/lib/loaders'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const bandSlug = process.env.BAND_SLUG
-
-  if (!bandSlug) {
-    throw new Error('BAND_SLUG environment variable is required')
-  }
-
-  const band = await sanityClient.fetch(getBandBySlug, { slug: bandSlug })
-
-  if (!band) {
-    throw new Response('Band not found', { status: 404 })
-  }
-
-  const url = new URL(request.url)
-  const baseUrl = `${url.protocol}//${url.host}`
-
-  return { band, baseUrl }
+  return loadBand(request)
 }
 
 export function meta({
@@ -53,14 +38,7 @@ export default function GalleryPage() {
     band.images
       ?.filter((img: (typeof band.images)[number]) => img.asset)
       .map((img: (typeof band.images)[number], idx: number) => ({
-        src: img.asset
-          ? urlForImage
-              .image(img.asset)
-              .width(3840)
-              .height(3840)
-              .fit('max')
-              .url()
-          : '',
+        src: img.asset ? getGalleryUrl(img.asset) : '',
         alt: img.metadata?.caption || `${band.name} gallery image ${idx + 1}`,
       })) || []
 

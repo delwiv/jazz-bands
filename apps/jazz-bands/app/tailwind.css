@@ -16,6 +16,19 @@
 
   /* Focus ring for accessibility */
   --color-focus: #3b82f6;
+
+  /* Error page dark palette */
+  --color-error-surface: #1e293b;
+  --color-error-surface-raised: #0f172a;
+  --color-error-accent: #ef4444;
+  --color-error-accent-secondary: #f97316;
+
+  /* Social media brand colors */
+  --color-social-twitter: #1DA1F2;
+  --color-social-facebook: #1877F2;
+  --color-social-instagram: #E4405F;
+  --color-social-spotify: #1DB954;
+  --color-social-youtube: #FF0000;
 }
 
 body {
