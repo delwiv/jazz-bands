@@ -33,7 +33,7 @@ export function BandStructuredData({
   band,
   baseUrl = 'https://jazzbands.com',
 }: BandStructuredDataProps) {
-  const bandUrl = `${baseUrl}/${band.slug.current}`
+  const bandUrl = baseUrl
 
   const imageUrl = band.logo?.asset?.url?.({ width: 800, height: 800 })
 
@@ -79,6 +79,7 @@ interface EventStructuredDataProps {
     details?: string
     ticketsUrl?: string
     soldOut?: boolean
+    country?: string
   }
   band: {
     name: string
@@ -92,7 +93,7 @@ export function EventStructuredData({
   band,
   baseUrl = 'https://jazzbands.com',
 }: EventStructuredDataProps) {
-  const bandUrl = `${baseUrl}/${band.slug.current}`
+  const bandUrl = baseUrl
 
   const structuredData: any = {
     '@context': 'https://schema.org',
@@ -106,7 +107,7 @@ export function EventStructuredData({
         '@type': 'PostalAddress',
         addressLocality: event.city,
         ...(event.region && { addressRegion: event.region }),
-        addressCountry: 'FR',
+        addressCountry: event.country || 'FR',
       },
     },
     performer: {
