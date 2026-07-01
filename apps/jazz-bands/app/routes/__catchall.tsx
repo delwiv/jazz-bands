@@ -1,5 +1,29 @@
 import { useRouteError } from 'react-router'
 
+export function meta({
+  location,
+}: {
+  location: { protocol: string; host: string }
+}) {
+  const origin = `${location.protocol}//${location.host}`
+  const title = 'Page not found - Jazz Band'
+  const description = 'The page you are looking for does not exist or has been moved.'
+
+  return [
+    { title },
+    { name: 'description', content: description },
+    { property: 'og:title', content: title },
+    { property: 'og:description', content: description },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:site_name', content: 'Jazz Band' },
+    { property: 'og:image', content: `${origin}/og-default.jpg` },
+    { name: 'twitter:card', content: 'summary' },
+    { name: 'twitter:title', content: title },
+    { name: 'twitter:description', content: description },
+    { name: 'twitter:image', content: `${origin}/og-default.jpg` },
+  ]
+}
+
 export default function CatchAll() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
