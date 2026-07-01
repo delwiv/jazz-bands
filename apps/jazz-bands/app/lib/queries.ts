@@ -84,7 +84,37 @@ export const getBandBySlug = `
     },
     contact,
     "socialMedia": socialMedia,
-    branding
+    branding,
+    seo {
+      metaTitle,
+      metaDescription,
+      metaKeywords
+    },
+    openGraph {
+      title,
+      description,
+      "image": image {
+        asset,
+        hotspot,
+        crop
+      },
+      type
+    },
+    twitterCard {
+      card,
+      title,
+      description,
+      "image": image {
+        asset,
+        hotspot,
+        crop
+      },
+      creator
+    },
+    structuredData {
+      genre,
+      formedYear
+    }
   }
 `
 
@@ -147,6 +177,11 @@ export const getBandWithTourDates = `
     _id,
     name,
     "slug": slug.current,
+    "logo": logo {
+      asset,
+      hotspot,
+      crop
+    },
     "tourDates": tourDates[] {
       _key,
       date,
@@ -173,5 +208,12 @@ export const getAllTourDates = `
       region,
       slug
     }
+  }
+`
+
+/** Get musician slugs for sitemap */
+export const getMusicianSlugsForSitemap = `
+  *[_type == "band" && slug.current == $bandSlug][0].bandMembers[] {
+    "slug": musician->slug.current
   }
 `
