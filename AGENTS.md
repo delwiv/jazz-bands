@@ -13,6 +13,7 @@
 **Tech Stack**: React Router v7 SSR, Sanity CMS, Docker, Traefik, TypeScript, Tailwind CSS
 
 **Key Architecture**:
+
 - **Subdomain-based Multi-tenancy**: Single codebase serves 6 bands via `$subdomain` route parameter
 - **Hybrid CMS Schema**: Direct references + band-specific overrides for musician relationships
 - **SSR with React Router v7**: SEO-friendly, fast initial load, bot detection
@@ -29,6 +30,7 @@
 All 6 legacy Angular apps are being ported from `/apps/<bandname>/` to the unified `/apps/jazz-bands/` platform.
 
 **Status by Band**:
+
 | Band | Source | Target | Data Status |
 |------|--------|--------|-------------|
 | boheme | `/apps/boheme` | `/apps/jazz-bands` (subdomain: boheme) | ✅ Migrated |
@@ -60,15 +62,15 @@ All 6 legacy Angular apps are being ported from `/apps/<bandname>/` to the unifi
 
 📊 **Content Statistics**:
 
-| Band | Tour Dates | Recordings | Members |
-|------|------------|------------|---------|
-| boheme | 125 | 4 | 4 |
-| canto | 52 | 5 | 3 |
-| jazzola | 15 | 6 | 4 |
-| swing-family | 53 | 6 | 4 |
-| trio-rsh | 29 | 5 | 3 |
-| west-side-trio | 12 | 7 | 3 |
-| **Total** | **286** | **33** | **21** |
+| Band           | Tour Dates | Recordings | Members |
+| -------------- | ---------- | ---------- | ------- |
+| boheme         | 125        | 4          | 4       |
+| canto          | 52         | 5          | 3       |
+| jazzola        | 15         | 6          | 4       |
+| swing-family   | 53         | 6          | 4       |
+| trio-rsh       | 29         | 5          | 3       |
+| west-side-trio | 12         | 7          | 3       |
+| **Total**      | **286**    | **33**     | **21**  |
 
 ### How to Run Migration
 
@@ -88,16 +90,19 @@ npm run import production
 ### Asset File Naming Convention
 
 All imported assets use clean, searchable naming:
+
 ```
 {band}-{type}-{name}.{ext}
 ```
 
 **Examples**:
+
 - `boheme-nova-dream.mp3` (no track number, band context from document)
 - `boheme-main-remy.jpg` (main content image)
 - `boheme-musician-guillaume-souriau.jpg` (musician photo)
 
 **Why This Naming?**
+
 - Easy to identify assets in Sanity Studio
 - Band name in filename helps operators verify correct band association
 - No redundant info (track numbers, composers removed)
@@ -107,22 +112,20 @@ All imported assets use clean, searchable naming:
 
 ## 🛠️ Tech Stack
 
-| Category | Technology | Version | Purpose |
-|----------|-----------|---------|---------|
-| **Framework** | React Router | v7.13.1 | SSR, routing, data loading |
-| **React** | React | v19.0.0 | UI library |
-| **Language** | TypeScript | v5.6.3 | Type safety |
-| **Styling** | Tailwind CSS | v3.4.14 | Utility-first CSS |
-| **Build Tool** | Vite | v7.0.0 | Fast HMR, bundling |
-| **CMS** | Sanity | v6.23.0 | Content management |
-| **Audio** | Howler.js | v2.2.4 | Audio playback |
-| **Drag & Drop** | dnd-kit | v6.3.1 | Queue reordering |
-| **Animations** | framer-motion | v12.36.0 | Page/player animations |
-| **Linter** | Biome | v2.4.6 | Fast linting/formatting |
-| **Deployment** | Docker | latest | Containerization |
-| **Proxy** | Traefik | latest | SSL, routing |
-
-
+| Category        | Technology    | Version  | Purpose                    |
+| --------------- | ------------- | -------- | -------------------------- |
+| **Framework**   | React Router  | v7.13.1  | SSR, routing, data loading |
+| **React**       | React         | v19.0.0  | UI library                 |
+| **Language**    | TypeScript    | v5.6.3   | Type safety                |
+| **Styling**     | Tailwind CSS  | v3.4.14  | Utility-first CSS          |
+| **Build Tool**  | Vite          | v7.0.0   | Fast HMR, bundling         |
+| **CMS**         | Sanity        | v6.23.0  | Content management         |
+| **Audio**       | Howler.js     | v2.2.4   | Audio playback             |
+| **Drag & Drop** | dnd-kit       | v6.3.1   | Queue reordering           |
+| **Animations**  | framer-motion | v12.36.0 | Page/player animations     |
+| **Linter**      | Biome         | v2.4.6   | Fast linting/formatting    |
+| **Deployment**  | Docker        | latest   | Containerization           |
+| **Proxy**       | Traefik       | latest   | SSL, routing               |
 
 ---
 
@@ -202,24 +205,25 @@ apps/jazz-bands/
 ### Document Types
 
 #### `band` (Document)
+
 Main band entity containing all content for a single band.
 
 ```typescript
 interface Band {
   _id: string;
   name: string;
-  slug: string;                    // Unique identifier (boheme, canto, etc.)
+  slug: string; // Unique identifier (boheme, canto, etc.)
   description: Array<PortableText>;
   logo: Image;
   heroImage: Image;
-  members: Array<{ _ref: string; _type: 'reference' }>;  // References to musicians
+  members: Array<{ _ref: string; _type: "reference" }>; // References to musicians
   bandMembers: Array<{
     _key: string;
-    musician: { _ref: string; _type: 'reference' };
-    bio?: Array<PortableText>;     // Optional override
-    image?: Image;                 // Optional override
-    instrument?: string;           // Optional override
-    _type: 'bandMember';
+    musician: { _ref: string; _type: "reference" };
+    bio?: Array<PortableText>; // Optional override
+    image?: Image; // Optional override
+    instrument?: string; // Optional override
+    _type: "bandMember";
   }>;
   tourDates: Array<TourDate>;
   recordings: Array<Recording>;
@@ -233,6 +237,7 @@ interface Band {
 ```
 
 #### `musician` (Document)
+
 Shared musician entity that can be referenced by multiple bands.
 
 ```typescript
@@ -243,10 +248,10 @@ interface Musician {
   bio: Array<PortableText>;
   instrument: string;
   images: Array<Image>;
-  bands: Array<{ _ref: string; _type: 'reference' }>;  // Bands this musician belongs to
+  bands: Array<{ _ref: string; _type: "reference" }>; // Bands this musician belongs to
   bandOverrides: Array<{
     _key: string;
-    band: { _ref: string; _type: 'reference' };
+    band: { _ref: string; _type: "reference" };
     bio?: Array<PortableText>;
     image?: Image;
     instrument?: string;
@@ -255,14 +260,15 @@ interface Musician {
 ```
 
 #### `recording` (Object)
+
 Audio recording embedded in band documents.
 
 ```typescript
 interface Recording {
   _key: string;
   title: string;
-  audio: File;                     // Uploaded audio file
-  duration: string;                // Human-readable (e.g., "3:45")
+  audio: File; // Uploaded audio file
+  duration: string; // Human-readable (e.g., "3:45")
   album?: string;
   releaseYear?: number;
   description?: Array<PortableText>;
@@ -271,12 +277,13 @@ interface Recording {
 ```
 
 #### `tourDate` (Object)
+
 Tour date embedded in band documents.
 
 ```typescript
 interface TourDate {
   _key: string;
-  date: string;                    // ISO date
+  date: string; // ISO date
   city: string;
   venue: string;
   region?: string;
@@ -307,8 +314,8 @@ Single codebase serves 6 bands via subdomain detection:
 // app/root.tsx
 export async function loader({ request }: Route.LoaderArgs) {
   const host = new URL(request.url).hostname;
-  const subdomain = host.split('.')[0];  // "boheme" from boheme.jazzbands.com
-  
+  const subdomain = host.split(".")[0]; // "boheme" from boheme.jazzbands.com
+
   return { subdomain, origin: new URL(request.url).origin };
 }
 ```
@@ -465,8 +472,6 @@ node migration/migrate.mjs
 
 ---
 
-
-
 ## 🔧 Build & Tooling
 
 ### React Router v7
@@ -605,6 +610,7 @@ npm run import production   # Import to production dataset
 ### Environment Variables
 
 **For extract:**
+
 ```bash
 MONGODB_URI=mongodb://...
 # Or:
@@ -613,6 +619,7 @@ MONGODB_ROOT_PASSWORD=...
 ```
 
 **For import:**
+
 ```bash
 SANITY_API_WRITE_TOKEN=your-token-here
 # Or:
@@ -628,6 +635,7 @@ The migration now properly handles three types of images:
 3. **Gallery Images** (`images` field): Group photos, posters, event photos (NEW: now migrated!)
 
 **What Changed**:
+
 - **Fixed `_key` missing warnings**: Changed `contentImages` from `_sanityAsset: "..."` shorthand to proper `asset: { _sanityAsset: "..." }` wrapper structure
 - **Gallery images now populated**: `scanBandImages()` function now called in `migrateBand()`, discovering 188+ images across all bands
 - **Proper asset references**: Gallery images use `asset: { _type: "reference", _ref: "..." }` pattern matching musician images
@@ -635,6 +643,7 @@ The migration now properly handles three types of images:
 **Verification**: Run `node migration/__tests__/verify-output.mjs` after extraction to validate NDJSON structure.
 
 **Results by Band**:
+
 | Band | Content Images | Gallery Images |
 |------|---------------|----------------|
 | boheme | 1 | 54 |
@@ -667,6 +676,7 @@ The migration now properly handles three types of images:
   4. **Wait for explicit approval** before proceeding
 
 **Example commit prompt:**
+
 ```
 ✅ Changes complete. Ready to commit?
 
@@ -693,6 +703,7 @@ Would you like me to stage and commit these changes?
 ### Recent Changes (March 2026)
 
 **Code Cleanup Completed:**
+
 - Created `app/lib/routes.types.ts` with type-safe route loader interfaces
 - Removed unused `useReducedMotion` imports from contact, musicians, and tour routes
 - Removed redundant page-entry animation props (5 instances across 4 routes)
@@ -707,4 +718,4 @@ Would you like me to stage and commit these changes?
 
 ---
 
-*Last updated: March 2026 (post-code-cleanup)*
+_Last updated: March 2026 (post-code-cleanup)_

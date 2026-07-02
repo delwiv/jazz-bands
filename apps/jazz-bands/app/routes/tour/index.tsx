@@ -6,10 +6,8 @@ import {
   BandStructuredData,
   EventStructuredData,
 } from '~/components/StructuredData'
-import { Badge } from '~/components/shared/Badge'
 import { GlassCard } from '~/components/shared/GlassCard'
 import { MainContainer } from '~/components/shared/MainContainer'
-import { PrimaryButton } from '~/components/shared/PrimaryButton'
 import { useReducedMotion } from '~/hooks/useReducedMotion'
 import { staggerContainerVariants, dropdownVariants } from '~/lib/animationVariants'
 import type { TourLoaderData } from '~/lib/routes.types'
@@ -131,16 +129,6 @@ export default function TourPage() {
   const sortedUpcomingGroups = sortGroups(Object.entries(groupedUpcomingDates))
   const sortedPastGroups = sortGroups(Object.entries(groupedPastDates))
 
-  const formatDateBadge = (
-    dateStr: string,
-  ): 'soldOut' | 'upcoming' | 'past' => {
-    if (!dateStr) return 'past'
-    const date = new Date(dateStr)
-    const todayForBadge = new Date()
-    todayForBadge.setHours(0, 0, 0, 0)
-    return date >= todayForBadge ? 'upcoming' : 'past'
-  }
-
   const formatDate = (dateStr: string): string => {
     const formatted = intl.formatDate(new Date(dateStr), {
       weekday: 'long',
@@ -153,58 +141,56 @@ export default function TourPage() {
   }
 
   function TourCardContent({ date }: { date: TourDate }) {
-  return (
-    <>
-      <div>
-        <p className="text-2xl font-bold text-amber-400">
-          {formatDate(date.date)}
-        </p>
-        <p className="text-xl font-semibold text-white mt-2">{date.venue}</p>
-        <p className="text-gray-300">
-          {date.city}, {date.region || ''}
-        </p>
-        {date.details && <p className="mt-2 text-gray-300">{date.details}</p>}
-      </div>
+    const eventDate = new Date(date.date)
+    const month = intl
+      .formatDate(eventDate, { month: 'short' })
+      .toUpperCase()
+    const day = intl.formatDate(eventDate, { day: 'numeric' })
 
-      <div className="flex gap-4 flex-wrap justify-center md:justify-end">
-        <Badge
-          variant={
-            date.soldOut
-              ? 'warning'
-              : formatDateBadge(date.date) === 'upcoming'
-                ? 'success'
-                : 'default'
-          }
-        >
-          {date.soldOut ? (
-            <FormattedMessage id="tour.soldOut" />
-          ) : formatDateBadge(date.date) === 'upcoming' ? (
-            <FormattedMessage id="tour.upcoming" />
-          ) : (
-            <FormattedMessage id="tour.past" />
-          )}
-        </Badge>
+    const isSoldOut = date.soldOut
+    const isPast = eventDate < new Date()
 
-        {date.soldOut || !date.ticketsUrl ? null : (
-          <PrimaryButton
-            href={date.ticketsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="!py-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <FormattedMessage id="tour.getTickets" />
-          </PrimaryButton>
+    return (
+      <>
+        <div className="flex items-start gap-4 flex-1 min-w-0">
+          <div className="hidden sm:flex flex-col items-center min-w-[56px] bg-white/[0.04] rounded-lg border border-white/[0.08] overflow-hidden shrink-0 self-start">
+            <span className="w-full text-center text-[11px] font-bold text-amber-400 bg-amber-500/10 py-1 px-2 uppercase tracking-wider leading-none">
+              {month}
+            </span>
+            <span className="text-2xl font-bold text-white py-1 px-2 leading-tight">
+              {day}
+            </span>
+          </div>
+
+          <div className="min-w-0">
+            <p className="text-lg md:text-xl font-bold text-amber-400">
+              {formatDate(date.date)}
+            </p>
+            <p className="text-xl md:text-2xl font-bold text-white mt-1 leading-tight">
+              {date.city}
+              {date.region ? `, ${date.region}` : ''}
+            </p>
+            <p className="text-base md:text-lg font-semibold text-gray-300 mt-0.5">
+              {date.venue}
+            </p>
+            {date.details && (
+              <p className="mt-2 text-sm text-gray-400 line-clamp-1">
+                {date.details}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {isSoldOut && (
+          <div className="shrink-0">
+            <span className="inline-block text-xs font-semibold text-red-400 bg-red-900/30 px-3 py-1 rounded-full border border-red-500/30">
+              Complet
+            </span>
+          </div>
         )}
-        {!date.ticketsUrl && !date.soldOut && (
-          <Badge variant="default" className="!px-6 !py-2">
-            <FormattedMessage id="tour.ticketsTBA" />
-          </Badge>
-        )}
-      </div>
-    </>
-  )
-}
+      </>
+    )
+  }
 
 // Helper function to render grouped tour dates
   const renderGroups = (
@@ -215,7 +201,7 @@ export default function TourPage() {
 
     const renderTourCard = (date: TourDate) => (
       <GlassCard
-        className="rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        className="w-full rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
         hover={false}
       >
         <TourCardContent date={date} />
@@ -224,32 +210,45 @@ export default function TourPage() {
 
     const renderAnimatedTourCard = (date: TourDate) => (
       <Link
-        key={date._key || date.slug}
         to={`/tour/${date.slug || date._key}`}
-        className="block"
+        className="block flex-1 my-4"
       >
-        <GlassCard className="rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <GlassCard className="w-full rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <TourCardContent date={date} />
         </GlassCard>
       </Link>
     )
 
     const allDates = groups.flatMap(([, dates]) => dates) as TourDate[]
+    const isUpcomingSection = section === 'upcoming'
+
     return (
-      <div className="flex flex-col gap-4">
-        {allDates.map((date: TourDate, idx: number) =>
-          reducedMotion ? (
+      <div className="flex flex-col">
+        {allDates.map((date: TourDate, idx: number) => {
+          const card = reducedMotion ? (
             <Link
-              key={date._key || date.slug || idx}
+              key={date._key || date.slug}
               to={`/tour/${date.slug || date._key}`}
-              className="block"
+              className="block flex-1 my-4"
             >
               {renderTourCard(date)}
             </Link>
           ) : (
             renderAnimatedTourCard(date)
-          ),
-        )}
+          )
+          return (
+            <div key={date._key || date.slug || idx} className="flex gap-4">
+              <div className="flex flex-col items-center w-6 shrink-0">
+                <div className="w-0.5 flex-1 bg-amber-500/20" />
+                <div
+                  className={`w-3 h-3 rounded-full ring-2 ring-gray-900 shrink-0 ${isUpcomingSection ? 'bg-amber-500' : 'bg-gray-600'}`}
+                />
+                <div className="w-0.5 flex-1 bg-amber-500/20" />
+              </div>
+              {card}
+            </div>
+          )
+        })}
       </div>
     )
   }

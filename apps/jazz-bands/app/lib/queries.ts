@@ -182,6 +182,12 @@ export const getBandWithTourDates = `
       hotspot,
       crop
     },
+    "contentImages": coalesce(contentImages, [])[] {
+      _key,
+      asset,
+      hotspot,
+      crop
+    },
     "tourDates": tourDates[] {
       _key,
       date,

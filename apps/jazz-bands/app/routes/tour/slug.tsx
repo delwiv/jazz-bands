@@ -1,10 +1,8 @@
 import {
-  AlertCircle,
   ArrowLeft,
   Calendar,
   ExternalLink,
   MapPin,
-  Ticket,
 } from 'lucide-react'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
@@ -96,12 +94,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Response('Tour date not found', { status: 404 })
   }
 
+  const heroImage = band.contentImages?.[0] || null
+
   return {
     tourDate,
     band: band.name,
     bandLogo: band.logo,
     bandSlug: band.slug,
     origin,
+    heroImage,
   }
 }
 
@@ -142,7 +143,8 @@ export function meta({ data }: { data: ReturnType<typeof loader> | null }) {
 }
 
 export default function TourDateDetail() {
-  const { tourDate, band, bandSlug, origin } = useLoaderData<typeof loader>()
+  const { tourDate, band, bandLogo, bandSlug, origin, heroImage } =
+    useLoaderData<typeof loader>()
   const intl = useIntl()
 
   const formatDate = (dateStr: string) => {
@@ -154,7 +156,23 @@ export default function TourDateDetail() {
     })
   }
 
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tourDate.venue + ', ' + tourDate.city)}`
+  const heroUrl =
+    heroImage?.asset?._ref
+      ? urlForImage.image(heroImage).width(1600).height(600).fit('crop').url()
+      : null
+
+  const googleMapsQuery = encodeURIComponent(
+    `${tourDate.venue}, ${tourDate.city}${tourDate.region ? `, ${tourDate.region}` : ''}`,
+  )
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const eventDate = new Date(tourDate.date)
+  const isUpcoming = eventDate >= today
+
+  const dayDiff = isUpcoming
+    ? Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    : null
 
   return (
     <MainContainer maxWidth="narrow">
@@ -164,6 +182,16 @@ export default function TourDateDetail() {
         bandSlug={bandSlug}
         origin={origin}
       />
+
+      {heroUrl && (
+        <div className="relative -mx-4 -mt-4 mb-6 overflow-hidden rounded-t-lg md:-mx-6 md:-mt-6 lg:-mx-8 lg:-mt-8">
+          <div
+            className="h-48 sm:h-56 md:h-64 bg-cover bg-center"
+            style={{ backgroundImage: `url(${heroUrl})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent" />
+        </div>
+      )}
 
       <div className="glass-card rounded-lg p-4 lg:p-8">
         <button
@@ -181,74 +209,69 @@ export default function TourDateDetail() {
               {formatDate(tourDate.date)}
             </p>
 
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
+            {dayDiff !== null && dayDiff <= 90 && (
+              <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 border border-amber-500/40 rounded-lg">
+                <Calendar className="icon-md text-amber-400 shrink-0" />
+                <span className="text-amber-300 font-medium">
+                  {dayDiff === 0
+                    ? 'Today!'
+                    : dayDiff === 1
+                      ? 'Tomorrow!'
+                      : `${dayDiff} days away`}
+                </span>
+              </div>
+            )}
+
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
                 <MapPin className="icon-md text-amber-500 mt-1 shrink-0" />
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">
-                    <FormattedMessage id="tour.venue" />
-                  </p>
-                  <p className="text-white font-medium">{tourDate.venue}</p>
-                  <p className="text-gray-300">
+                  <p className="text-3xl md:text-4xl font-bold text-white leading-tight">
                     {tourDate.city}
-                    {tourDate.region ? `, ${tourDate.region}` : ''}
                   </p>
+                  <p className="text-2xl font-semibold text-gray-300 mt-2">
+                    {tourDate.venue}
+                  </p>
+                  {tourDate.region && (
+                    <p className="text-lg text-gray-400 mt-1">
+                      {tourDate.region}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {tourDate.soldOut && (
-                <div className="flex items-center gap-2 bg-red-600/30 border border-red-500/50 px-4 py-3 rounded-lg">
-                  <AlertCircle className="icon-md shrink-0" />
-                  <span className="text-red-200 font-medium">
-                    <FormattedMessage id="tour.soldOut" />
-                  </span>
+              {tourDate.details && (
+                <div className="glass-card p-5 rounded-lg bg-white/[0.03]">
+                  <p className="text-gray-300 whitespace-pre-line leading-relaxed">
+                    {tourDate.details}
+                  </p>
                 </div>
               )}
-
-              <a
-                href={googleMapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="focus-ring inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors"
-              >
-                <ExternalLink className="icon-sm" />
-                <FormattedMessage id="tour.viewOnMap" />
-              </a>
             </div>
           </div>
 
-          <div>
-            <div className="glass-card p-6 rounded-lg bg-white/[0.03]">
-              <h2 className="text-xl font-semibold text-white mb-4">
-                <FormattedMessage id="tour.ticketsAndInfo" />
-              </h2>
-
-              <div className="space-y-4">
-                {tourDate.ticketsUrl && !tourDate.soldOut && (
-                  <a
-                    href={tourDate.ticketsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="focus-ring flex items-center gap-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors text-white font-medium"
-                  >
-                    <Ticket className="icon-md" />
-                    <FormattedMessage id="tour.getTickets" />
-                  </a>
-                )}
-
-                {!tourDate.ticketsUrl && !tourDate.soldOut && (
-                  <span className="inline-flex items-center px-3 py-1 bg-gray-700/50 rounded-full text-sm text-gray-300">
-                    <FormattedMessage id="tour.ticketsTBA" />
-                  </span>
-                )}
-
-                {tourDate.details && (
-                  <div className="mt-6 pt-6 border-t border-white/[0.1]">
-                    <p className="text-gray-300 whitespace-pre-line">
-                      {tourDate.details}
-                    </p>
-                  </div>
-                )}
+          <div className="space-y-6">
+            <div className="glass-card rounded-lg overflow-hidden bg-white/[0.03]">
+              <div className="aspect-[16/9] w-full">
+                <iframe
+                  src={`https://maps.google.com/maps?q=${googleMapsQuery}&output=embed&z=14`}
+                  title={`${tourDate.venue} — ${tourDate.city}`}
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  sandbox="allow-scripts allow-same-origin"
+                />
+              </div>
+              <div className="p-3 border-t border-white/[0.08]">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${googleMapsQuery}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="focus-ring inline-flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                >
+                  <ExternalLink className="icon-sm" />
+                  <FormattedMessage id="tour.viewOnMap" />
+                </a>
               </div>
             </div>
           </div>
