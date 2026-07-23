@@ -1,23 +1,22 @@
 import { createClient } from 'redis'
 
 export const ONE_DAY = 60 * 60 * 24
+const MAIL_COUNT_KEY = 'email:sent'
 
-let redisClient
-createClient({ url: 'redis://redis' })
-  .on('error', err => console.log('Redis error', err))
-  .connect()
-  .then(client => {
-    redisClient = client
-  })
+const client = createClient({ url: 'redis://redis' })
+client.on('error', err => console.error('Redis error', err))
+client.connect()
 
-export const MAILCOUNT_KEY = 'email.task'
+export const MAILCOUNT_KEY = MAIL_COUNT_KEY
 
-const client = {
-  set: (key, value, ...args) => redisClient.set(key, value, ...args),
-  get: key => redisClient.get(key),
-  del: key => redisClient.del(key),
-  find: pattern => redisClient.keys(pattern),
-  expire: (key, expire = ONE_DAY) => redisClient.expire(key, expire),
+export default {
+  set: (key, value, ...args) => client.set(key, value, ...args),
+  get: key => client.get(key),
+  del: key => client.del(key),
+  expire: (key, expire = ONE_DAY) => client.expire(key, expire),
+  addToCount: uuid => client.zAdd(MAIL_COUNT_KEY, { score: Date.now(), value: uuid }),
+  countLast24h: () => {
+    const min = Date.now() - ONE_DAY * 1000
+    return client.zCount(MAIL_COUNT_KEY, min, '+inf')
+  },
 }
-
-export default client

@@ -1,7 +1,7 @@
 import { subDays } from 'date-fns'
 
 import ContactModel from '../models/ContactModel.js'
-import redis, { MAILCOUNT_KEY } from '../lib/redis'
+import redis from '../lib/redis'
 
 export default {
   list: async (req, res) => {
@@ -87,11 +87,16 @@ export default {
       ContactModel.countDocuments(query),
     ])
 
-    const last24hours = await redis.find(`${MAILCOUNT_KEY}.*`)
+    let emailsSent = 0
+    try {
+      emailsSent = await redis.countLast24h()
+    } catch (err) {
+      console.error('Redis count failed', err)
+    }
     return res.json({
       contacts: contacts.sort((a, b) => +a.departement - +b.departement),
       count,
-      emailsSent: last24hours.length,
+      emailsSent,
     })
   },
 
