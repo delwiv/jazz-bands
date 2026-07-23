@@ -59,8 +59,14 @@ const worker = new Worker('sendMail', async (job) => {
   concurrency: NB_PARALLEL_EMAILS,
 })
 
+let lastErrorEmail = 0
+const ERROR_EMAIL_COOLDOWN = 5 * 60 * 1000
+
 worker.on('error', async (err) => {
   console.error('BullMQ error', err)
+  const now = Date.now()
+  if (now - lastErrorEmail < ERROR_EMAIL_COOLDOWN) return
+  lastErrorEmail = now
   try {
     await sendMail({
       body: err.message + '\n' + (err.stack || ''),
