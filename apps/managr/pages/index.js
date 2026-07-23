@@ -183,7 +183,7 @@ class Index extends React.Component {
       getItemSize,
     } = this
 
-    const checkedItems = contacts.filter(c => checkedSet.has(c._id))
+    const checkedItems = contacts.filter(c => checkedSet.has(c._id)).map(c => ({ _id: c._id, email: c.mail }))
 
     const itemData = {
       contacts,
