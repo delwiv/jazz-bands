@@ -1,62 +1,110 @@
+import { randomUUID } from 'crypto'
 import fs from 'fs'
-import kue from 'kue'
-import uuid from 'uuid/v4'
-import { format } from 'date-fns'
 import { join } from 'path'
+import { Queue, Worker } from 'bullmq'
 
-import Contact from '../models/ContactModel'
-import redis from './redis'
-import { sendMail } from './gmail'
-
-const getBody = type =>
-  fs.readFileSync(join(__dirname, `../mails/${type}.html`)).toString('utf8')
+import Contact from '../models/ContactModel.js'
+import redis from './redis.js'
+import { sendMail } from './gmail.js'
 
 const NB_PARALLEL_EMAILS = 2
-const mailJobs = kue.createQueue({ redis: 'redis://redis' })
-
 const JOB_DELAY = 1000 * 60 * 60 * 3 // 3h
+const REDIS_CONNECTION = { host: 'redis' }
 
-mailJobs.on('error', async err => {
-  console.error(require('util').inspect({ err }, true, 10, true))
+function getBody(type) {
+  return fs.readFileSync(join(import.meta.dirname, `../mails/${type}.html`), 'utf8')
+}
+
+function formatDate(date) {
+  const d = String(date.getDate()).padStart(2, '0')
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const y = String(date.getFullYear()).slice(-2)
+  return `${d}/${m}/${y}`
+}
+
+const mailQueue = new Queue('sendMail', { connection: REDIS_CONNECTION })
+
+const worker = new Worker('sendMail', async (job) => {
+  const { name, email, type, toRecontact } = job.data
+  const subjects = {
+    '4bands': `${name} - Proposition spectacle`,
+    jazzola: 'Hommage à Marcel Azzola',
+  }
+
+  await Contact.updateOne(
+    { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
+    { sendMailStatus: { date: new Date(), status: 'sending' } }
+  )
+
   await sendMail({
-    body: err.toString('utf8') + err.stack.toString('utf8'),
-    subject: 'Massmail error happened',
-    to: 'delwiv@protonmail.com',
+    subject: subjects[type],
+    body: getBody(type),
+    to: email.trim(),
   })
+
+  if (toRecontact !== null) {
+    await Contact.updateOne(
+      { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
+      {
+        sendMailStatus: { date: new Date(), status: 'sent' },
+        mois_contact: toRecontact + 1,
+        envoi_mail: formatDate(new Date()),
+      }
+    )
+  }
+
+  redis.addToCount(randomUUID()).catch(err => console.error('Redis count failed', err))
+}, {
+  connection: REDIS_CONNECTION,
+  concurrency: NB_PARALLEL_EMAILS,
+})
+
+worker.on('error', async (err) => {
+  console.error('BullMQ error', err)
+  try {
+    await sendMail({
+      body: err.message + '\n' + (err.stack || ''),
+      subject: 'Massmail error happened',
+      to: 'delwiv@protonmail.com',
+    })
+  } catch (sendErr) {
+    console.error('Failed to send error notification', sendErr)
+  }
 })
 
 export const sendMails = async ({ emails, type, toRecontact }) => {
   for (const email of emails) {
-    // console.log({ email })
     try {
       const contact = await Contact.findOne({
         $or: [{ mail: email }, { mail2: email }, { mail3: email }],
       })
-      const { mail, mail2, mail3 } = contact
-      const jobs = [mail, mail2, mail3]
-        .filter(m => !!m)
-        .map(m =>
-          mailJobs
-            .create('sendMail', {
-              email: m,
-              type,
-              total: emails.length,
-              toRecontact,
-              name: contact.nom,
-            })
-            .save()
-        )
+      const dataList = [contact.mail, contact.mail2, contact.mail3].filter(Boolean)
+      const sentCount = await redis.countLast24h()
+      const delay = sentCount >= 500 ? JOB_DELAY : 0
+
+      await Promise.all(dataList.map(m =>
+        mailQueue.add('sendMail', {
+          email: m,
+          type,
+          total: emails.length,
+          toRecontact,
+          name: contact.nom,
+        }, {
+          attempts: 10,
+          backoff: { type: 'exponential' },
+          delay,
+        })
+      ))
+
       await Contact.updateOne(
         { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
         { sendMailStatus: { date: new Date(), status: 'queued' } }
       )
-      jobs.forEach(j => j.attempts(10).backoff({ type: 'exponential' }))
-      const sentCount = await redis.countLast24h()
+
       console.log({ sentCount })
-      if (sentCount >= 500) jobs.forEach(j => j.delay(JOB_DELAY))
       await new Promise(resolve => setTimeout(resolve, 500))
     } catch (error) {
-      console.error(require('util').inspect({ error }, true, 10, true))
+      console.error(error)
       const errorMessage =
         error.message === 'Invalid to header'
           ? `Mauvaise adresse email : ${email}`
@@ -68,43 +116,3 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
     }
   }
 }
-
-mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
-  const { name, email, total, type, toRecontact } = job.data
-  // console.log({ name, email, total, type, toRecontact })
-  try {
-    const subjects = {
-      '4bands': `${name} - Proposition spectacle`,
-      jazzola: 'Hommage à Marcel Azzola',
-    }
-    await Contact.updateOne(
-      { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
-      { sendMailStatus: { date: new Date(), status: 'sending' } }
-    )
-    await sendMail({
-      subject: subjects[type],
-      body: getBody(type),
-      to: email.trim(),
-    })
-
-    if (toRecontact !== null) {
-      await Contact.updateOne(
-        { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
-        {
-          sendMailStatus: { date: new Date(), status: 'sent' },
-          mois_contact: toRecontact + 1,
-          envoi_mail: format(new Date(), 'DD/MM/YY'),
-        }
-      )
-    }
-    redis.addToCount(uuid()).catch(err => console.error('Redis count failed', err))
-    done()
-  } catch (error) {
-    console.error({ error })
-    await Contact.updateOne(
-      { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
-      { sendMailStatus: { date: new Date(), error: error.message } }
-    )
-    done(error)
-  }
-})

@@ -1,7 +1,5 @@
-import { subDays } from 'date-fns'
-
 import ContactModel from '../models/ContactModel.js'
-import redis from '../lib/redis'
+import redis from '../lib/redis.js'
 
 export default {
   list: async (req, res) => {
@@ -23,7 +21,7 @@ export default {
             $regex: /error:/g,
           },
           'sendMailStatus.date': {
-            $gt: subDays(new Date(), 1),
+            $gt: new Date(Date.now() - 86400000),
           },
         })
       } else {
