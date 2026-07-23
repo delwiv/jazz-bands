@@ -26,6 +26,7 @@ const mailQueue = new Queue('sendMail', { connection: REDIS_CONNECTION })
 
 const worker = new Worker('sendMail', async (job) => {
   const { name, email, type, toRecontact } = job.data
+  console.log('Worker processing', { name, email, type })
   const subjects = {
     '4bands': `${name} - Proposition spectacle`,
     jazzola: 'Hommage à Marcel Azzola',
@@ -36,11 +37,12 @@ const worker = new Worker('sendMail', async (job) => {
     { sendMailStatus: { date: new Date(), status: 'sending' } }
   )
 
-  await sendMail({
-    subject: subjects[type],
-    body: getBody(type),
-    to: email.trim(),
-  })
+  console.log('Sending mail to', email)
+  await Promise.race([
+    sendMail({ subject: subjects[type], body: getBody(type), to: email.trim() }),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('sendMail timeout')), 15000)),
+  ])
+  console.log('Mail sent to', email)
 
   if (toRecontact !== null) {
     await Contact.updateOne(
@@ -62,8 +64,12 @@ const worker = new Worker('sendMail', async (job) => {
 let lastErrorEmail = 0
 const ERROR_EMAIL_COOLDOWN = 5 * 60 * 1000
 
+worker.on('failed', (job, err) => {
+  console.error('BullMQ job failed', job?.id, err.message, job?.data)
+})
+
 worker.on('error', async (err) => {
-  console.error('BullMQ error', err)
+  console.error('BullMQ error', err.message, err.stack?.split('\n')[1])
   const now = Date.now()
   if (now - lastErrorEmail < ERROR_EMAIL_COOLDOWN) return
   lastErrorEmail = now
