@@ -26,9 +26,6 @@ networks:
   api-network:
     driver: bridge
     name: jazz-bands-api
-  jazzbands-net:
-    driver: bridge
-    external: true
 
 services:
   # ======================================================================
