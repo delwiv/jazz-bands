@@ -11,25 +11,15 @@ import {
   createContact as ApiCreateContact,
 } from './api'
 
-// const getStorage = () =>
-//   typeof Storage !== 'undefined'
-//     ? localStorage
-//     : {
-//         getItem: () => null,
-//         setItem: () => null,
-//         removeItem: () => null,
-// }
-
 export const initialState = {
   contacts: [],
+  allContacts: [],
   emailsSent: 0,
   current: {},
   currentId: null,
   query: null,
   count: 0,
 }
-
-// const wait = (duration = 0) => new Promise(resolve => setTimeout(resolve, duration))
 
 const _loadContacts = buildAction('LOAD_CONTACTS')
 const _viewContact = buildAction('VIEW_CONTACT')
@@ -44,11 +34,56 @@ export const sendMails = params => async (dispatch, getState) => {
   dispatch(_sendMails.succeed(result))
 }
 
+function filterContacts(contacts, q) {
+  if (!q) return contacts
+
+  if (q.match(/month:\d+/)) {
+    const month = q.replace('month:', '')
+    return contacts.filter(c => +c.mois_contact === +month)
+  }
+
+  if (q.match(/v:.+/)) {
+    const ville = q.replace('v:', '').toLowerCase()
+    return contacts.filter(c => c.ville && c.ville.toLowerCase().includes(ville))
+  }
+
+  if (q === 'emailErrors') {
+    return contacts.filter(c =>
+      c.sendMailStatus && c.sendMailStatus.status &&
+      (typeof c.sendMailStatus.status === 'string' && c.sendMailStatus.status.match(/error:/))
+    )
+  }
+
+  const qLower = q.toLowerCase()
+  return contacts.filter(c =>
+    [c.nom, c.mail, c.mail2, c.mail3, c.responsable, c.ville,
+     c.notes, c.cible, c.tel_perso, c.tel_pro, c.tel3]
+      .some(f => f != null && f.toLowerCase().includes(qLower))
+  )
+}
+
 export const loadContacts = (params = {}) => async (dispatch, getState) => {
   dispatch(_loadContacts.request(params))
-  const { lazyLoad } = getState()
-  const { contacts, count, emailsSent } = await fetchContacts(params, { lazyLoad })
-  dispatch(_loadContacts.succeed({ contacts, count, emailsSent }))
+  const { q } = params
+  const state = getState()
+
+  if (state.allContacts.length && !state.lazyLoad) {
+    const filtered = q ? filterContacts(state.allContacts, q) : state.allContacts
+    dispatch(_loadContacts.succeed({
+      contacts: filtered,
+      count: filtered.length,
+      emailsSent: state.emailsSent,
+    }))
+    return
+  }
+
+  const { contacts, count, emailsSent } = await fetchContacts(params)
+  dispatch(_loadContacts.succeed({
+    contacts,
+    allContacts: contacts,
+    count,
+    emailsSent,
+  }))
 }
 
 export const viewContact = params => async dispatch => {
@@ -109,14 +144,13 @@ export const reducer = (state = initialState, action) => {
         loadingContacts: true,
       }
     case _loadContacts.succeeded: {
-      const { count, contacts, emailsSent } = action.payload
-
       return {
         ...state,
         loadingContacts: false,
-        contacts,
-        count,
-        emailsSent,
+        contacts: action.payload.contacts,
+        allContacts: action.payload.allContacts || state.allContacts,
+        count: action.payload.count,
+        emailsSent: action.payload.emailsSent,
       }
     }
     case _viewContact.requested:
@@ -142,6 +176,7 @@ export const reducer = (state = initialState, action) => {
         loadingContact: false,
         current: action.payload,
         contacts: state.contacts.map(c => (c._id !== action.payload._id ? c : action.payload)),
+        allContacts: state.allContacts.map(c => (c._id !== action.payload._id ? c : action.payload)),
       }
     case _deleteContact.requested:
       return {
@@ -153,6 +188,7 @@ export const reducer = (state = initialState, action) => {
         ...state,
         deletingContact: false,
         contacts: state.contacts.filter(c => c._id !== action.payload),
+        allContacts: state.allContacts.filter(c => c._id !== action.payload),
       }
     case 'SET_CURRENT':
       return {

@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 import { join } from 'path'
 
 import Contact from '../models/ContactModel'
-import redis, { MAILCOUNT_KEY, ONE_DAY } from './redis'
+import redis from './redis'
 import { sendMail } from './gmail'
 
 const getBody = type =>
@@ -51,9 +51,9 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
         { sendMailStatus: { date: new Date(), status: 'queued' } }
       )
       jobs.forEach(j => j.attempts(10).backoff({ type: 'exponential' }))
-      const last24hours = await redis.find(`${MAILCOUNT_KEY}.*`)
-      console.log({ last24hours: last24hours.length })
-      if (last24hours.length >= 500) jobs.forEach(j => j.delay(JOB_DELAY))
+      const sentCount = await redis.countLast24h()
+      console.log({ sentCount })
+      if (sentCount >= 500) jobs.forEach(j => j.delay(JOB_DELAY))
       await new Promise(resolve => setTimeout(resolve, 500))
     } catch (error) {
       console.error(require('util').inspect({ error }, true, 10, true))
@@ -97,9 +97,7 @@ mailJobs.process('sendMail', NB_PARALLEL_EMAILS, async (job, done) => {
         }
       )
     }
-    const redisKey = `${MAILCOUNT_KEY}.${uuid()}`
-    await redis.set(redisKey, 'true', { EX: ONE_DAY })
-    // await redis.expire(redisKey, ONE_DAY)
+    redis.addToCount(uuid()).catch(err => console.error('Redis count failed', err))
     done()
   } catch (error) {
     console.error({ error })
