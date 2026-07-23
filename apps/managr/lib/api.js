@@ -5,6 +5,14 @@ import config from '../src/config'
 
 const { API_URL, apiKey } = config
 
+export const fetchEmailCount = async () => {
+  const data = await fetch(`${API_URL}/emails/count`, {
+    cors: true,
+    headers: { 'Authorization': 'Bearer ' + apiKey }
+  })
+  return data.json()
+}
+
 export const sendMails = async params => {
   console.log({ params })
   const data = await fetch(`${API_URL}/emails`, {

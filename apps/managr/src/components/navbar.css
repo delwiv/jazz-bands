@@ -31,3 +31,8 @@
 #dropdownActions {
   width: 250px !important;
 }
+
+.email-counter {
+  margin-left: 4px;
+  font-size: 13px;
+}

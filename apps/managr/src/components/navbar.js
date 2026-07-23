@@ -4,7 +4,8 @@ import { connect } from 'react-redux'
 import debounce from 'lodash.debounce'
 import Link from 'next/link'
 
-import { loadContacts, setQuery, setLazyLoad, sendMails } from '../../lib/contacts'
+import { loadContacts, setQuery, setEmailsSent, sendMails } from '../../lib/contacts'
+import { fetchEmailCount } from '../../lib/api'
 import { months } from '../config'
 import './navbar.css'
 
@@ -21,6 +22,7 @@ class Navbar extends Component {
     total: T.number.isRequired,
     setQuery: T.func.isRequired,
     setLazyLoad: T.func.isRequired,
+    setEmailsSent: T.func.isRequired,
     lazyLoad: T.bool,
     sendMails: T.func.isRequired,
     loadingContacts: T.bool,
@@ -29,6 +31,24 @@ class Navbar extends Component {
   }
 
   state = { mailType: types[0], toRecontactDelay: 2 }
+
+  componentDidMount() {
+    this.poll = setInterval(() => this.pollCount(), 30000)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.poll)
+  }
+
+  pollCount = async () => {
+    const { emailsSent, setEmailsSent } = this.props
+    try {
+      const { emailsSent: count } = await fetchEmailCount()
+      if (count !== emailsSent) setEmailsSent(count)
+    } catch (err) {
+      console.error('Poll email count failed', err)
+    }
+  }
 
   onChange = e => {
     const value = e.target.value
@@ -150,6 +170,12 @@ class Navbar extends Component {
                     <span>{`${selected.length} Sélectionné${selected.length > 1 ? 's' : ''}`}</span>
                   </a>
                 </li>
+                <li>
+                  <a href={null} title="Emails envoyés ces dernières 24h">
+                    <i className="material-icons">mail</i>
+                    <span className="email-counter">{emailsSent}/500</span>
+                  </a>
+                </li>
               </ul>
             </div>
             <div key="progress" className="progress">
@@ -174,6 +200,7 @@ export default connect(
   dispatch => ({
     setQuery: q => dispatch(setQuery(q)),
     setLazyLoad: q => dispatch(setLazyLoad(q)),
+    setEmailsSent: c => dispatch(setEmailsSent(c)),
     search: params => dispatch(loadContacts(params)),
     sendMails: params => dispatch(sendMails(params)),
   })
