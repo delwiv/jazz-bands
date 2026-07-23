@@ -5,6 +5,7 @@ import buildAction from './actions'
 import {
   fetchContacts,
   fetchContact,
+  fetchEmailCount,
   sendMails as apiSendMails,
   updateContact as ApiUpdateContact,
   deleteContact as ApiDeleteContact,
@@ -130,6 +131,12 @@ export const setQuery = q => dispatch =>
     payload: q,
   })
 
+export const setEmailsSent = count => dispatch =>
+  dispatch({
+    type: 'SET_EMAILS_SENT',
+    payload: count,
+  })
+
 export const reducer = (state = initialState, action) => {
   switch (action.type) {
     case 'SET_QUERY':
@@ -194,6 +201,11 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         currentId: action.payload,
+      }
+    case 'SET_EMAILS_SENT':
+      return {
+        ...state,
+        emailsSent: action.payload,
       }
     default:
       return state

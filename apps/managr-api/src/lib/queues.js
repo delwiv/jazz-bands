@@ -79,6 +79,7 @@ worker.on('error', async (err) => {
       subject: 'Massmail error happened',
       to: 'delwiv@protonmail.com',
     })
+    redis.addToCount(randomUUID()).catch(() => {})
   } catch (sendErr) {
     console.error('Failed to send error notification', sendErr)
   }

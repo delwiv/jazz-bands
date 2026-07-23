@@ -1,7 +1,18 @@
 import { Router } from 'express'
+import redis from '../lib/redis.js'
 import { sendMails } from '../lib/queues.js'
 
 const router = Router()
+
+router.get('/count', async (req, res) => {
+  try {
+    const emailsSent = await redis.countLast24h()
+    res.json({ emailsSent })
+  } catch (error) {
+    console.error('Failed to get email count', error)
+    res.json({ emailsSent: 0 })
+  }
+})
 
 const emailRegex = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
 
