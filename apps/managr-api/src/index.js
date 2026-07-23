@@ -16,7 +16,8 @@ const {
 } = process.env
 
 mongoose.connect(`mongodb://managr:${MONGODB_MANAGR_PASSWORD}@${MONGODB_HOST}/managr`, {
-  useNewUrlParser: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 }, connectErr => {
   console.log(connectErr || `MongoDB connected to mongodb://${MONGODB_HOST}`)
 })
