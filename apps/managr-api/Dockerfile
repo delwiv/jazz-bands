@@ -1,21 +1,14 @@
-ARG BASE=node:18
-ARG PORT=3092
-
-FROM $BASE AS builder
-
+FROM node:24
 WORKDIR /app
 
 RUN npm i -g pnpm@latest-8
 
 COPY package.json pnpm-lock.yaml ./
-
 RUN pnpm install
 
 COPY src/ ./src/
-COPY babel.config.js getToken.js credentials.json token.json ./
+COPY credentials.json token.json ./
 
-RUN pnpm build
+EXPOSE 3092
 
-EXPOSE $PORT
-
-CMD ["pnpm", "start"]
+CMD ["node", "src/index.js"]

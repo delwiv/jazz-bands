@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { sendMails } from '../lib/queues'
+import { sendMails } from '../lib/queues.js'
 
 const router = Router()
 
