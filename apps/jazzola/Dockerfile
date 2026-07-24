@@ -7,6 +7,7 @@ WORKDIR /app
 
 RUN npm i -g corepack@latest
 RUN corepack enable pnpm
+RUN corepack prepare pnpm@9 --activate
 
 COPY package.json pnpm-lock.yaml bower.json .bowerrc ./
 
