@@ -12,14 +12,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Vite requires VITE_ prefix for client-side environment variables
-ARG VITE_SANITY_STUDIO_PROJECT_ID
-ARG VITE_SANITY_STUDIO_DATASET
-ARG VITE_SANITY_API_READ_TOKEN
-ENV VITE_SANITY_STUDIO_PROJECT_ID=$VITE_SANITY_STUDIO_PROJECT_ID
-ENV VITE_SANITY_STUDIO_DATASET=$VITE_SANITY_STUDIO_DATASET
-ENV VITE_SANITY_API_READ_TOKEN=$VITE_SANITY_API_READ_TOKEN
-
 # Copy package files first (Docker layer caching)
 COPY package*.json ./
 

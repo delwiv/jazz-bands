@@ -21,10 +21,14 @@ import type { ImageMetadata } from 'sanity'
  */
 function getEnv() {
   // Server-side: use process.env
-  // Client-side: use import.meta.env (Vite)
   if (typeof process !== 'undefined' && process.env) {
     return process.env
   }
+  // Client-side runtime: use window.__ENV injected by SSR
+  if (typeof window !== 'undefined' && (window as any).__ENV) {
+    return (window as any).__ENV
+  }
+  // Client-side fallback: use import.meta.env (Vite build-time)
   if (typeof import.meta !== 'undefined' && import.meta.env) {
     return import.meta.env
   }

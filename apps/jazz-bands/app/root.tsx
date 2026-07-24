@@ -73,6 +73,18 @@ export async function loader({ request }: Route.LoaderArgs) {
     umamiWebsiteId,
     primaryColor: brandPrimary,
     secondaryColor: brandSecondary,
+    // window.__ENV — injected into client HTML
+    // ⚠️ Only non-secret values here. Everything is visible in-page source!
+    ENV: {
+      SANITY_PROJECT_ID:
+        process.env.SANITY_PROJECT_ID ||
+        process.env.SANITY_STUDIO_PROJECT_ID ||
+        '',
+      SANITY_DATASET:
+        process.env.SANITY_DATASET ||
+        process.env.SANITY_STUDIO_DATASET ||
+        '',
+    },
   }
 }
 
@@ -171,6 +183,11 @@ export default function App() {
             )}
           </AudioProvider>
         </I18nProvider>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        />
         <ScrollRestoration />
         <Scripts />
       </body>
