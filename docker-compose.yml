@@ -48,7 +48,7 @@ services:
     environment:
       PORT: 3045
     ports:
-      - "3045:3345"
+      - "3045:3045"
 
   jazzola:
     container_name: jazzola-legacy
