@@ -57,7 +57,7 @@ ENV NODE_OPTIONS="--max-old-space-size=180"
 # Healthcheck using curl (default in node-slim)
 # Port 5173 = React Router v7 default, respects PORT env var
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD ["curl", "-f", "http://localhost:5173/", "-s"]
+  CMD ["node", "-e", "require('http').get('http://localhost:5173/',function(r){process.exit(r.statusCode===200?0:1)})"]
 
 # Zero-config production server with @react-router/serve
 # 180MB max heap for Pi 4; PORT=5173
