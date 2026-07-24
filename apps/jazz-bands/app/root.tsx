@@ -90,16 +90,6 @@ export function meta({ data }: Route.MetaArgs) {
     { title: data?.bandSlug ? `${data.bandSlug} - Jazz Band` : 'Jazz Bands' },
     { name: 'description', content: 'Jazz band website' },
     {
-      tagName: 'meta',
-      name: 'sanity-project-id',
-      content: data?.sanityProjectId || '',
-    },
-    {
-      tagName: 'meta',
-      name: 'sanity-dataset',
-      content: data?.sanityDataset || '',
-    },
-    {
       tagName: 'link',
       rel: 'apple-touch-icon',
       sizes: '180x180',
@@ -137,6 +127,8 @@ export default function App() {
     umamiWebsiteId,
     primaryColor,
     secondaryColor,
+    sanityProjectId,
+    sanityDataset,
   } = useLoaderData<Route>()
 
   return (
@@ -150,6 +142,8 @@ export default function App() {
       <head>
         <Meta />
         <Links />
+        <meta name="sanity-project-id" content={sanityProjectId} />
+        <meta name="sanity-dataset" content={sanityDataset} />
         {umamiWebsiteId && (
           <>
             <script
