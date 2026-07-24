@@ -41,9 +41,9 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=jazzbands-prod"
       - "--entrypoints.web.address=:8012"
       - "--accesslog=true"
+      - "--log.level=DEBUG"
     ports:
       - "8012:8012"
     restart: always
