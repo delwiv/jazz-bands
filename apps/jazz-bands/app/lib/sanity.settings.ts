@@ -24,9 +24,15 @@ function getEnv() {
   if (typeof process !== 'undefined' && process.env) {
     return process.env
   }
-  // Client-side runtime: use window.__ENV injected by SSR
-  if (typeof window !== 'undefined' && (window as any).__ENV) {
-    return (window as any).__ENV
+  // Client-side runtime: read meta tags injected by SSR (like aozia)
+  if (typeof document !== 'undefined') {
+    const projectId =
+      document.querySelector('meta[name="sanity-project-id"]')?.getAttribute('content') || ''
+    const dataset =
+      document.querySelector('meta[name="sanity-dataset"]')?.getAttribute('content') || ''
+    if (projectId) {
+      return { SANITY_PROJECT_ID: projectId, SANITY_DATASET: dataset } as Record<string, string>
+    }
   }
   // Client-side fallback: use import.meta.env (Vite build-time)
   if (typeof import.meta !== 'undefined' && import.meta.env) {
