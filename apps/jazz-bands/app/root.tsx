@@ -89,8 +89,16 @@ export function meta({ data }: Route.MetaArgs) {
     { charset: 'utf-8' },
     { title: data?.bandSlug ? `${data.bandSlug} - Jazz Band` : 'Jazz Bands' },
     { name: 'description', content: 'Jazz band website' },
-    { name: 'sanity-project-id', content: data?.sanityProjectId || '' },
-    { name: 'sanity-dataset', content: data?.sanityDataset || '' },
+    {
+      tagName: 'meta',
+      name: 'sanity-project-id',
+      content: data?.sanityProjectId || '',
+    },
+    {
+      tagName: 'meta',
+      name: 'sanity-dataset',
+      content: data?.sanityDataset || '',
+    },
     {
       tagName: 'link',
       rel: 'apple-touch-icon',
