@@ -111,8 +111,10 @@ services:
     ports:
       - "3092:3092"
     depends_on:
-      - mongo
-      - redis
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_healthy
 
   # ======================================================================
   # DATABASES
@@ -150,6 +152,12 @@ services:
     networks:
       - api-network
     command: /opt/bitnami/scripts/valkey/run.sh --appendonly no
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     volumes:
       - ./data/valkey:/bitnami/valkey/data
     deploy:
