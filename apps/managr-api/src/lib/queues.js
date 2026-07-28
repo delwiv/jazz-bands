@@ -9,7 +9,10 @@ import { sendMail } from './gmail.js'
 
 const NB_PARALLEL_EMAILS = 2
 const JOB_DELAY = 1000 * 60 * 60 * 3 // 3h
-const REDIS_CONNECTION = { host: 'redis' }
+const REDIS_CONNECTION = {
+  host: 'redis',
+  retryStrategy: times => Math.min(times * 100, 3000),
+}
 
 function getBody(type) {
   return fs.readFileSync(join(import.meta.dirname, `../mails/${type}.html`), 'utf8')
@@ -69,6 +72,11 @@ worker.on('failed', (job, err) => {
 })
 
 worker.on('error', async (err) => {
+  const msg = err.message || ''
+  if (msg.includes('ENOTFOUND') || msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT')) {
+    console.error('BullMQ transient connection error', msg)
+    return
+  }
   console.error('BullMQ error', err.message, err.stack?.split('\n')[1])
   const now = Date.now()
   if (now - lastErrorEmail < ERROR_EMAIL_COOLDOWN) return

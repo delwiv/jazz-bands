@@ -3,7 +3,10 @@ import { createClient } from 'redis'
 export const ONE_DAY = 60 * 60 * 24
 const MAIL_COUNT_KEY = 'email:sent'
 
-const client = createClient({ url: 'redis://redis' })
+const client = createClient({
+  url: 'redis://redis',
+  socket: { reconnectStrategy: retries => Math.min(retries * 100, 3000) },
+})
 client.on('error', err => console.error('Redis error', err))
 client.connect()
 
