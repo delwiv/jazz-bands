@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto'
 import fs from 'fs'
 import { join } from 'path'
+import IORedis from 'ioredis'
 import { Queue, Worker } from 'bullmq'
 
 import Contact from '../models/ContactModel.js'
@@ -9,10 +10,12 @@ import { sendMail } from './gmail.js'
 
 const NB_PARALLEL_EMAILS = 2
 const JOB_DELAY = 1000 * 60 * 60 * 3 // 3h
-const REDIS_CONNECTION = {
+
+const connection = new IORedis({
   host: 'redis',
   retryStrategy: times => Math.min(times * 100, 3000),
-}
+  maxRetriesPerRequest: null,
+})
 
 function getBody(type) {
   return fs.readFileSync(join(import.meta.dirname, `../mails/${type}.html`), 'utf8')
@@ -25,7 +28,7 @@ function formatDate(date) {
   return `${d}/${m}/${y}`
 }
 
-const mailQueue = new Queue('sendMail', { connection: REDIS_CONNECTION })
+const mailQueue = new Queue('sendMail', { connection })
 
 const worker = new Worker('sendMail', async (job) => {
   const { name, email, type, toRecontact } = job.data
@@ -60,36 +63,55 @@ const worker = new Worker('sendMail', async (job) => {
 
   redis.addToCount(randomUUID()).catch(err => console.error('Redis count failed', err))
 }, {
-  connection: REDIS_CONNECTION,
+  connection,
   concurrency: NB_PARALLEL_EMAILS,
 })
 
 let lastErrorEmail = 0
 const ERROR_EMAIL_COOLDOWN = 5 * 60 * 1000
+const GRACE_PERIOD = 60_000
+let pendingNotificationTimeout = null
+
+function clearPendingNotification() {
+  if (pendingNotificationTimeout) {
+    clearTimeout(pendingNotificationTimeout)
+    pendingNotificationTimeout = null
+  }
+}
+
+function scheduleNotification(err) {
+  clearPendingNotification()
+  pendingNotificationTimeout = setTimeout(async () => {
+    pendingNotificationTimeout = null
+    const now = Date.now()
+    if (now - lastErrorEmail < ERROR_EMAIL_COOLDOWN) return
+    lastErrorEmail = now
+    try {
+      await sendMail({
+        body: err.message + '\n' + (err.stack || ''),
+        subject: 'Massmail error happened',
+        to: 'delwiv@protonmail.com',
+      })
+      redis.addToCount(randomUUID()).catch(() => {})
+    } catch (sendErr) {
+      console.error('Failed to send error notification', sendErr)
+    }
+  }, GRACE_PERIOD)
+}
 
 worker.on('failed', (job, err) => {
   console.error('BullMQ job failed', job?.id, err.message, job?.data)
 })
 
 worker.on('error', async (err) => {
-  const msg = err.message || ''
-  if (msg.includes('ENOTFOUND') || msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT')) {
-    console.error('BullMQ transient connection error', msg)
-    return
-  }
   console.error('BullMQ error', err.message, err.stack?.split('\n')[1])
-  const now = Date.now()
-  if (now - lastErrorEmail < ERROR_EMAIL_COOLDOWN) return
-  lastErrorEmail = now
-  try {
-    await sendMail({
-      body: err.message + '\n' + (err.stack || ''),
-      subject: 'Massmail error happened',
-      to: 'delwiv@protonmail.com',
-    })
-    redis.addToCount(randomUUID()).catch(() => {})
-  } catch (sendErr) {
-    console.error('Failed to send error notification', sendErr)
+  scheduleNotification(err)
+})
+
+connection.on('ready', () => {
+  if (pendingNotificationTimeout) {
+    clearPendingNotification()
+    console.log('Redis reconnected, cancelled pending notification')
   }
 })
 
