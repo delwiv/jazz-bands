@@ -1,177 +1,77 @@
-import ContactModel from '../models/ContactModel.js'
+import Contact from '../models/ContactModel.js'
 import redis from '../lib/redis.js'
+
+const PROJECTION = 'id, departement, ville, nom, responsable, mail, mail2, mail3, envoi_mail, mois_contact, send_mail_status'
 
 export default {
   list: async (req, res) => {
     const { q } = req.query
+    const filter = {}
 
-    const query = {}
     if (q) {
       if (q.match(/month:\d+/)) {
-        Object.assign(query, {
-          mois_contact: q.replace('month:', ''),
-        })
+        filter.mois_contact = q.replace('month:', '')
       } else if (q.match(/v:.+/)) {
-        Object.assign(query, {
-          ville: new RegExp(q.replace('v:', ''), 'gi'),
-        })
+        filter.ville_like = q.replace('v:', '')
       } else if (q === 'emailErrors') {
-        Object.assign(query, {
-          'sendMailStatus.status': {
-            $regex: /error:/g,
-          },
-          'sendMailStatus.date': {
-            $gt: new Date(Date.now() - 86400000),
-          },
-        })
+        filter.email_errors_after = new Date(Date.now() - 86400000)
       } else {
-        const regex = new RegExp(q, 'i')
-        Object.assign(query, {
-          $or: [
-            {
-              nom: regex,
-            },
-            {
-              mail: regex,
-            },
-            {
-              mail2: regex,
-            },
-            {
-              mail3: regex,
-            },
-            {
-              responsable: regex,
-            },
-            {
-              ville: regex,
-            },
-            {
-              notes: regex,
-            },
-            {
-              cible: regex,
-            },
-            {
-              tel_perso: regex,
-            },
-            {
-              tel_pro: regex,
-            },
-            {
-              tel3: regex,
-            },
-          ],
-        })
+        filter.search = q
       }
     }
 
-    const params = {
-      sort: {
-        departement: 1,
-        ville: 1,
-        nom: 1,
-      },
-    }
-
-    console.log({ params, query })
-
-    const [contacts, count] = await Promise.all([
-      ContactModel.find(
-        query,
-        'departement ville _id nom responsable mail mail2 mail3 envoi_mail mois_contact sendMailStatus',
-        params
-      ),
-      ContactModel.countDocuments(query),
+    const [contacts, count, emailsSent] = await Promise.all([
+      Contact.find(filter, PROJECTION),
+      Contact.countDocuments(filter),
+      redis.countLast24h().catch(() => 0),
     ])
 
-    let emailsSent = 0
-    try {
-      emailsSent = await redis.countLast24h()
-    } catch (err) {
-      console.error('Redis count failed', err)
-    }
     return res.json({
-      contacts: contacts.sort((a, b) => +a.departement - +b.departement),
+      contacts: contacts.sort((a, b) => (+a.departement || 0) - (+b.departement || 0)),
       count,
       emailsSent,
     })
   },
 
-  show: function(req, res) {
-    var id = req.params.id
-    ContactModel.findOne({ _id: id }, function(err, contact) {
-      if (err) {
-        return res.status(500).json({
-          message: 'Error when getting contact.',
-          error: err,
-        })
-      }
+  show: async (req, res) => {
+    try {
+      const contact = await Contact.findOne({ id: req.params.id })
       if (!contact) {
-        return res.status(404).json({
-          message: 'No such contact',
-        })
+        return res.status(404).json({ message: 'No such contact' })
       }
       return res.json(contact)
-    })
+    } catch (err) {
+      return res.status(500).json({ message: 'Error when getting contact.', error: err.message })
+    }
   },
 
-  create: function(req, res) {
-    var contact = new ContactModel({ ...req.body, departement: +req.body.departement })
-
-    contact.save(function(err, contact) {
-      if (err) {
-        return res.status(500).json({
-          message: 'Error when creating contact',
-          error: err,
-        })
-      }
+  create: async (req, res) => {
+    try {
+      const contact = await Contact.create({ ...req.body, departement: req.body.departement })
       return res.status(201).json(contact)
-    })
+    } catch (err) {
+      return res.status(500).json({ message: 'Error when creating contact', error: err.message })
+    }
   },
 
-  update: function(req, res) {
-    var id = req.params.id
-    ContactModel.findOne({ _id: id }, function(err, contact) {
-      if (err) {
-        return res.status(500).json({
-          message: 'Error when getting contact',
-          error: err,
-        })
-      }
+  update: async (req, res) => {
+    try {
+      const contact = await Contact.updateById(req.params.id, req.body)
       if (!contact) {
-        return res.status(404).json({
-          message: 'No such contact',
-        })
+        return res.status(404).json({ message: 'No such contact' })
       }
-
-      const { checked, ...body } = req.body
-
-      Object.assign(contact, body)
-
-      contact.save(function(err, contact) {
-        if (err) {
-          return res.status(500).json({
-            message: 'Error when updating contact.',
-            error: err,
-          })
-        }
-
-        return res.json(contact)
-      })
-    })
+      return res.json(contact)
+    } catch (err) {
+      return res.status(500).json({ message: 'Error when updating contact.', error: err.message })
+    }
   },
 
-  remove: function(req, res) {
-    var id = req.params.id
-    ContactModel.findByIdAndDelete(id, function(err, contact) {
-      if (err) {
-        return res.status(500).json({
-          message: 'Error when deleting the contact.',
-          error: err,
-        })
-      }
+  remove: async (req, res) => {
+    try {
+      await Contact.deleteById(req.params.id)
       return res.status(204).json()
-    })
+    } catch (err) {
+      return res.status(500).json({ message: 'Error when deleting the contact.', error: err.message })
+    }
   },
 }

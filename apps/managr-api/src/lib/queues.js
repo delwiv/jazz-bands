@@ -9,7 +9,7 @@ import redis from './redis.js'
 import { sendMail } from './gmail.js'
 
 const NB_PARALLEL_EMAILS = 2
-const JOB_DELAY = 1000 * 60 * 60 * 3 // 3h
+const JOB_DELAY = 1000 * 60 * 60 * 3
 
 const connection = new IORedis({
   host: 'redis',
@@ -38,10 +38,9 @@ const worker = new Worker('sendMail', async (job) => {
     jazzola: 'Hommage à Marcel Azzola',
   }
 
-  await Contact.updateOne(
-    { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
-    { sendMailStatus: { date: new Date(), status: 'sending' } }
-  )
+  await Contact.updateOneByEmail(email, {
+    send_mail_status: { date: new Date(), status: 'sending' },
+  })
 
   console.log('Sending mail to', email)
   await Promise.race([
@@ -51,14 +50,11 @@ const worker = new Worker('sendMail', async (job) => {
   console.log('Mail sent to', email)
 
   if (toRecontact !== null) {
-    await Contact.updateOne(
-      { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
-      {
-        sendMailStatus: { date: new Date(), status: 'sent' },
-        mois_contact: toRecontact + 1,
-        envoi_mail: formatDate(new Date()),
-      }
-    )
+    await Contact.updateOneByEmail(email, {
+      send_mail_status: { date: new Date(), status: 'sent' },
+      mois_contact: String(toRecontact + 1),
+      envoi_mail: formatDate(new Date()),
+    })
   }
 
   redis.addToCount(randomUUID()).catch(err => console.error('Redis count failed', err))
@@ -118,9 +114,8 @@ connection.on('ready', () => {
 export const sendMails = async ({ emails, type, toRecontact }) => {
   for (const email of emails) {
     try {
-      const contact = await Contact.findOne({
-        $or: [{ mail: email }, { mail2: email }, { mail3: email }],
-      })
+      const contact = await Contact.findOneByEmail(email)
+      if (!contact) continue
       const dataList = [contact.mail, contact.mail2, contact.mail3].filter(Boolean)
       const sentCount = await redis.countLast24h()
       const delay = sentCount >= 500 ? JOB_DELAY : 0
@@ -139,10 +134,9 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
         })
       ))
 
-      await Contact.updateOne(
-        { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
-        { sendMailStatus: { date: new Date(), status: 'queued' } }
-      )
+      await Contact.updateOneByEmail(email, {
+        send_mail_status: { date: new Date(), status: 'queued' },
+      })
 
       console.log({ sentCount })
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -152,10 +146,9 @@ export const sendMails = async ({ emails, type, toRecontact }) => {
         error.message === 'Invalid to header'
           ? `Mauvaise adresse email : ${email}`
           : error.message
-      await Contact.updateOne(
-        { $or: [{ mail: email }, { mail2: email }, { mail3: email }] },
-        { sendMailStatus: { date: new Date(), error: errorMessage } }
-      )
+      await Contact.updateOneByEmail(email, {
+        send_mail_status: { date: new Date(), error: errorMessage },
+      })
     }
   }
 }

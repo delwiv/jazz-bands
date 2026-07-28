@@ -1,16 +1,13 @@
 name: legacy
 
 # ============================================================================
-# Jazz Bands Platform - Production (Legacy + Manager + Databases)
+# Jazz Bands Platform - Legacy Apps + Manager
 # ============================================================================
 # This file manages:
 # - Legacy Angular apps (6 bands)
 # - Manager services (managr, managr-api)
 # - Shared databases (Mongo, Redis)
 # ============================================================================
-#
-# Dev mode: Use docker-compose.jazzbands-dev.yml
-# Production SSR: Create new file when dev is complete
 #
 # Anchors for Legacy Apps
 x-legacy-common: &legacy-common
@@ -28,6 +25,9 @@ networks:
   api-network:
     driver: bridge
     name: jazz-bands-api
+  jazzbands-prod:
+    external: true
+    name: jazzbands-prod
 
 services:
   # ======================================================================
@@ -94,7 +94,10 @@ services:
 
   managr:
     container_name: managr
-    <<: *legacy-common
+    env_file: .env
+    restart: always
+    networks:
+      - api-network
     build: ./apps/managr
     environment:
       PORT: 3091
@@ -104,16 +107,17 @@ services:
 
   managr-api:
     container_name: managr-api
-    <<: *legacy-common
+    env_file: .env
+    restart: always
     build: ./apps/managr-api
     environment:
       PORT: 3092
-      MONGODB_HOST: mongo-managr:27017
     ports:
       - "3092:3092"
+    networks:
+      - api-network
+      - jazzbands-prod
     depends_on:
-      mongo-managr:
-        condition: service_started
       redis:
         condition: service_healthy
 
@@ -169,26 +173,4 @@ services:
         reservations:
           memory: 64M
 
-  # ======================================================================
-  # MANAGER DATABASE (MongoDB 7.0, for managr-api only)
-  # ======================================================================
 
-  mongo-managr:
-    image: "mongo:7.0"
-    container_name: mongo-managr
-    env_file: .env
-    restart: always
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD}
-    volumes:
-      - ./data/mongo-managr:/data/db
-      - ./data/init-mongo-managr.js:/docker-entrypoint-initdb.d/init-mongo.js
-    networks:
-      - api-network
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
