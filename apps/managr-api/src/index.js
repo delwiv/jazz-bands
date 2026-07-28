@@ -15,12 +15,9 @@ const {
   MANAGR_API_KEY,
 } = process.env
 
-mongoose.connect(`mongodb://managr:${MONGODB_MANAGR_PASSWORD}@${MONGODB_HOST}/managr`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}, connectErr => {
-  console.log(connectErr || `MongoDB connected to mongodb://${MONGODB_HOST}`)
-})
+mongoose.connect(`mongodb://managr:${MONGODB_MANAGR_PASSWORD}@${MONGODB_HOST}/managr`)
+  .then(() => console.log(`MongoDB connected to mongodb://${MONGODB_HOST}`))
+  .catch(connectErr => console.log(connectErr))
 
 const app = express()
 

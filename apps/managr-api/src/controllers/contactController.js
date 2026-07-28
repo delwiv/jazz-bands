@@ -164,7 +164,7 @@ export default {
 
   remove: function(req, res) {
     var id = req.params.id
-    ContactModel.findByIdAndRemove(id, function(err, contact) {
+    ContactModel.findByIdAndDelete(id, function(err, contact) {
       if (err) {
         return res.status(500).json({
           message: 'Error when deleting the contact.',

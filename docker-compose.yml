@@ -108,10 +108,11 @@ services:
     build: ./apps/managr-api
     environment:
       PORT: 3092
+      MONGODB_HOST: mongo-managr:27017
     ports:
       - "3092:3092"
     depends_on:
-      mongo:
+      mongo-managr:
         condition: service_started
       redis:
         condition: service_healthy
@@ -142,9 +143,10 @@ services:
         reservations:
           memory: 256M
 
+  # ======================================================================
   redis:
     image: "bitnami/valkey:latest"
-    container_name: redis
+    container_name: redis-legacy
     restart: always
     user: "1001"
     environment:
@@ -159,7 +161,7 @@ services:
       retries: 3
       start_period: 10s
     volumes:
-      - ./data/valkey:/bitnami/valkey/data
+      - ./data/valkey-legacy:/bitnami/valkey/data
     deploy:
       resources:
         limits:
@@ -167,4 +169,26 @@ services:
         reservations:
           memory: 64M
 
+  # ======================================================================
+  # MANAGER DATABASE (MongoDB 7.0, for managr-api only)
+  # ======================================================================
 
+  mongo-managr:
+    image: "mongo:7.0"
+    container_name: mongo-managr
+    env_file: .env
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD}
+    volumes:
+      - ./data/mongo-managr:/data/db
+      - ./data/init-mongo-managr.js:/docker-entrypoint-initdb.d/init-mongo.js
+    networks:
+      - api-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
