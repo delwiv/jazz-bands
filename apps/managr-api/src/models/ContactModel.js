@@ -6,22 +6,27 @@ const pool = new pg.Pool({
 
 const KNOWN_COLUMNS = [
   'adresse', 'cd', 'cible', 'cp', 'date_cd', 'departement',
-  'envoi_mail', 'legacy_id', 'mail', 'mail2', 'mail3',
+  'departement_label', 'envoi_mail', 'legacy_id', 'mail', 'mail2', 'mail3',
   'mois_contact', 'mois_envoi', 'nom', 'notes',
   'responsable', 'responsable2', 'responsable3',
   'tel_perso', 'tel_pro', 'tel3', 'ville', 'vu_le', 'site',
   'send_mail_status',
 ]
 
+const FIELD_MAP = {
+  sendMailStatus: 'send_mail_status',
+}
+
 function splitFields(data) {
   const row = {}
   const extra = {}
   for (const [key, value] of Object.entries(data)) {
     if (key === 'checked') continue
-    if (KNOWN_COLUMNS.includes(key)) {
-      row[key] = value
+    const col = FIELD_MAP[key] || key
+    if (KNOWN_COLUMNS.includes(col)) {
+      row[col] = value
     } else {
-      extra[key] = value
+      extra[col] = value
     }
   }
   if (Object.keys(extra).length > 0) row.data = extra
@@ -40,10 +45,27 @@ function buildSetClause(row) {
   return { clause: clauses.join(', '), values }
 }
 
+function toCamelCase(row) {
+  if (!row) return null
+  const result = {}
+  for (const [key, value] of Object.entries(row)) {
+    if (key === 'id') { result.id = value; continue }
+    if (key === 'data') {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        for (const [k, v] of Object.entries(value)) result[k] = v
+      }
+      continue
+    }
+    const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+    result[camelKey] = value
+  }
+  return result
+}
+
 const query = (text, params) => pool.query(text, params)
 
 export default {
-  find: async (filter, fields, sort) => {
+  find: async (filter, fields) => {
     const select = fields || '*'
     let sql = `SELECT ${select} FROM contacts`
     const values = []
@@ -51,7 +73,7 @@ export default {
     if (whereClauses.length > 0) sql += ' WHERE ' + whereClauses.join(' AND ')
     sql += ' ORDER BY departement ASC, ville ASC, nom ASC'
     const result = await query(sql, values)
-    return result.rows
+    return result.rows.map(toCamelCase)
   },
 
   countDocuments: async (filter) => {
@@ -69,17 +91,17 @@ export default {
     if (whereClauses.length === 0) return null
     const sql = `SELECT * FROM contacts WHERE ${whereClauses.join(' AND ')} ORDER BY id ASC LIMIT 1`
     const result = await query(sql, values)
-    return result.rows[0] || null
+    return toCamelCase(result.rows[0] || null)
   },
 
   create: async (data) => {
     const row = splitFields(data)
-    const { clause, values } = buildSetClause(row)
     const cols = Object.keys(row).join(', ')
+    const values = Object.values(row)
     const params = values.map((_, i) => `$${i + 1}`).join(', ')
     const sql = `INSERT INTO contacts (${cols}) VALUES (${params}) RETURNING *`
     const result = await query(sql, values)
-    return result.rows[0]
+    return toCamelCase(result.rows[0])
   },
 
   updateById: async (id, data) => {
@@ -89,7 +111,7 @@ export default {
     values.push(id)
     const sql = `UPDATE contacts SET ${clause} WHERE id = $${values.length} RETURNING *`
     const result = await query(sql, values)
-    return result.rows[0] || null
+    return toCamelCase(result.rows[0] || null)
   },
 
   deleteById: async (id) => {
@@ -116,6 +138,10 @@ export default {
 
 function buildWhere(filter, values) {
   const clauses = []
+  if (filter.id) {
+    values.push(filter.id)
+    clauses.push(`id = $${values.length}`)
+  }
   if (filter.mois_contact) {
     values.push(filter.mois_contact)
     clauses.push(`mois_contact = $${values.length}`)
