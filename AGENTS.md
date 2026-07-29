@@ -666,14 +666,13 @@ The migration now properly handles three types of images:
 
 ### Git & Commits
 
-**CRITICAL COMMIT WORKFLOW:**
+**⛔ CRITICAL — NEVER COMMIT. EVER.**
 
-- **DO NOT COMMIT**: You must NEVER automatically commit code changes. Committing is the developer's responsibility.
-- **PROMPT USER TO COMMIT**: After completing any significant updates (feature completion, bug fixes, refactoring), you must:
-  1. **Notify the user** that changes are complete
-  2. **Provide a commit message suggestion** (semantic style)
-  3. **Ask if they want to commit** the changes
-  4. **Wait for explicit approval** before proceeding
+- **NEVER run `git commit`**, `git commit --amend`, or `git add` + `git commit` unless the user gave you **explicit approval** in the same conversation turn.
+- **NEVER assume** that a user's "OK" or "go" or "yes" means "commit now". Committing is a separate, explicit request.
+- **After every completed task**, prompt the user with a summary and ask "Ready to commit?" — wait for explicit approval before running any commit.
+- **If the user previously asked you not to commit, it applies forever**, not just for that session.
+- **Exception**: The user may ask you to modify `AGENTS.md` and commit that change. This is the ONLY time auto-commit is allowed, and it must be a single commit touching only `AGENTS.md`.
 
 **Example commit prompt:**
 
@@ -718,4 +717,4 @@ Would you like me to stage and commit these changes?
 
 ---
 
-_Last updated: March 2026 (post-code-cleanup)_
+_Last updated: July 2026 (post-PostgreSQL-migration)_
