@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS contacts (
   cp              TEXT,
   date_cd         TEXT,
   departement     TEXT,
+  departement_label TEXT,
   envoi_mail      TEXT,
   legacy_id       TEXT,
   mail            TEXT,

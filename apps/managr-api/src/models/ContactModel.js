@@ -63,7 +63,7 @@ function toLegacyFormat(row) {
     if (key === 'legacy_id') { result._id = value || String(row.id); continue }
     if (key === 'send_mail_status') {
       const hasColumn = value && Object.keys(value).length > 0
-      result.sendMailStatus = hasColumn ? value : (extra.send_mail_status || {})
+      result.sendMailStatus = hasColumn ? value : (extra.send_mail_status || null)
       continue
     }
     if (key === 'created_at') { result.createdAt = value || extra.created_at; continue }
@@ -122,13 +122,15 @@ export default {
     const row = splitFields(body)
     const { clause, values } = buildSetClause(row)
     values.push(id)
-    const sql = `UPDATE contacts SET ${clause} WHERE legacy_id = $${values.length} RETURNING *`
+    const where = /^\d+$/.test(id) ? `id` : `legacy_id`
+    const sql = `UPDATE contacts SET ${clause} WHERE ${where} = $${values.length} RETURNING *`
     const result = await query(sql, values)
     return toLegacyFormat(result.rows[0] || null)
   },
 
   deleteById: async (id) => {
-    await query('DELETE FROM contacts WHERE legacy_id = $1', [id])
+    const where = /^\d+$/.test(id) ? 'id' : 'legacy_id'
+    await query(`DELETE FROM contacts WHERE ${where} = $1`, [id])
   },
 
   updateOneByEmail: async (email, update) => {

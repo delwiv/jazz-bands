@@ -35,7 +35,8 @@ export default {
 
   show: async (req, res) => {
     try {
-      const contact = await Contact.findOne({ legacy_id: req.params.id })
+      const isSerial = /^\d+$/.test(req.params.id)
+      const contact = await Contact.findOne(isSerial ? { id: req.params.id } : { legacy_id: req.params.id })
       if (!contact) {
         return res.status(404).json({ message: 'No such contact' })
       }
