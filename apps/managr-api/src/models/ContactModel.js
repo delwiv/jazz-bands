@@ -45,23 +45,25 @@ function buildSetClause(row) {
   return { clause: clauses.join(', '), values }
 }
 
-function toCamelCase(row) {
+function toLegacyFormat(row) {
   if (!row) return null
   const result = {}
   for (const [key, value] of Object.entries(row)) {
-    if (key === 'id') { result.id = value; continue }
+    if (key === 'id') { result._id = String(value); continue }
     if (key === 'send_mail_status') {
-      result.sendMailStatus = value && Object.keys(value).length > 0 ? value : null
+      result.sendMailStatus = value && Object.keys(value).length > 0 ? value : {}
       continue
     }
+    if (key === 'created_at') { result.createdAt = value; continue }
+    if (key === 'updated_at') { result.updatedAt = value; continue }
     if (key === 'data') {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         for (const [k, v] of Object.entries(value)) result[k] = v
       }
       continue
     }
-    const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
-    result[camelKey] = value
+    if (key === 'legacy_id' && value) { result.id = value; continue }
+    result[key] = value
   }
   return result
 }
@@ -77,7 +79,7 @@ export default {
     if (whereClauses.length > 0) sql += ' WHERE ' + whereClauses.join(' AND ')
     sql += ' ORDER BY departement ASC, ville ASC, nom ASC'
     const result = await query(sql, values)
-    return result.rows.map(toCamelCase)
+    return result.rows.map(toLegacyFormat)
   },
 
   countDocuments: async (filter) => {
@@ -95,7 +97,7 @@ export default {
     if (whereClauses.length === 0) return null
     const sql = `SELECT * FROM contacts WHERE ${whereClauses.join(' AND ')} ORDER BY id ASC LIMIT 1`
     const result = await query(sql, values)
-    return toCamelCase(result.rows[0] || null)
+    return toLegacyFormat(result.rows[0] || null)
   },
 
   create: async (data) => {
@@ -105,7 +107,7 @@ export default {
     const params = values.map((_, i) => `$${i + 1}`).join(', ')
     const sql = `INSERT INTO contacts (${cols}) VALUES (${params}) RETURNING *`
     const result = await query(sql, values)
-    return toCamelCase(result.rows[0])
+    return toLegacyFormat(result.rows[0])
   },
 
   updateById: async (id, data) => {
@@ -115,7 +117,7 @@ export default {
     values.push(id)
     const sql = `UPDATE contacts SET ${clause} WHERE id = $${values.length} RETURNING *`
     const result = await query(sql, values)
-    return toCamelCase(result.rows[0] || null)
+    return toLegacyFormat(result.rows[0] || null)
   },
 
   deleteById: async (id) => {
