@@ -1,7 +1,7 @@
 import Contact from '../models/ContactModel.js'
 import redis from '../lib/redis.js'
 
-const PROJECTION = 'id, departement, ville, nom, responsable, mail, mail2, mail3, envoi_mail, mois_contact, send_mail_status, data'
+const PROJECTION = 'id, departement, ville, nom, responsable, mail, mail2, mail3, envoi_mail, mois_contact, send_mail_status, data, legacy_id'
 
 export default {
   list: async (req, res) => {
@@ -35,7 +35,7 @@ export default {
 
   show: async (req, res) => {
     try {
-      const contact = await Contact.findOne({ id: req.params.id })
+      const contact = await Contact.findOne({ legacy_id: req.params.id })
       if (!contact) {
         return res.status(404).json({ message: 'No such contact' })
       }

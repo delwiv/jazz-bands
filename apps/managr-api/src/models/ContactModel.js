@@ -47,24 +47,31 @@ function buildSetClause(row) {
 
 function toLegacyFormat(row) {
   if (!row) return null
+
+  const extra = row.data && typeof row.data === 'object' && !Array.isArray(row.data) ? row.data : {}
+
   const result = {}
+  for (const [k, v] of Object.entries(extra)) {
+    if (k === 'id' || k === '_id' || k === 'send_mail_status' || k === 'created_at' || k === 'updated_at') continue
+    result[k] = v
+  }
+
   for (const [key, value] of Object.entries(row)) {
-    if (key === 'id') { result._id = String(value); continue }
+    if (key === 'id') continue
+    if (key === 'data') continue
+
+    if (key === 'legacy_id') { result._id = value || String(row.id); continue }
     if (key === 'send_mail_status') {
-      result.sendMailStatus = value && Object.keys(value).length > 0 ? value : {}
+      const hasColumn = value && Object.keys(value).length > 0
+      result.sendMailStatus = hasColumn ? value : (extra.send_mail_status || {})
       continue
     }
-    if (key === 'created_at') { result.createdAt = value; continue }
-    if (key === 'updated_at') { result.updatedAt = value; continue }
-    if (key === 'data') {
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
-        for (const [k, v] of Object.entries(value)) result[k] = v
-      }
-      continue
-    }
-    if (key === 'legacy_id' && value) { result.id = value; continue }
+    if (key === 'created_at') { result.createdAt = value || extra.created_at; continue }
+    if (key === 'updated_at') { result.updatedAt = value || extra.updated_at; continue }
     result[key] = value
   }
+
+  if (!result._id) result._id = String(row.id)
   return result
 }
 
@@ -115,13 +122,13 @@ export default {
     const row = splitFields(body)
     const { clause, values } = buildSetClause(row)
     values.push(id)
-    const sql = `UPDATE contacts SET ${clause} WHERE id = $${values.length} RETURNING *`
+    const sql = `UPDATE contacts SET ${clause} WHERE legacy_id = $${values.length} RETURNING *`
     const result = await query(sql, values)
     return toLegacyFormat(result.rows[0] || null)
   },
 
   deleteById: async (id) => {
-    await query('DELETE FROM contacts WHERE id = $1', [id])
+    await query('DELETE FROM contacts WHERE legacy_id = $1', [id])
   },
 
   updateOneByEmail: async (email, update) => {
@@ -147,6 +154,10 @@ function buildWhere(filter, values) {
   if (filter.id) {
     values.push(filter.id)
     clauses.push(`id = $${values.length}`)
+  }
+  if (filter.legacy_id) {
+    values.push(filter.legacy_id)
+    clauses.push(`legacy_id = $${values.length}`)
   }
   if (filter.mois_contact) {
     values.push(filter.mois_contact)
