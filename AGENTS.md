@@ -39,6 +39,7 @@ All 6 legacy Angular apps are being ported from `/apps/<bandname>/` to the unifi
 | swing-family | `/apps/swing-family` | `/apps/jazz-bands` (subdomain: swing-family) | ✅ Migrated |
 | trio-rsh | `/apps/trio-rsh` | `/apps/jazz-bands` (subdomain: trio-rsh) | ✅ Migrated |
 | west-side-trio | `/apps/west-side-trio` | `/apps/jazz-bands` (subdomain: west-side-trio) | ✅ Migrated |
+| **managr-api** | `/apps/managr-api` | PostgreSQL 16 | ✅ Migrated — MongoDB→PostgreSQL, 5957 contacts |
 
 ### What Has Been Migrates
 
@@ -126,6 +127,8 @@ All imported assets use clean, searchable naming:
 | **Linter**      | Biome         | v2.4.6   | Fast linting/formatting    |
 | **Deployment**  | Docker        | latest   | Containerization           |
 | **Proxy**       | Traefik       | latest   | SSL, routing               |
+| **managr-api DB** | PostgreSQL  | 16       | Contact storage (pg raw)   |
+| **managr-api Queue** | BullMQ    | v5.54.10 | Email job queue            |
 
 ---
 
@@ -301,6 +304,38 @@ The schema uses a **hybrid approach** for musician-band relationships:
 2. **Band-Specific Overrides**: For musicians who play different instruments or have different bios per band
 
 See `apps/jazz-bands/sanity/SCHEMA-DESIGN.md` for detailed rationale.
+
+### PostgreSQL Schema (managr-api)
+
+The `managr-api` uses a single `contacts` table with JSONB for dynamic fields (replacing MongoDB's `strict:false`).
+
+```sql
+contacts (
+  id              SERIAL PRIMARY KEY,
+  adresse, cd, cible, cp, date_cd, departement, departement_label,
+  envoi_mail, legacy_id, mail, mail2, mail3,
+  mois_contact, mois_envoi, nom, notes,
+  responsable, responsable2, responsable3,
+  tel_perso, tel_pro, tel3, ville, vu_le, site      -- TEXT fields
+  send_mail_status  JSONB NOT NULL DEFAULT '{}',      -- email tracking
+  data              JSONB NOT NULL DEFAULT '{}',      -- catch-all for legacy fields
+  created_at, updated_at  TIMESTAMPTZ
+);
+```
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| `id` | SERIAL | New primary key |
+| `legacy_id` | TEXT | Old MongoDB ObjectId string |
+| `departement` | TEXT | "01", "2A" (Corse), "étranger" |
+| `send_mail_status` | JSONB | `{ date, status }` or `null` |
+| `data` | JSONB | Unknown fields from MongoDB (gp1-8, aime1-8, date1-8, fax, etc.) |
+
+**Key design decisions:**
+- Dual-lookup (`id`/`legacy_id`) for backward compat with MongoDB ObjectIds
+- `toLegacyFormat()` converts column names to match old Mongoose responses
+- Migrations in `apps/managr-api/migrations/` (raw SQL)
+- Data migration script: `scripts/migrate-mongo-to-pg.mjs` (auto-detects Docker IPs)
 
 ---
 
@@ -653,6 +688,19 @@ The migration now properly handles three types of images:
 | trio-rsh | 1 | 12 |
 | west-side-trio | 1 | 23 |
 
+### PostgreSQL Migration (managr-api)
+
+```bash
+# Apply SQL migrations
+docker compose exec -T postgres psql -U managr -d managr < apps/managr-api/migrations/001_create_contacts.sql
+
+# Migrate data from MongoDB (auto-detects container IPs)
+cd apps/managr-api && node scripts/migrate-mongo-to-pg.mjs
+
+# Rebuild
+cd ../.. && docker compose -p legacy up -d --build managr-api
+```
+
 ---
 
 ## 🤖 AI Agent Guidelines
@@ -699,9 +747,22 @@ Would you like me to stage and commit these changes?
 - **Reduced Motion**: Import `useReducedMotion` hook only when actually needed (e.g., for parallax/scroll effects). Remove unused imports.
 - **Type Annotations**: Use explicit types for collections (e.g., `TourDate` for tour data filtering/sorting).
 
-### Recent Changes (March 2026)
+### Recent Changes (July 2026)
 
-**Code Cleanup Completed:**
+**managr-api PostgreSQL Migration:**
+- Replaced Mongoose 8 with `pg` raw driver
+- Unified Redis clients (`redis` v4 + `ioredis` → `ioredis` only)
+- Dual-lookup `id`/`legacy_id` for backward compat with MongoDB ObjectIds
+- `toLegacyFormat()` maps `sendMailStatus`, `createdAt`, `updatedAt` to legacy format
+- `send_mail_status` and `data` columns use JSONB with `{}` defaults
+- Migration script auto-detects Docker container IPs
+- `jazzbands-prod` external network for PostgreSQL access from legacy stack
+- npm replaces pnpm, `npm ci` in Dockerfile
+- Split MongoDB instances — `managr-api` now uses PostgreSQL exclusively, legacy apps keep MongoDB 4.4
+- Data migration script: `scripts/migrate-mongo-to-pg.mjs` (5957 contacts)
+- SQL migrations in `apps/managr-api/migrations/`
+
+**Code Cleanup (March 2026):**
 
 - Created `app/lib/routes.types.ts` with type-safe route loader interfaces
 - Removed unused `useReducedMotion` imports from contact, musicians, and tour routes
