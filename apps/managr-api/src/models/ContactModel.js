@@ -50,6 +50,10 @@ function toCamelCase(row) {
   const result = {}
   for (const [key, value] of Object.entries(row)) {
     if (key === 'id') { result.id = value; continue }
+    if (key === 'send_mail_status') {
+      result.sendMailStatus = value && Object.keys(value).length > 0 ? value : null
+      continue
+    }
     if (key === 'data') {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         for (const [k, v] of Object.entries(value)) result[k] = v
