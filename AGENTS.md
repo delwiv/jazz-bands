@@ -720,7 +720,6 @@ cd ../.. && docker compose -p legacy up -d --build managr-api
 - **NEVER assume** that a user's "OK" or "go" or "yes" means "commit now". Committing is a separate, explicit request.
 - **After every completed task**, prompt the user with a summary and ask "Ready to commit?" — wait for explicit approval before running any commit.
 - **If the user previously asked you not to commit, it applies forever**, not just for that session.
-- **Exception**: The user may ask you to modify `AGENTS.md` and commit that change. This is the ONLY time auto-commit is allowed, and it must be a single commit touching only `AGENTS.md`.
 
 **Example commit prompt:**
 
