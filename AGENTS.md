@@ -20,6 +20,8 @@
 - **Docker Per Band**: Isolation, independent scaling, memory limits for Raspberry Pi 4
 - **Traefik for SSL**: Automatic Let's Encrypt certificates via TLS-ALPN-01 challenge
 - **Sanity CDN**: Edge caching for better performance, reduced server load
+- **Sanity Proxy Cache**: In-app proxy (`/sanity/*`) with 1h TTL, reduces API quota usage by caching SSR/bot requests
+- **Healthcheck via `/__health`**: Lightweight endpoint (no SSR, no Sanity) used by Docker HEALTHCHECK only
 
 ---
 
@@ -183,11 +185,16 @@ apps/jazz-bands/
 │   │   ├── recording.ts          # Recording object type
 │   │   ├── tourDate.ts           # TourDate object type
 │   │   └── bandMemberOverride.ts # Override schema
+│   ├── purgeTool.tsx             # Studio custom tool: purge cache button
 │   ├── sanity.config.ts          # Sanity Studio config
 │   └── SCHEMA-DESIGN.md          # Architecture docs
 ├── migration/                    # MongoDB → Sanity scripts
-├── docker-compose.yml            # 6 band containers + Traefik
-├── Dockerfile                    # Node.js Alpine image
+├── server.js                     # Express server (proxy, cache, purge, healthcheck)
+├── docker-compose.yml            # Legacy compose (unused)
+├── docker-compose.jazzbands.yml  # Production stack (6 bands + Traefik + PostgreSQL + Umami)
+├── docker-compose.jazzbands.dev.yml # Dev stack (hot-reload bands + Traefik + PostgreSQL + Umami)
+├── docker-compose.jazzbands.local.yml # Local prod build test (standalone, own Traefik)
+├── Dockerfile                    # Production container (node server.js)
 ├── package.json                  # Dependencies
 ├── vite.config.ts                # Vite configuration
 ├── react-router.config.ts        # React Router config
@@ -385,7 +392,43 @@ Files: `app/contexts/AudioContext.tsx`, `app/components/audio/StickyPlayer.tsx`
 - **CDN Caching**: Edge caching for global performance
 - **Versioning**: Built-in version history and publishing workflow
 
-### 5. Accessibility
+### 6. Sanity Proxy Cache
+
+All Sanity API calls (GROQ queries) are routed through a local proxy at `/sanity/*` instead of hitting Sanity's API directly. This reduces API quota consumption from SSR renders and bot crawls.
+
+**Architecture**:
+```
+Browser request → SSR → sanityClient.fetch()
+                              ↓
+                    express app /sanity/* proxy
+                              ↓ (cache MISS)
+                    https://{projectId}.api.sanity.io
+                              ↓ (cache HIT)
+                    Returns cached response immediately
+```
+
+**Cache**:
+- **TTL**: 1 hour (content changes are rare; tour dates etc.)
+- **Max entries**: 100 (LRU eviction)
+- **Scope**: Per-container in-memory Map (each band container has its own cache)
+- **Key**: `GET:{url}` including the full GROQ query
+
+**Cache invalidation**:
+1. **TTL expiry**: Automatic after 1 hour (fallback)
+2. **Sanity webhooks**: 6 webhooks (one per band slug) firing `POST /__purge` on publish
+3. **Studio tool**: "Purge cache" button in Sanity Studio (`sanity/purgeTool.tsx`)
+4. **Manual**: `curl -X POST https://{slug}.domain/__purge -H 'x-purge-token: {token}'`
+
+**Logging** (in container stdout):
+| Message | When |
+|---------|------|
+| `[sanity-proxy] ACTIVE → ...` | Startup |
+| `[sanity-proxy] HIT ...` | Cache hit |
+| `[sanity-proxy] MISS cached ...` | Cache miss → stored |
+| `[sanity-proxy] PURGED N entries` | Purge executed |
+| `[sanity-proxy] cache entries: N` | Every 10 min |
+
+### 7. Accessibility
 
 - **Reduced Motion**: Respects user's `prefers-reduced-motion` setting
 - **Semantic HTML**: Proper heading hierarchy, ARIA labels
@@ -407,6 +450,12 @@ SANITY_DATASET=production
 SANITY_API_READ_TOKEN=<token>
 SANITY_API_WRITE_TOKEN=<token>
 
+# Cache proxy (redirects API calls through local server for caching)
+SANITY_PROXY_URL=http://localhost:5173/sanity
+
+# Shared secret for cache purge (POST /__purge)
+SANITY_PURGE_TOKEN=<token>
+
 # Server
 PORT=3000
 NODE_ENV=production
@@ -417,13 +466,13 @@ NODE_ENV=production
 ```bash
 # Start all 6 band containers + Traefik
 cd apps/jazz-bands
-docker-compose up -d
+docker compose -f docker-compose.jazzbands.yml up -d
 
 # View logs
-docker-compose logs -f
+docker compose -f docker-compose.jazzbands.yml logs -f
 
 # Stop all containers
-docker-compose down
+docker compose -f docker-compose.jazzbands.yml down
 ```
 
 ### Traefik Configuration
@@ -451,6 +500,20 @@ See `RAM-OPTIMIZATION.md` for detailed memory tuning:
 ---
 
 ## 🧑‍💻 Development
+
+### Test Production Build Locally
+
+```bash
+# Build & run all 6 bands using the production Dockerfile (node server.js)
+# Includes its own Traefik on port 8012 (standalone, no dev dependency)
+docker compose -f docker-compose.jazzbands.local.yml up -d --build
+
+# Watch logs
+docker compose -f docker-compose.jazzbands.local.yml logs -f
+
+# Stop
+docker compose -f docker-compose.jazzbands.local.yml down
+```
 
 ### Prerequisites
 
@@ -760,6 +823,16 @@ Would you like me to stage and commit these changes?
 - Split MongoDB instances — `managr-api` now uses PostgreSQL exclusively, legacy apps keep MongoDB 4.4
 - Data migration script: `scripts/migrate-mongo-to-pg.mjs` (5957 contacts)
 - SQL migrations in `apps/managr-api/migrations/`
+
+**Sanity Proxy Cache (July 2026):**
+- Added `/sanity/*` proxy in `server.js` (Express) replaces `react-router-serve`
+- In-memory cache with 1h TTL, HIT/MISS logging, LRU eviction (max 100 entries)
+- `POST /__purge` endpoint with token auth + CORS for webhook/Studio purge
+- `GET /__health` lightweight healthcheck (no SSR, no Sanity) reduces Docker HEALTHCHECK impact
+- Sanity client config (`sanity.settings.ts`) supports `SANITY_PROXY_URL` via `useProjectHostname: false` + `apiHost`
+- `docker-compose.jazzbands.local.yml` for testing production build locally
+- Studio custom purge tool (`sanity/purgeTool.tsx`) — button to purge all band caches
+- Detailed logging: `[sanity-proxy] HIT/MISS/PURGED/ACTIVE`
 
 **Code Cleanup (March 2026):**
 
