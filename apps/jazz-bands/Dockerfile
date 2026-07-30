@@ -37,6 +37,7 @@ WORKDIR /app
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json .
+COPY --from=builder /app/server.js .
 RUN chown -R node:node /app
 
 # Drop privileges (node-slim uses 'node' user/group)
@@ -46,11 +47,10 @@ ENV NODE_ENV=production
 ENV PORT=5173
 ENV NODE_OPTIONS="--max-old-space-size=180"
 
-# Healthcheck using curl (default in node-slim)
-# Port 5173 = React Router v7 default, respects PORT env var
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD ["node", "-e", "require('http').get('http://localhost:5173/',function(r){process.exit(r.statusCode===200?0:1)})"]
+# Healthcheck — lightweight endpoint, no SSR / no Sanity call
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD ["node", "-e", "require('http').get('http://localhost:5173/__health',function(r){process.exit(r.statusCode===200?0:1)})"]
 
-# Zero-config production server with @react-router/serve
-# 180MB max heap for Pi 4; PORT=5173
-CMD ["npm", "start"]
+# Custom production server with Sanity proxy cache + purge endpoint
+# Uses server.js (Express) instead of default react-router-serve
+CMD ["node", "server.js"]

@@ -1,15 +1,15 @@
 /**
  * Centralized Sanity CMS Configuration
  *
- * All Sanity-related environment variables should use the SANITY_STUDIO_* prefix
- * for consistency across the application.
- *
  * Required environment variables:
  * - SANITY_STUDIO_PROJECT_ID: Sanity project ID
  * - SANITY_STUDIO_DATASET: Sanity dataset
- * - SANITY_STUDIO_API_READ_TOKEN: Read token for API access (REQUIRED)
  *
- * Note: Write token is NOT used in this frontend application (read-only).
+ * Optional:
+ * - VITE_SANITY_PROXY_URL / SANITY_PROXY_URL: Proxy prefix for CDN bypass + caching
+ *   When set, @sanity/client routes all API calls through this URL.
+ *   Example: http://localhost:5173/sanity
+ * - SANITY_STUDIO_API_READ_TOKEN: Read token (not needed for public datasets)
  */
 
 import { type ClientConfig, createClient } from '@sanity/client'
@@ -20,11 +20,9 @@ import type { ImageMetadata } from 'sanity'
  * Get environment variables safely (works in both Node and browser)
  */
 function getEnv() {
-  // Server-side: use process.env
   if (typeof process !== 'undefined' && process.env) {
     return process.env
   }
-  // Client-side runtime: read meta tags injected by SSR (like aozia)
   if (typeof document !== 'undefined') {
     const projectId =
       document.querySelector('meta[name="sanity-project-id"]')?.getAttribute('content') || ''
@@ -34,7 +32,6 @@ function getEnv() {
       return { SANITY_PROJECT_ID: projectId, SANITY_DATASET: dataset } as Record<string, string>
     }
   }
-  // Client-side fallback: use import.meta.env (Vite build-time)
   if (typeof import.meta !== 'undefined' && import.meta.env) {
     return import.meta.env
   }
@@ -43,9 +40,6 @@ function getEnv() {
 
 const env = getEnv()
 
-// Environment variables (all required)
-// Vite requires VITE_ prefix for client-side access
-// Check client vars first (import.meta.env), then server vars (process.env)
 const projectId =
   env.VITE_SANITY_STUDIO_PROJECT_ID ||
   env.VITE_SANITY_PROJECT_ID ||
@@ -62,7 +56,6 @@ const apiReadToken =
   env.SANITY_STUDIO_API_READ_TOKEN ||
   env.SANITY_API_READ_TOKEN
 
-// Validate required environment variables (both server and client)
 if (!projectId) {
   throw new Error(
     'Missing required environment variable: SANITY_STUDIO_PROJECT_ID',
@@ -74,7 +67,6 @@ if (!dataset) {
   )
 }
 
-// Base configuration
 const baseConfig: ClientConfig = {
   projectId,
   dataset,
@@ -83,30 +75,40 @@ const baseConfig: ClientConfig = {
   token: apiReadToken,
 }
 
+// --- Proxy support ---
+// When SANITY_PROXY_URL is set, redirect API calls through a local proxy (Varnish, Express, etc.)
+// to cache responses and reduce direct Sanity API quota usage.
+// Uses useProjectHostname: false so the hostname resolves to just {apiHost}/v{apiVersion}/...
+const SANITY_PROXY =
+  env.VITE_SANITY_PROXY_URL || env.SANITY_PROXY_URL || ''
+
+const proxyConfig = SANITY_PROXY
+  ? { useProjectHostname: false, apiHost: SANITY_PROXY }
+  : {}
+
 /**
  * Server-side Sanity client
- * Uses read token only (write token not needed for frontend app)
- * CDN disabled for real-time data
- *
- * ⚠️ Server-side only - will throw in browser
  */
 export const sanityClient =
   typeof window === 'undefined'
     ? createClient({
       ...baseConfig,
+      ...proxyConfig,
       useCdn: false,
     })
-    : (undefined as never) // Type guard for client-side
+    : (undefined as never)
 
 /**
  * Browser-side Sanity client
- * Read-only with CDN enabled
  */
-export const sanityClientBrowser = createClient(baseConfig)
+export const sanityClientBrowser = createClient({
+  ...baseConfig,
+  ...proxyConfig,
+})
 
 /**
  * Image URL builder for Sanity images
- * Client-side safe - only uses projectId
+ * Always hits cdn.sanity.io directly (not affected by proxy config)
  */
 export const urlForImage = createImageUrlBuilder({
   projectId: projectId,

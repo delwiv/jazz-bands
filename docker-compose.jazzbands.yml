@@ -26,6 +26,8 @@ x-band-prod: &band-prod
     - PORT=5173
     - SANITY_DATASET=staging
     - SANITY_STUDIO_DATASET=staging
+    - SANITY_PROXY_URL=http://localhost:5173/sanity
+    - SANITY_PURGE_TOKEN=${SANITY_PURGE_TOKEN}
   deploy:
     resources:
       limits:

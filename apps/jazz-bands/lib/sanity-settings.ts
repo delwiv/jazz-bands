@@ -20,3 +20,4 @@ export const SANITY_PROJECT_ID = projectId
 export const SANITY_DATASET = dataset
 export const SANITY_API_READ_TOKEN = process.env.SANITY_STUDIO_API_READ_TOKEN
 export const SANITY_API_WRITE_TOKEN = process.env.SANITY_STUDIO_API_WRITE_TOKEN
+export const SANITY_PURGE_DOMAIN = process.env.SANITY_STUDIO_PURGE_DOMAIN || ''

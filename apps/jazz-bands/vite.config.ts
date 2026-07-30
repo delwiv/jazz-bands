@@ -19,6 +19,14 @@ export default defineConfig({
     // Allow wildcard subdomain access via Traefik
     host: '0.0.0.0',
     allowedHosts: true,
+    // Proxy /sanity/* to Sanity API when VITE_SANITY_PROXY_URL=/sanity in dev
+    proxy: {
+      '/sanity': {
+        target: 'https://94fpfdn8.api.sanity.io',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/sanity/, ''),
+      },
+    },
   },
   build: {
     target: 'esnext',
