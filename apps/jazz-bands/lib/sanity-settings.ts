@@ -1,20 +1,27 @@
 /**
  * Centralized Sanity settings for shared use
- * Read from SANITY_STUDIO_* environment variables
- * 
- * Required: SANITY_STUDIO_PROJECT_ID, SANITY_STUDIO_DATASET
- * Optional: SANITY_STUDIO_API_READ_TOKEN, SANITY_STUDIO_API_WRITE_TOKEN
+ * Read from SANITY_STUDIO_* environment variables.
+ *
+ * The workspace .env files are loaded automatically (repo root first,
+ * then a local .env in the current directory) so the Sanity CLI and
+ * Studio work without manual exports. Falls back to the project's
+ * well-known values when nothing is set.
  */
 
-const projectId = process.env.SANITY_STUDIO_PROJECT_ID
-if (!projectId) {
-  throw new Error('Missing required environment variable: SANITY_STUDIO_PROJECT_ID')
-}
+import dotenv from 'dotenv'
 
-const dataset = process.env.SANITY_STUDIO_DATASET
-if (!dataset) {
-  throw new Error('Missing required environment variable: SANITY_STUDIO_DATASET')
-}
+dotenv.config({ path: '../../.env', quiet: true }) // repo root (apps/jazz-bands -> root)
+dotenv.config({ quiet: true }) // local ./.env if present (overrides nothing already set)
+
+const projectId =
+  process.env.SANITY_STUDIO_PROJECT_ID ||
+  process.env.SANITY_PROJECT_ID ||
+  '94fpfdn8'
+
+const dataset =
+  process.env.SANITY_STUDIO_DATASET ||
+  process.env.SANITY_DATASET ||
+  'production'
 
 export const SANITY_PROJECT_ID = projectId
 export const SANITY_DATASET = dataset
