@@ -66,8 +66,10 @@ class Index extends React.Component {
           Array.from(prev.checkedSet).filter(id =>
             this.props.contacts.some(c => c._id === id)
           )
-        )
+        ),
+        unfold: new Set(),
       }))
+      if (this.listRef.current) this.listRef.current.resetAfterIndex(0)
     }
   }
 
@@ -77,13 +79,13 @@ class Index extends React.Component {
 
   toggleUnfold = (contactId) => {
     const index = this.props.contacts.findIndex(c => c._id === contactId)
-    this.setState(prev => {
-      const next = new Set(prev.unfold)
-      if (next.has(contactId)) next.delete(contactId)
-      else next.add(contactId)
-      return { unfold: next }
-    }, () => {
-      if (index >= 0 && this.listRef.current) this.listRef.current.resetAfterIndex(index)
+    const wasOpen = this.state.unfold.has(contactId)
+    const prevIndex = wasOpen ? -1 : this.props.contacts.findIndex(c => this.state.unfold.has(c._id))
+    this.setState({ unfold: wasOpen ? new Set() : new Set([contactId]) }, () => {
+      const resetFrom = [prevIndex, index].filter(i => i >= 0)
+      if (resetFrom.length && this.listRef.current) {
+        this.listRef.current.resetAfterIndex(Math.min(...resetFrom))
+      }
     })
   }
 
@@ -127,7 +129,7 @@ class Index extends React.Component {
     const isChecked = data.checkedSet.has(contact._id)
 
     return (
-      <div style={{ ...style, overflow: 'hidden' }}>
+      <div style={{ ...style, overflow: 'hidden' }} className="list-row">
         <div className={`tr ${isChecked ? 'highlight' : ''}`}>
           <div className="td idx">{index + 1}</div>
           <div className="td chk">

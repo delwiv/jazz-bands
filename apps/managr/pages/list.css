@@ -30,10 +30,14 @@ body {
   z-index: 200;
 }
 
+.list-row {
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
+}
+
 .tr {
   display: grid;
   grid-template-columns: 40px 40px 70px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(150px, 1.5fr) 130px 80px;
-  border-bottom: 1px solid #ddd;
   background: #fff;
   align-items: center;
 }
