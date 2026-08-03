@@ -16,3 +16,4 @@ data
 config
 .opencode
 apps/jazz-bands/dist/
+apps/frederic-robert/scripts/migrate-certs.sh
