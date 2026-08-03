@@ -6,19 +6,20 @@
 
 ## 📋 Quick Summary
 
-**Jazz Bands** is a modern SSR application that serves **6 jazz band websites** (boheme, canto, jazzola, swing-family, trio-rsh, west-side-trio) from a single codebase via subdomain routing.
+**Jazz Bands** is a modern SSR application serving **6 jazz band websites** (boheme, canto, jazzola, swing-family, trio-rsh, west-side-trio) **plus the Frédéric Robert hub** (`apps/frederic-robert`, live at www.frederic-robert.com).
 
-**Project Goal**: Migrate 6 legacy Angular band websites (`/apps/boheme`, `/apps/canto`, `/apps/jazzola`, `/apps/swing-family`, `/apps/trio-rsh`, `/apps/west-side-trio`) to a unified modern platform at `/apps/jazz-bands`.
+**Project Goal**: Migrate 6 legacy Angular band websites (`/apps/boheme`, `/apps/canto`, `/apps/jazzola`, `/apps/swing-family`, `/apps/trio-rsh`, `/apps/west-side-trio`) to a unified modern platform at `/apps/jazz-bands`. ✅ **Done** — all 6 bands live on `*.jazz.wildredbeard.tech`. The hub (bio, gallery, band links, news, booking) is a separate app sharing the same Sanity project.
 
-**Tech Stack**: React Router v7 SSR, Sanity CMS, Docker, Traefik, TypeScript, Tailwind CSS
+**Tech Stack**: React Router v7 SSR, Sanity CMS, Docker, Traefik, nginx + Certbot, TypeScript, Tailwind CSS
 
 **Key Architecture**:
 
-- **Subdomain-based Multi-tenancy**: Single codebase serves 6 bands via `$subdomain` route parameter
+- **Per-band containers**: The same build serves all bands; each container is configured via the `BAND_SLUG` env var (no runtime subdomain routing)
+- **Hub app**: `apps/frederic-robert` serves www.frederic-robert.com via `docker-compose.frederic-robert.yml`
 - **Hybrid CMS Schema**: Direct references + band-specific overrides for musician relationships
 - **SSR with React Router v7**: SEO-friendly, fast initial load, bot detection
 - **Docker Per Band**: Isolation, independent scaling, memory limits for Raspberry Pi 4
-- **Traefik for SSL**: Automatic Let's Encrypt certificates via TLS-ALPN-01 challenge
+- **nginx + Certbot for SSL**: Host nginx terminates TLS (auto-renewal via `certbot.timer`); local Traefik instances do HTTP routing only (no SSL)
 - **Sanity CDN**: Edge caching for better performance, reduced server load
 - **Sanity Proxy Cache**: In-app proxy (`/sanity/*`) with 1h TTL, reduces API quota usage by caching SSR/bot requests
 - **Healthcheck via `/__health`**: Lightweight endpoint (no SSR, no Sanity) used by Docker HEALTHCHECK only
@@ -33,6 +34,21 @@ In addition to the 6 band websites, the repo hosts **managr** and **managr-api**
 - **managr-api** (`/apps/managr-api`): Node.js Express API + BullMQ job queue — contact CRUD on PostgreSQL 16 (single `contacts` table, 5957 contacts migrated from MongoDB), bulk email sending with per-contact tracking (`send_mail_status`, `envoi_mail`), Gmail/Mailchimp integration, email templates (`4bands`, `jazzola`)
 - **Purpose**: Prospecting — manage venue/media/booking contacts and send follow-up emails (relance with configurable delay, dedup, rate limiting via Redis)
 - **Infra**: Shared PostgreSQL instance (`DATABASE_URL=postgres://managr:...@postgres:5432/managr`), Redis (ioredis) for the BullMQ email queue
+- **Email sending (in progress)**: currently sends via a personal Gmail (poor deliverability). **Brevo** integration planned to replace it for managr-api
+
+---
+
+## 🏠 Hub — Frédéric Robert
+
+Landing page hub for **Frédéric Robert** (drummer & manager of all 6 bands), live at **www.frederic-robert.com** (apex `frederic-robert.com` redirects to www).
+
+- **App**: `/apps/frederic-robert` — React Router v7 SSR, French only, distinct "classic jazz" design (ivory/ink/brass palette, Cormorant Garamond + Inter)
+- **Sections**: hero · bio (from the linked musician doc) · band cards (links to the 6 band sites via `BAND_URL_PATTERN` env; per-band URL override possible in CMS) · news (aggregated upcoming tour dates from referenced bands + manual announcements) · gallery (`/galerie` with lightbox) · contact/booking (mailto + phone + socials)
+- **Sanity**: new top-level `person` document (`_id: person_frederic-robert`, schema `apps/jazz-bands/sanity/schemas/person.ts`), **hard-linked to `musician_frederic-robert`** (bio/photos shared, zero duplication). Fields: tagline, heroImage, gallery, news, bands (ordered refs + description + URL override), bookingEmail, phone, socialMedia, SEO/OG
+- **Deployment**: `docker-compose.frederic-robert.yml` — Traefik (routing only, `127.0.0.1:8013:80`) + hub container (port 5174). Host nginx: `config/hub.frederic-robert.nginx.conf` → `/etc/nginx/sites-available/` + symlink into `sites-enabled`
+- **Tools**: `scripts/create-person.mjs` (idempotent doc creation in Sanity), `scripts/migrate-certs.sh` (one-shot cert migration — kept out of git, deploy via scp)
+- **Dev**: `npm run dev` (react-router dev), `lint`/`typecheck`/`build`, server port 5174
+- **Email**: Zoho Mail on frederic-robert.com (`contact@frederic-robert.com` verified)
 
 ---
 
@@ -479,6 +495,9 @@ NODE_ENV=production
 cd apps/jazz-bands
 docker compose -f docker-compose.jazzbands.yml up -d
 
+# Start the Frederic Robert hub (own Traefik on 127.0.0.1:8013)
+docker compose -f docker-compose.frederic-robert.yml up -d --build
+
 # View logs
 docker compose -f docker-compose.jazzbands.yml logs -f
 
@@ -488,16 +507,14 @@ docker compose -f docker-compose.jazzbands.yml down
 
 ### Traefik Configuration
 
-Automatic SSL via Let's Encrypt:
+Local Traefik instances do **routing only** (HTTP). SSL is terminated by the host nginx (certbot-managed certs, auto-renewal via `certbot.timer` + deploy hook `/etc/letsencrypt/renewal-hooks/deploy/nginx-reload`).
 
 ```yaml
-# docker-compose.yml (apps/jazz-bands)
+# docker-compose.jazzbands.yml (routing only — no tls, no certresolver)
 labels:
   - "traefik.enable=true"
-  - "traefik.http.routers.boheme.rule=Host(`boheme.jazzbands.com`)"
-  - "traefik.http.services.boheme.loadbalancer.server.port=3000"
-  - "traefik.http.routers.boheme.tls=true"
-  - "traefik.http.routers.boheme.tls.certresolver=letsencrypt"
+  - "traefik.http.routers.boheme.rule=Host(`boheme.jazz.wildredbeard.tech`)"
+  - "traefik.http.services.boheme.loadbalancer.server.port=5173"
 ```
 
 ### Raspberry Pi 4 Optimization
@@ -820,6 +837,26 @@ Would you like me to stage and commit these changes?
 - **Reduced Motion**: Import `useReducedMotion` hook only when actually needed (e.g., for parallax/scroll effects). Remove unused imports.
 - **Type Annotations**: Use explicit types for collections (e.g., `TourDate` for tour data filtering/sorting).
 
+### Recent Changes (August 2026)
+
+**Frederic Robert Hub (new app):**
+- New `apps/frederic-robert` — React Router v7 SSR hub landing page at www.frederic-robert.com (see "Hub" section)
+- New Sanity `person` document type (`sanity/schemas/person.ts`), hard-linked to `musician_frederic-robert`, registered in `schemas/index.ts`
+- `docker-compose.frederic-robert.yml` — own Traefik (routing only, `127.0.0.1:8013:80`) + hub container (5174)
+- `config/hub.frederic-robert.nginx.conf` — host nginx: http redirect → https://www, apex → www, proxy `127.0.0.1:8013`
+- `scripts/create-person.mjs` — idempotent creation of `person_frederic-robert` (staging/production)
+
+**SSL / Certificates migration (all domains now on auto-renewal):**
+- All certs migrated from manual issuance (acme.sh + `--manual`) to certbot: **webroot** for web domains, **DNS-01 OVH** (`python3-certbot-dns-ovh`, `/etc/letsencrypt/ovh.ini`) for wildcards
+- Consolidation: `wildredbeard.tech` (covers `*.wildredbeard.tech` + apex + `*.ai.*` + `*.jazz.*`), `frederic-robert.com` (wildcard), `aozia.fr` (wildcard) — 30+ certs → 11
+- acme.sh uninstalled (aozia migrated to certbot, logimizer retired)
+- Deploy hook `/etc/letsencrypt/renewal-hooks/deploy/nginx-reload` (reloads nginx on renewal)
+- `lib/sanity-settings.ts` fix: loads repo `.env` (dotenv) + fallbacks — `npx sanity deploy/dev` work without manual exports
+
+**Email:**
+- Zoho Mail on frederic-robert.com (contact@frederic-robert.com) — MX `mx.zoho.eu`, SPF `include:zoho.eu`, DKIM; OVH autodiscover records removed
+- managr-api: **Brevo** integration planned to replace personal-Gmail sending (poor deliverability)
+
 ### Recent Changes (July 2026)
 
 **managr-api PostgreSQL Migration:**
@@ -861,4 +898,4 @@ Would you like me to stage and commit these changes?
 
 ---
 
-_Last updated: July 2026 (post-PostgreSQL-migration)_
+_Last updated: August 2026 (hub + cert auto-renewal migration)_
