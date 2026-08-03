@@ -116,7 +116,7 @@ async function main() {
 
 async function insertBatch(pool, rows) {
   if (rows.length === 0) return
-  const cols = Object.keys(rows[0])
+  const cols = [...new Set(rows.flatMap(r => Object.keys(r)))]
   const params = []
   const valueRows = []
 
