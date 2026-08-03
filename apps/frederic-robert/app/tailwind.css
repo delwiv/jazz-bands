@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  /* Jazz classic palette — ivory / ink / brass / wine */
+  --color-ivory: #f8f4ec;
+  --color-ivory-deep: #efe8da;
+  --color-ink: #1c1917;
+  --color-ink-soft: #2a2522;
+  --color-brass: #a17a3f;
+  --color-brass-light: #c9a866;
+  --color-wine: #7a2433;
+  --color-stone-line: #d8cfc0;
+
+  /* Typography */
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply min-h-screen font-body antialiased;
+  background-color: var(--color-ivory);
+  color: var(--color-ink);
+}
+
+/* Gold hairline used for section separators */
+@utility hairline {
+  @apply h-px bg-gradient-to-r from-transparent via-brass to-transparent;
+}
+
+/* Eyebrow label above section titles */
+@utility eyebrow {
+  @apply text-xs font-semibold tracking-[0.25em] uppercase text-brass;
+}
+
+@utility container-hub {
+  @apply w-full max-w-6xl mx-auto px-5 sm:px-8;
+}
+
+/* Scroll reveal (added by the Reveal component) */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

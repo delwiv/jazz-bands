@@ -1,0 +1,124 @@
+name: frederic-robert
+
+# ============================================================================
+# Frederic Robert Hub - Production Stack (Raspberry Pi)
+# ============================================================================
+# Services:
+#   - Traefik: HTTP/8013 + HTTPS/8014 (internal ports behind the host nginx)
+#   - hub: the React Router SSR app (port 5174 inside the container)
+#
+# Network flow:
+#   Host nginx (80/443, managed outside this stack)
+#     → frederic-robert.com & www.frederic-robert.com
+#     → Traefik (host 8013 for HTTP, 8014 for HTTPS/stream)
+#     → hub container
+#
+# Traefik handles Let's Encrypt (TLS-ALPN-01) for frederic-robert.com
+# + www.frederic-robert.com and redirects the apex to www.
+#
+# nginx snippets to add (host):
+#   http {
+#     server {
+#       server_name frederic-robert.com www.frederic-robert.com;
+#       location / { proxy_pass http://127.0.0.1:8013; }
+#       location /.well-known/acme-challenge/ { proxy_pass http://127.0.0.1:8013; }
+#     }
+#   }
+#   stream {
+#     map $ssl_preread_server_name $fr_backend {
+#       frederic-robert.com        127.0.0.1:8014;
+#       www.frederic-robert.com    127.0.0.1:8014;
+#       default                    '';
+#     }
+#     server {
+#       listen 443;
+#       proxy_pass $fr_backend;
+#       ssl_preread on;
+#     }
+#   }
+#
+# Usage:
+#   docker compose -f docker-compose.frederic-robert.yml up -d --build
+#   docker compose -f docker-compose.frederic-robert.yml logs -f
+#   docker compose -f docker-compose.frederic-robert.yml down
+# ============================================================================
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: frederic-robert-traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=frederic-robert-net"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.entrypoint=websecure"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LE_EMAIL:-admin@frederic-robert.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--accesslog=true"
+    ports:
+      - "8013:80"
+      - "8014:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt-data:/letsencrypt
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    networks:
+      - frederic-robert-net
+
+  hub:
+    build:
+      context: ./apps/frederic-robert
+    container_name: frederic-robert-hub
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - NODE_ENV=production
+      - PORT=5174
+      # Must match the dataset used by the band sites (references to band/musician docs)
+      - SANITY_DATASET=${SANITY_DATASET:-staging}
+      - SANITY_PROXY_URL=http://localhost:5174/sanity
+      - SANITY_PURGE_TOKEN=${SANITY_PURGE_TOKEN}
+    labels:
+      - "traefik.enable=true"
+      # Main router: www + apex over HTTPS
+      - "traefik.http.routers.hub.rule=Host(`frederic-robert.com`) || Host(`www.frederic-robert.com`)"
+      - "traefik.http.routers.hub.entrypoints=websecure"
+      - "traefik.http.routers.hub.tls=true"
+      - "traefik.http.routers.hub.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.hub.tls.domains[0].main=frederic-robert.com"
+      - "traefik.http.routers.hub.tls.domains[0].sans=www.frederic-robert.com"
+      - "traefik.http.services.hub.loadbalancer.server.port=5174"
+      # Apex → www redirect (canonical host)
+      - "traefik.http.routers.hub-apex.rule=Host(`frederic-robert.com`)"
+      - "traefik.http.routers.hub-apex.entrypoints=websecure"
+      - "traefik.http.routers.hub-apex.tls=true"
+      - "traefik.http.routers.hub-apex.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.hub-apex.middlewares=apex-to-www"
+      - "traefik.http.middlewares.apex-to-www.redirectregex.regex=^https://frederic-robert\\.com/(.*)"
+      - "traefik.http.middlewares.apex-to-www.redirectregex.replacement=https://www.frederic-robert.com/$${1}"
+      - "traefik.http.middlewares.apex-to-www.redirectregex.permanent=true"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    networks:
+      - frederic-robert-net
+
+volumes:
+  letsencrypt-data:
+
+networks:
+  frederic-robert-net:
+    driver: bridge

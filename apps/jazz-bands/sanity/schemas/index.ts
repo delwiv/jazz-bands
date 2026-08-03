@@ -5,6 +5,7 @@ import { recordingType } from './recording'
 import { bandMember } from './bandMember'
 import { musicianBandOverride } from './musicianBandOverride'
 import { contactType } from './contact'
+import { personType } from './person'
 
 export const schemaTypes = [
   musicianType,
@@ -14,4 +15,5 @@ export const schemaTypes = [
   bandMember,
   musicianBandOverride,
   contactType,
+  personType,
 ]

@@ -1,0 +1,40 @@
+{
+  "name": "frederic-robert",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev --host",
+    "build": "react-router build",
+    "start": "node server.js",
+    "lint": "biome check",
+    "typecheck": "tsc --noEmit",
+    "format": "biome format --write"
+  },
+  "dependencies": {
+    "@portabletext/react": "^6.0.3",
+    "@react-router/express": "^7.14.0",
+    "@react-router/node": "^7.14.0",
+    "@sanity/client": "^6.23.0",
+    "@sanity/image-url": "^1.1.0",
+    "clsx": "^2.1.1",
+    "compression": "^1.8.1",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.0",
+    "lucide-react": "^1.0.1",
+    "morgan": "^1.11.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.14.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
+    "@react-router/dev": "^7.14.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.6.3",
+    "vite": "^7.0.0"
+  }
+}
