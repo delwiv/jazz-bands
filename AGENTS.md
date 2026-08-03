@@ -25,6 +25,17 @@
 
 ---
 
+## 🎯 Managr — Prospecting Platform
+
+In addition to the 6 band websites, the repo hosts **managr** and **managr-api**: the prospecting platform used to manage contacts and send booking/marketing emails for the bands.
+
+- **managr** (`/apps/managr`, `managr-web`): Legacy Next.js front-end for managing prospects — contact lists, search/filter by French `département`, campaign management
+- **managr-api** (`/apps/managr-api`): Node.js Express API + BullMQ job queue — contact CRUD on PostgreSQL 16 (single `contacts` table, 5957 contacts migrated from MongoDB), bulk email sending with per-contact tracking (`send_mail_status`, `envoi_mail`), Gmail/Mailchimp integration, email templates (`4bands`, `jazzola`)
+- **Purpose**: Prospecting — manage venue/media/booking contacts and send follow-up emails (relance with configurable delay, dedup, rate limiting via Redis)
+- **Infra**: Shared PostgreSQL instance (`DATABASE_URL=postgres://managr:...@postgres:5432/managr`), Redis (ioredis) for the BullMQ email queue
+
+---
+
 ## 📊 Migration Status
 
 ### Migration Overview
