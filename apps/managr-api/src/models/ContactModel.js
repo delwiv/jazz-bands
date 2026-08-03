@@ -123,14 +123,16 @@ export default {
     const { clause, values } = buildSetClause(row)
     values.push(id)
     const where = /^\d+$/.test(id) ? `id` : `legacy_id`
-    const sql = `UPDATE contacts SET ${clause} WHERE ${where} = $${values.length} RETURNING *`
+    const legacyOr = where === 'legacy_id' ? ` OR legacy_id = '"' || $${values.length} || '"'` : ''
+    const sql = `UPDATE contacts SET ${clause} WHERE ${where} = $${values.length}${legacyOr} RETURNING *`
     const result = await query(sql, values)
     return toLegacyFormat(result.rows[0] || null)
   },
 
   deleteById: async (id) => {
     const where = /^\d+$/.test(id) ? 'id' : 'legacy_id'
-    await query(`DELETE FROM contacts WHERE ${where} = $1`, [id])
+    const legacyOr = where === 'legacy_id' ? ` OR legacy_id = '"' || $1 || '"'` : ''
+    await pool.query(`DELETE FROM contacts WHERE ${where} = $1${legacyOr}`, [id])
   },
 
   updateOneByEmail: async (email, update) => {
@@ -159,7 +161,7 @@ function buildWhere(filter, values) {
   }
   if (filter.legacy_id) {
     values.push(filter.legacy_id)
-    clauses.push(`legacy_id = $${values.length}`)
+    clauses.push(`(legacy_id = $${values.length} OR legacy_id = '"' || $${values.length} || '"')`)
   }
   if (filter.mois_contact) {
     values.push(filter.mois_contact)

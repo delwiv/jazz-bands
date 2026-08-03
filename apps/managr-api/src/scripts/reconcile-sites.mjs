@@ -10,6 +10,9 @@ const APPLY = process.argv.includes('--apply')
 const DRY_RUN = process.argv.includes('--dry-run') || !APPLY
 const BATCH_SIZE = 500
 
+const normalizeId = id =>
+  typeof id === 'string' ? id.replace(/^"(.*)"$/, '$1').trim() : String(id ?? '')
+
 async function main() {
   if (!MONGO_PW && !process.env.MONGODB_URI) {
     console.error('❌ MONGODB_MANAGR_PASSWORD not found in env')
@@ -41,10 +44,18 @@ async function main() {
   console.log(`Mongo: ${mongoSites.size} contacts with a non-empty site`)
 
   const pool = new pg.Pool({ connectionString: DATABASE_URL })
+
+  if (APPLY) {
+    const norm = await pool.query(`UPDATE contacts SET legacy_id = btrim(legacy_id, '"') WHERE legacy_id LIKE '"%"'`)
+    if (norm.rowCount > 0) console.log(`Normalized ${norm.rowCount} quoted legacy_id values`)
+  }
+
   const { rows } = await pool.query(
     'SELECT legacy_id FROM contacts WHERE site IS NULL AND legacy_id IS NOT NULL'
   )
-  const nullLegacyIds = new Set(rows.map(r => r.legacy_id))
+  const nullLegacyIds = new Set(rows.map(r => normalizeId(r.legacy_id)))
+  const quotedCount = rows.filter(r => /^".*"$/.test(r.legacy_id ?? '')).length
+  if (quotedCount > 0) console.log(`Postgres: ${quotedCount} legacy_id values quoted (will be normalized)`)
   console.log(`Postgres: ${nullLegacyIds.size} rows with site IS NULL (lost in migration)`)
 
   const toRestore = [...mongoSites.entries()].filter(([id]) => nullLegacyIds.has(id))
