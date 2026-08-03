@@ -4,38 +4,19 @@ name: frederic-robert
 # Frederic Robert Hub - Production Stack (Raspberry Pi)
 # ============================================================================
 # Services:
-#   - Traefik: HTTP/8013 + HTTPS/8014 (internal ports behind the host nginx)
+#   - traefik: HTTP routing only (like the jazzbands 8012 Traefik), bound to
+#     127.0.0.1:8013 — no SSL, no certresolver (nginx terminates SSL on the host)
 #   - hub: the React Router SSR app (port 5174 inside the container)
 #
 # Network flow:
-#   Host nginx (80/443, managed outside this stack)
-#     → frederic-robert.com & www.frederic-robert.com
-#     → Traefik (host 8013 for HTTP, 8014 for HTTPS/stream)
+#   Host nginx (80/443, SSL termination via certbot)
+#     → www.frederic-robert.com
+#     → Traefik (host 127.0.0.1:8013, HTTP)
 #     → hub container
 #
-# Traefik handles Let's Encrypt (TLS-ALPN-01) for frederic-robert.com
-# + www.frederic-robert.com and redirects the apex to www.
-#
-# nginx snippets to add (host):
-#   http {
-#     server {
-#       server_name frederic-robert.com www.frederic-robert.com;
-#       location / { proxy_pass http://127.0.0.1:8013; }
-#       location /.well-known/acme-challenge/ { proxy_pass http://127.0.0.1:8013; }
-#     }
-#   }
-#   stream {
-#     map $ssl_preread_server_name $fr_backend {
-#       frederic-robert.com        127.0.0.1:8014;
-#       www.frederic-robert.com    127.0.0.1:8014;
-#       default                    '';
-#     }
-#     server {
-#       listen 443;
-#       proxy_pass $fr_backend;
-#       ssl_preread on;
-#     }
-#   }
+# TLS certificates for frederic-robert.com + www.frederic-robert.com are
+# managed by certbot on the host (auto-renewal via certbot.timer).
+# Nginx config: config/hub.frederic-robert.nginx.conf
 #
 # Usage:
 #   docker compose -f docker-compose.frederic-robert.yml up -d --build
@@ -52,19 +33,11 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=frederic-robert-net"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.web.http.redirections.entrypoint.entrypoint=websecure"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.email=${LE_EMAIL:-admin@frederic-robert.com}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--accesslog=true"
     ports:
-      - "8013:80"
-      - "8014:443"
+      - "127.0.0.1:8013:80"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - letsencrypt-data:/letsencrypt
     restart: unless-stopped
     deploy:
       resources:
@@ -90,23 +63,9 @@ services:
       - SANITY_PURGE_TOKEN=${SANITY_PURGE_TOKEN}
     labels:
       - "traefik.enable=true"
-      # Main router: www + apex over HTTPS
       - "traefik.http.routers.hub.rule=Host(`frederic-robert.com`) || Host(`www.frederic-robert.com`)"
-      - "traefik.http.routers.hub.entrypoints=websecure"
-      - "traefik.http.routers.hub.tls=true"
-      - "traefik.http.routers.hub.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.hub.tls.domains[0].main=frederic-robert.com"
-      - "traefik.http.routers.hub.tls.domains[0].sans=www.frederic-robert.com"
+      - "traefik.http.routers.hub.entrypoints=web"
       - "traefik.http.services.hub.loadbalancer.server.port=5174"
-      # Apex → www redirect (canonical host)
-      - "traefik.http.routers.hub-apex.rule=Host(`frederic-robert.com`)"
-      - "traefik.http.routers.hub-apex.entrypoints=websecure"
-      - "traefik.http.routers.hub-apex.tls=true"
-      - "traefik.http.routers.hub-apex.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.hub-apex.middlewares=apex-to-www"
-      - "traefik.http.middlewares.apex-to-www.redirectregex.regex=^https://frederic-robert\\.com/(.*)"
-      - "traefik.http.middlewares.apex-to-www.redirectregex.replacement=https://www.frederic-robert.com/$${1}"
-      - "traefik.http.middlewares.apex-to-www.redirectregex.permanent=true"
     deploy:
       resources:
         limits:
@@ -115,9 +74,6 @@ services:
           memory: 128M
     networks:
       - frederic-robert-net
-
-volumes:
-  letsencrypt-data:
 
 networks:
   frederic-robert-net:
