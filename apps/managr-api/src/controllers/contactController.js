@@ -1,7 +1,7 @@
 import Contact from '../models/ContactModel.js'
 import redis from '../lib/redis.js'
 
-const PROJECTION = 'id, departement, ville, nom, responsable, mail, mail2, mail3, envoi_mail, mois_contact, send_mail_status, data, legacy_id'
+const PROJECTION = 'id, departement, ville, nom, responsable, mail, mail2, mail3, site, envoi_mail, mois_contact, send_mail_status, data, legacy_id'
 
 export default {
   list: async (req, res) => {

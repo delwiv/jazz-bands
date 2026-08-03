@@ -37,7 +37,7 @@ body {
 
 .tr {
   display: grid;
-  grid-template-columns: 40px 40px 70px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(150px, 1.5fr) 130px 80px;
+  grid-template-columns: 40px 40px 70px minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(150px, 1.5fr) minmax(90px, 0.8fr) 130px 80px;
   background: #fff;
   align-items: center;
 }

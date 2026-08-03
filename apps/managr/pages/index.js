@@ -14,6 +14,22 @@ const EXTRA_HEIGHT = 700
 const HEADER_HEIGHT = 40
 const isClient = typeof window !== 'undefined'
 
+const isEmail = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
+
+const normalizeUrl = value => {
+  const url = String(value || '').trim()
+  if (!url) return ''
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
+const getSiteDomain = value => {
+  try {
+    return new URL(normalizeUrl(value)).hostname
+  } catch (err) {
+    return value
+  }
+}
+
 class Index extends React.Component {
   static propTypes = {
     contacts: T.array.isRequired,
@@ -149,7 +165,23 @@ class Index extends React.Component {
           </div>
           <div className="td resp">{contact.responsable}</div>
           <div className="td mail">
-            <a href={`mailto:${contact.mail}?SUBJECT=Jazz`}>{contact.mail}</a>
+            {isEmail(contact.mail) ? (
+              <a href={`mailto:${contact.mail}?SUBJECT=Jazz`}>{contact.mail}</a>
+            ) : (
+              contact.mail
+            )}
+          </div>
+          <div className="td site">
+            {contact.site ? (
+              <a
+                href={normalizeUrl(contact.site)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={contact.site}
+              >
+                {getSiteDomain(contact.site)}
+              </a>
+            ) : null}
           </div>
           <div className="td lastmail">
             {contact.envoi_mail}
@@ -214,6 +246,7 @@ class Index extends React.Component {
             <div className="th nom">Nom</div>
             <div className="th resp">Responsable</div>
             <div className="th mail">Mail</div>
+            <div className="th site">Site web</div>
             <div className="th lastmail">Mail Envoyé le</div>
             <div className="th contact">Contact</div>
           </div>
