@@ -37,8 +37,15 @@ export function meta({ data }: Route.MetaArgs) {
     {
       tagName: 'link',
       rel: 'icon',
-      type: 'image/svg+xml',
-      href: '/favicon.svg',
+      type: 'image/png',
+      sizes: '192x192',
+      href: '/logo-192.png',
+    },
+    {
+      tagName: 'link',
+      rel: 'apple-touch-icon',
+      sizes: '192x192',
+      href: '/logo-192.png',
     },
   ]
 }

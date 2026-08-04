@@ -20,7 +20,17 @@ export function Hero({ person }: { person: PersonHub }) {
 
       <div className="container-hub relative z-10 pb-20 pt-32 text-center">
         <Reveal>
-          <p className="eyebrow mb-6">Batteur de jazz — Nantes</p>
+          <img
+            src="/logo-512.png"
+            alt={`Logo ${person.name}`}
+            width={512}
+            height={512}
+            loading="eager"
+            className="mx-auto h-24 w-auto drop-shadow-lg md:h-28"
+          />
+        </Reveal>
+        <Reveal delay={100}>
+          <p className="eyebrow mt-8 mb-6">Batteur de jazz — Nantes</p>
         </Reveal>
         <Reveal delay={100}>
           <h1 className="font-display text-6xl font-semibold leading-none tracking-tight sm:text-8xl md:text-9xl">
