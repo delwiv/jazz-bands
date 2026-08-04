@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS contacts (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_legacy_id ON contacts (legacy_id);
 CREATE INDEX IF NOT EXISTS idx_contacts_mail ON contacts (mail);
 CREATE INDEX IF NOT EXISTS idx_contacts_departement ON contacts (departement);
 CREATE INDEX IF NOT EXISTS idx_contacts_mois_contact ON contacts (mois_contact);

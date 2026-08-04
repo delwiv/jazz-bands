@@ -59,3 +59,10 @@ input[type='text'] {
   margin-bottom: 0 !important;
 }
 
+#dropdownMonthsContact {
+  position: fixed !important;
+  max-height: 50vh;
+  min-width: 140px;
+  overflow-y: auto;
+}
+

@@ -3,13 +3,19 @@ import { MongoClient } from 'mongodb'
 import pg from 'pg'
 import { join } from 'path'
 import { readFileSync } from 'fs'
+import readline from 'readline'
 
 const PROJECT_ROOT = join(import.meta.dirname, '..', '..', '..')
 
 function envValue(key) {
-  const envFile = readFileSync(join(PROJECT_ROOT, '.env'), 'utf-8')
-  const match = envFile.match(new RegExp(`^${key}=['"]?(.+?)['"]?$`, 'm'))
-  return match ? match[1] : null
+  if (process.env[key]) return process.env[key]
+  try {
+    const envFile = readFileSync(join(PROJECT_ROOT, '.env'), 'utf-8')
+    const match = envFile.match(new RegExp(`^${key}=['"]?(.+?)['"]?$`, 'm'))
+    return match ? match[1] : null
+  } catch {
+    return null
+  }
 }
 
 function exec(cmd) {
@@ -25,19 +31,50 @@ function containerIP(name) {
   return exec(`docker inspect ${name} -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'`)
 }
 
+function maskURL(url) {
+  return url.replace(/:\/\/[^@]+@/, '://***:***@')
+}
+
 const MONGO_PW = envValue('MONGODB_MANAGR_PASSWORD') || envValue('MONGODB_ROOT_PASSWORD')
 const PG_PW = envValue('POSTGRES_MANAGR_PASSWORD') || envValue('POSTGRES_PASSWORD')
 
-const MONGO_IP = containerIP('mongo') || containerIP('mongo-legacy')
-const PG_IP = containerIP('postgres-prod') || containerIP('postgres-dev') || containerIP('postgres')
+if (!MONGO_PW) {
+  console.error('❌ MONGODB_MANAGR_PASSWORD (ou MONGODB_ROOT_PASSWORD) introuvable dans .env')
+  process.exit(1)
+}
 
-if (!MONGO_IP) { console.error('❌ MongoDB container not found (tried: mongo)'); process.exit(1) }
-if (!PG_IP)   { console.error('❌ PostgreSQL container not found (tried: postgres-prod, postgres-dev, postgres)'); process.exit(1) }
-if (!MONGO_PW) { console.error('❌ MONGODB_MANAGR_PASSWORD not found in .env'); process.exit(1) }
-if (!PG_PW)   { console.error('❌ POSTGRES_MANAGR_PASSWORD not found in .env'); process.exit(1) }
+function resolveMongoURI() {
+  const host = process.env.MONGODB_HOST
+    || containerIP('mongo') || containerIP('mongo-legacy')
+    || 'mongo'
+  return `mongodb://managr:${MONGO_PW}@${host.includes(':') ? host : `${host}:27017`}/managr`
+}
 
-const MONGO_URI = `mongodb://managr:${MONGO_PW}@${MONGO_IP}:27017/managr`
-const DATABASE_URL = `postgres://managr:${PG_PW}@${PG_IP}:5432/managr`
+function resolvePgURL() {
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL
+  if (!PG_PW) return null
+  const host = containerIP('postgres-prod') || containerIP('postgres-dev') || containerIP('postgres') || 'postgres'
+  return `postgres://managr:${PG_PW}@${host}:5432/managr`
+}
+
+const MONGO_URI = resolveMongoURI()
+const DATABASE_URL = resolvePgURL()
+if (!DATABASE_URL) {
+  console.error('❌ POSTGRES_MANAGR_PASSWORD introuvable dans .env (ou définir DATABASE_URL)')
+  process.exit(1)
+}
+
+function confirm() {
+  return new Promise(resolve => {
+    let settled = false
+    const done = ok => {
+      if (!settled) { settled = true; resolve(ok) }
+    }
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+    rl.question('Tape YES pour continuer : ', answer => done(answer.trim() === 'YES'))
+    rl.on('close', () => done(false))
+  })
+}
 
 const KNOWN_COLUMNS = [
   'adresse', 'cd', 'cible', 'cp', 'date_cd', 'departement',
@@ -74,8 +111,17 @@ function splitDoc(doc) {
 }
 
 async function main() {
-  console.log(`MongoDB:  ${MONGO_URI}`)
-  console.log(`Postgres: ${DATABASE_URL}\n`)
+  console.log(`MongoDB  source : ${maskURL(MONGO_URI)}`)
+  console.log(`Postgres cible  : ${maskURL(DATABASE_URL)}`)
+  console.log('ℹ️ INSERT only — ne vide pas la table. Doublons ignorés via legacy_id (index unique).\n')
+
+  if (!process.argv.includes('--yes')) {
+    const ok = await confirm()
+    if (!ok) {
+      console.error('❌ Abandon (réponse ≠ YES ou stdin fermé). Relance avec --yes pour sauter le prompt.')
+      process.exit(1)
+    }
+  }
 
   console.log('Connecting to MongoDB...')
   const mongo = new MongoClient(MONGO_URI)
@@ -87,6 +133,7 @@ async function main() {
   console.log('Connecting to PostgreSQL...')
   const pool = new pg.Pool({ connectionString: DATABASE_URL })
   await pool.query('SELECT 1')
+  await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_legacy_id ON contacts (legacy_id)')
 
   const cursor = db.collection('contacts').find()
   let count = 0
@@ -109,7 +156,7 @@ async function main() {
     await insertBatch(pool, batch)
   }
 
-  console.log(`✅ Done: ${count} contacts migrated`)
+  console.log(`✅ Done: ${count} contacts migrated (doublons éventuels ignorés via legacy_id)`)
   await mongo.close()
   await pool.end()
 }
@@ -129,7 +176,7 @@ async function insertBatch(pool, rows) {
     valueRows.push(vals.map((_, i) => `$${params.length - vals.length + i + 1}`))
   }
 
-  const sql = `INSERT INTO contacts (${cols.join(', ')}) VALUES ${valueRows.map(v => `(${v.join(', ')})`).join(', ')} ON CONFLICT DO NOTHING`
+  const sql = `INSERT INTO contacts (${cols.join(', ')}) VALUES ${valueRows.map(v => `(${v.join(', ')})`).join(', ')} ON CONFLICT (legacy_id) DO NOTHING`
   await pool.query(sql, params)
 }
 

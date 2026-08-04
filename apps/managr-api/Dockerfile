@@ -5,6 +5,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY src/ ./src/
+COPY scripts/ ./scripts/
 COPY credentials.json token.json ./
 
 EXPOSE 3092

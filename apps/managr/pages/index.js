@@ -49,6 +49,7 @@ class Index extends React.Component {
   }
 
   listRef = React.createRef()
+  headerRef = React.createRef()
 
   constructor(props) {
     super(props)
@@ -90,7 +91,10 @@ class Index extends React.Component {
   }
 
   updateSize = () => {
-    this.setState({ height: window.innerHeight - 64 - HEADER_HEIGHT })
+    const header = this.headerRef.current
+    const bottom = header && header.getBoundingClientRect().bottom
+    const top = bottom || 64 + HEADER_HEIGHT
+    this.setState({ height: window.innerHeight - top })
   }
 
   toggleUnfold = (contactId) => {
@@ -232,7 +236,7 @@ class Index extends React.Component {
     return [
       <Navbar key="navbar" selected={checkedItems} />,
       <div key="list" className="table-virtual">
-        <div className="table-header">
+        <div className="table-header" ref={this.headerRef}>
           <div className="tr">
             <div className="th idx">#</div>
             <div className="th chk">
