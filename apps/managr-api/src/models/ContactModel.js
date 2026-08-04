@@ -22,6 +22,7 @@ function splitFields(data) {
   const extra = {}
   for (const [key, value] of Object.entries(data)) {
     if (key === 'checked') continue
+    if (value == null) continue
     const col = FIELD_MAP[key] || key
     if (KNOWN_COLUMNS.includes(col)) {
       row[col] = value
